@@ -4,9 +4,14 @@
 #include "Characters/HCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "NavigationSystem.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Controllers/HAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/HHealthComponent.h"
+#include "Components/HAttackComponent.h"
+#include "Components/HFollowComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Weapons/HWeapon.h"
 
 // Sets default values
 AHCharacter::AHCharacter()
@@ -15,7 +20,9 @@ AHCharacter::AHCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	HealthComponent = CreateDefaultSubobject<UHHealthComponent>(TEXT("HealthComponent"));
-	
+	AttackComponent = CreateDefaultSubobject<UHAttackComponent>(TEXT("AttackComponent"));
+	FollowComponent = CreateDefaultSubobject<UHFollowComponent>(TEXT("FollowComponent"));
+
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationPitch = false;
@@ -28,7 +35,30 @@ AHCharacter::AHCharacter()
 void AHCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	HealthComponent->OnActorDeath.AddDynamic(this, &AHCharacter::OnDeath);
 
+	AttackComponent->AttackStartedEvent.AddDynamic(this, &AHCharacter::OnAttackStart);
+	AttackComponent->AttackEndedEvent.AddDynamic(this, &AHCharacter::OnAttackEnd);
+}
+
+void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
+{
+	if (Controller)
+	{
+		Controller->UnPossess();
+	}
+	SetLifeSpan(10.f);
+}
+
+void AHCharacter::OnAttackStart()
+{
+	FollowComponent->LockMovement();
+}
+
+void AHCharacter::OnAttackEnd()
+{
+	FollowComponent->UnlockMovement();
 }
 
 // Called every frame
@@ -36,5 +66,16 @@ void AHCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+bool AHCharacter::IsDead() const
+{
+	return HealthComponent->IsDead();
+}
+
+FVector AHCharacter::GetTargetLocation(AActor* RequestedBy) const
+{
+	const FVector Location = GetActorLocation();
+	return FVector(Location.X, Location.Y, Location.Z + GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 }
 
