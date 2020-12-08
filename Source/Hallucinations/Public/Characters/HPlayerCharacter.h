@@ -8,6 +8,8 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class AHProjectile;
+class AHPlayerController;
 
 /**
  * 
@@ -29,18 +31,25 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
 
-	bool bIsHoldingPrimaryAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	float MinCameraDistance;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	float MaxCameraDistance;
+
+	bool bIsHoldingPrimaryAction;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void Move(float Value);
 	void Strafe(float Value);
+	void Zoom(float Value);
 
 	void OnPrimaryActionPress();
 	void OnPrimaryActionRelease();
-	void PrimaryAction();
+	void PrimaryAction(bool bIsRepeated);
 
 public:
 	// Called every frame
@@ -48,5 +57,4 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
 };

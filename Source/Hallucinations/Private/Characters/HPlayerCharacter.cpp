@@ -9,6 +9,11 @@
 #include "NavigationPath.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Controllers/HPlayerController.h"
+#include "Actors/HProjectile.h"
+#include "Utils/HUtils.h"
+#include "Components/HAttackComponent.h"
+#include "Components/HFollowComponent.h"
 
 // Sets default values
 AHPlayerCharacter::AHPlayerCharacter() {
@@ -17,6 +22,9 @@ AHPlayerCharacter::AHPlayerCharacter() {
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 1500.f;
 	SpringArmComponent->bDoCollisionTest = false;
+
+	MinCameraDistance = 300.f;
+	MaxCameraDistance = 2000.f;
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
@@ -36,10 +44,9 @@ void AHPlayerCharacter::BeginPlay() {
 // Called every frame
 void AHPlayerCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-
-	if (bIsHoldingPrimaryAction) {
-		PrimaryAction();
-	}
+	
+	if (bIsHoldingPrimaryAction)
+		PrimaryAction(true);
 }
 
 // Called to bind functionality to input
@@ -48,6 +55,7 @@ void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAxis("Move", this, &AHPlayerCharacter::Move);
 	PlayerInputComponent->BindAxis("Strafe", this, &AHPlayerCharacter::Strafe);
+	PlayerInputComponent->BindAxis("Zoom", this, &AHPlayerCharacter::Zoom);
 
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AHPlayerCharacter::OnPrimaryActionPress);
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Released, this, &AHPlayerCharacter::OnPrimaryActionRelease);
@@ -61,28 +69,52 @@ void AHPlayerCharacter::Strafe(float Value) {
 	AddMovementInput(GetActorRightVector() * Value);
 }
 
+void AHPlayerCharacter::Zoom(float Value)
+{
+	SpringArmComponent->TargetArmLength = FMath::Clamp(SpringArmComponent->TargetArmLength + Value * 50.f, MinCameraDistance, MaxCameraDistance);
+}
+
 void AHPlayerCharacter::OnPrimaryActionPress() {
 	bIsHoldingPrimaryAction = true;
+	PrimaryAction(false);
+	UE_LOG(LogTemp, Log, TEXT("Primary action pressed"));
 }
 
 void AHPlayerCharacter::OnPrimaryActionRelease() {
 	bIsHoldingPrimaryAction = false;
+	AttackComponent->CancelActorLock();
+	UE_LOG(LogTemp, Log, TEXT("Primary action released"));
 }
 
-void AHPlayerCharacter::PrimaryAction() {
-	APlayerController* controller = Cast<APlayerController>(GetController());
-	if (!controller) {
-		UE_LOG(LogTemp, Log, TEXT("No player controller assigned"));
+void AHPlayerCharacter::PrimaryAction(bool bIsRepeated) {
+	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
+	if (!PlayerController)
+	{
 		return;
 	}
 
-	float screenSpaceX, screenSpaceY;
-	controller->GetMousePosition(screenSpaceX, screenSpaceY);
-	FHitResult hitResult;
-	controller->GetHitResultAtScreenPosition(FVector2D(screenSpaceX, screenSpaceY), controller->CurrentClickTraceChannel, FCollisionQueryParams(), hitResult);
+	FHitResult& MouseoverData = PlayerController->MouseoverData;
+	if (MouseoverData.bBlockingHit) {
+		const bool bIsGroundAttack = PlayerController->IsInputKeyDown(EKeys::LeftShift);
+		AActor* MouseoverActor = MouseoverData.GetActor();
+		const bool bIsActorAttackable = UHAttackComponent::CanBeAttacked(this, MouseoverActor);
 
-	if (hitResult.bBlockingHit) {
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(controller, hitResult.ImpactPoint);
+		if (bIsGroundAttack || bIsActorAttackable || AttackComponent->GetCurrentAttackMode() == EAttackMode::LockedActor)
+		{
+			AttackComponent->HandlePlayerAttack(MouseoverData, bIsRepeated, bIsGroundAttack);
+		}
+		else
+		{
+			AttackComponent->StopAttacking();
+			if (UHFollowComponent::CanBeFollowed(MouseoverActor))
+			{
+				FollowComponent->MoveTo(MouseoverActor);
+			}
+			else
+			{
+				FollowComponent->MoveTo(MouseoverData.ImpactPoint);
+			}
+		}
 	}
 }
 

@@ -15,6 +15,12 @@ class HALLUCINATIONS_API AHPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+
 	AHPlayerController();
-	
+
+	virtual void PlayerTick(float DeltaSeconds) override;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Target")
+	FHitResult MouseoverData;
+
 };
