@@ -5,56 +5,43 @@
 
 #include "HConstants.h"
 #include "Components/HHealthComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Utils/HUtils.h"
+#include "Components/HProjectileMovementComponent.h"
 
 // Sets default values
 AHProjectile::AHProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	SceneRootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRootComponent"));
-	RootComponent = SceneRootComponent;
 	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMesh->SetupAttachment(SceneRootComponent);
-	StaticMesh->SetSimulatePhysics(false);
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	StaticMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
-	StaticMesh->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
+	StaticMesh->SetCollisionResponseToAllChannels(ECR_Block);
+	StaticMesh->SetNotifyRigidBodyCollision(true);
+	StaticMesh->IgnoreActorWhenMoving(GetInstigator(), true);
+	RootComponent = StaticMesh;
 
 	MaxRange = 10000.f;
 	DistanceTraveled = 0.f;
-	InitialSpeed = 3000.f;
 	
-	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComponent"));
-	MovementComponent->InitialSpeed = InitialSpeed;
+	MovementComponent = CreateDefaultSubobject<UHProjectileMovementComponent>(TEXT("MovementComponent"));
 
-	Damage = 10.f;
 }
 
 // Called when the game starts or when spawned
 void AHProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	StaticMesh->OnComponentHit.AddDynamic(this, &AHProjectile::OnHit);
 }
 
-void AHProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
+void AHProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::NotifyActorBeginOverlap(OtherActor);
-
-	if (OtherActor != GetOwner())
+	if (OtherActor != GetOwner() && OtherActor != GetInstigator())
 	{
-		bool bAreEnemies = UHUtils::AreEnemies(GetOwner(), OtherActor);
-		UE_LOG(LogTemp, Log, TEXT("Overlapping: %s, isEnemy: %s"), OtherActor ? *OtherActor->GetName() : TEXT("Null"), bAreEnemies ? "true" : "false");
-		if (bAreEnemies)
-		{
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, GetInstigatorController(), this, DamageType);
-			GetWorld()->DestroyActor(this);
-		}
+		UGameplayStatics::ApplyPointDamage(OtherActor, Data.Damage, -Hit.ImpactNormal, Hit, GetInstigatorController(), this, Data.DamageType);
+		GetWorld()->DestroyActor(this);
 	}
 }
 
@@ -68,5 +55,10 @@ void AHProjectile::Tick(float DeltaTime)
 	{
 		GetWorld()->DestroyActor(this);
 	}
+}
+
+UStaticMeshComponent* AHProjectile::GetMesh() const
+{
+	return StaticMesh;
 }
 

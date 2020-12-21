@@ -26,7 +26,6 @@ void UHFollowComponent::BeginPlay()
 
 void UHFollowComponent::ResetRotationFields()
 {
-	UE_LOG(LogTemp, Log, TEXT("Resetting fields"));
 	RotationActor = nullptr;
 	RotationLocation = FHConstants::Null_Vector;
 }
@@ -86,7 +85,6 @@ void UHFollowComponent::RotateTowards(AActor* const Actor)
 	StopMovement();
 	RotationActor = Actor;
 	RotationLocation = FHConstants::Null_Vector;
-	UE_LOG(LogTemp, Log, TEXT("Rotation towards: %s"), *RotationActor->GetName());
 }
 
 void UHFollowComponent::RotateTowards(FVector Location)
@@ -94,13 +92,11 @@ void UHFollowComponent::RotateTowards(FVector Location)
 	StopMovement();
 	RotationActor = nullptr;
 	RotationLocation = Location;
-	UE_LOG(LogTemp, Log, TEXT("Rotation towards: %s"), *Location.ToString());
 }
 
 void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
-	//UE_LOG(LogTemp, Log, TEXT("RotationActor: %s, RotationLocation: %s"), RotationActor ? *RotationActor->GetName() : TEXT("None"), RotationLocation != FHConstants::Null_Vector ? *RotationLocation.ToString() : TEXT("None"));
 	const FVector TargetLocation = RotationActor ? RotationActor->GetTargetLocation(GetOwner()) : RotationLocation;
 	if (TargetLocation != FHConstants::Null_Vector)
 	{

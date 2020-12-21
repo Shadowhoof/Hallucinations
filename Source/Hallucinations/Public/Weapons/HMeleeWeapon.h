@@ -13,5 +13,24 @@ UCLASS()
 class HALLUCINATIONS_API AHMeleeWeapon : public AHWeapon
 {
 	GENERATED_BODY()
+
+public:
+
+	AHMeleeWeapon();
 	
+private:
+
+	static const float RangeLeewayMultiplier;
+
+	float RangeWithLeeway;
+
+protected:
+
+	virtual void BeginPlay() override;
+	
+public:
+
+	virtual void AttackActor(AActor* const TargetActor) override;
+
+	virtual void AttackLocation(const FVector& TargetLocation) override;
 };

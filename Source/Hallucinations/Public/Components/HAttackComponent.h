@@ -12,6 +12,8 @@ class AHWeapon;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackStart);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEnd);
 
+DECLARE_LOG_CATEGORY_EXTERN(LogAttack, Log, All);
+
 UENUM()
 enum class EAttackMode : uint8
 {
@@ -40,12 +42,6 @@ protected:
 
 	// Time between attack initiation and attack actually happening, depends on attack animation
 	float AttackDelay;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
-	float BaseAttackSpeed;
-	
-	// Maximum amount of attack per second, depends on attack animation
-	float MaxAttacksPerSecond;
 
 	// Actor to attack
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)

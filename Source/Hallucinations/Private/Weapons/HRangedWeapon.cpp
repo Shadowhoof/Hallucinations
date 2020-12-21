@@ -11,7 +11,7 @@ AHRangedWeapon::AHRangedWeapon()
 	ProjectileSocketName = FHConstants::Arrow_Socket_Name;
 }
 
-void AHRangedWeapon::ShootAtLocation(const FVector& Location, bool MatchSocketHeight) const
+void AHRangedWeapon::ShootAtLocation(const FVector& Location, bool MatchSocketHeight)
 {
 	AHCharacter* Character = Cast<AHCharacter>(GetOwner());
 	FVector SpawnLocation = ProjectileSocketName.IsNone() ? GetTargetLocation() : Character->GetMesh()->GetSocketLocation(ProjectileSocketName);
@@ -24,8 +24,15 @@ void AHRangedWeapon::ShootAtLocation(const FVector& Location, bool MatchSocketHe
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = Character;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Owner = Character;
-	GetWorld()->SpawnActor(ProjectileClass, &SpawnLocation, &Rotation, SpawnParams);
+	SpawnParams.Owner = this;
+	AHProjectile* Projectile = Cast<AHProjectile>(GetWorld()->SpawnActor(ProjectileClass, &SpawnLocation, &Rotation, SpawnParams));
+	if (Projectile)
+	{
+		FHProjectileData ProjectileData;
+		ProjectileData.Damage = Damage;
+		ProjectileData.DamageType = DamageType;
+		Projectile->Data = ProjectileData;
+	}
 }
 
 void AHRangedWeapon::AttackActor(AActor* const TargetActor)

@@ -8,6 +8,15 @@
 
 class UProjectileMovementComponent;
 
+
+// Holds projectile data filled by the shooter
+struct FHProjectileData
+{
+	float Damage;
+	TSubclassOf<UDamageType> DamageType;
+};
+
+
 UCLASS()
 class HALLUCINATIONS_API AHProjectile : public AActor
 {
@@ -18,9 +27,6 @@ public:
 	AHProjectile();
 
 protected:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-	USceneComponent* SceneRootComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMesh;
@@ -33,23 +39,18 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	float DistanceTraveled;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	float InitialSpeed;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	float Damage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	TSubclassOf<UDamageType> DamageType;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	FHProjectileData Data;
 
+	UStaticMeshComponent* GetMesh() const;
 };

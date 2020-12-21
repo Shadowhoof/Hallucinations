@@ -2,6 +2,9 @@
 
 
 #include "Components/HHealthComponent.h"
+#include "Characters/HCharacter.h"
+
+DEFINE_LOG_CATEGORY(LogRagdoll);
 
 // Sets default values for this component's properties
 UHHealthComponent::UHHealthComponent()
@@ -10,6 +13,8 @@ UHHealthComponent::UHHealthComponent()
 	CurrentHealth = MaxHealth;
 
 	Team = ETeam::BadGuys;
+
+	RagdollForce = 10000;
 }
 
 // Called when the game starts
@@ -18,10 +23,11 @@ void UHHealthComponent::BeginPlay() {
 
 	CurrentHealth = MaxHealth;
 
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHHealthComponent::HandleTakeAnyDamage);
+	GetOwner()->OnTakePointDamage.AddDynamic(this, &UHHealthComponent::HandleTakePointDamage);
+	GetOwner()->OnTakeRadialDamage.AddDynamic(this, &UHHealthComponent::HandleTakeRadialDamage);
 }
 
-void UHHealthComponent::ApplyHealthChange(AActor* Target, float Delta, const UDamageType* DamageType, AController* Instigator, AActor* Source)
+void UHHealthComponent::ApplyHealthChange(float Delta, const UDamageType* DamageType, AController* Instigator, AActor* Source)
 {
 	if (Delta == 0.f)
 		return;
@@ -56,6 +62,11 @@ bool UHHealthComponent::AreEnemies(AActor* FirstActor, AActor* SecondActor)
 	return GetThreatStatus(FirstActor, SecondActor) == EThreatStatus::Enemy;
 }
 
+bool UHHealthComponent::AreAllies(AActor* FirstActor, AActor* SecondActor)
+{
+	return GetThreatStatus(FirstActor, SecondActor) == EThreatStatus::Ally;
+}
+
 bool UHHealthComponent::IsEnemy(AActor* OtherActor) const
 {
 	return AreEnemies(this->GetOwner(), OtherActor);
@@ -82,15 +93,36 @@ ETeam UHHealthComponent::GetTeam() const
 	return Team;
 }
 
-void UHHealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* Instigator, AActor* DamageCauser)
+void UHHealthComponent::HandleTakePointDamage(AActor* DamagedActor, float Damage, AController* InstigatedBy,
+	FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, FVector ShotFromDirection,
+	const UDamageType* DamageType, AActor* DamageCauser)
 {
-	if (Damage <= 0.f)
-	{
-		UE_LOG(LogDamage, Warning, TEXT("Negative damage %.2f applied from %s to %s"), Damage, *Instigator->GetName(), *DamagedActor->GetName());
+	if (Damage <= 0.f) {
+		UE_LOG(LogDamage, Warning, TEXT("Negative damage %.2f applied from %s to %s"), Damage, *InstigatedBy->GetName(), *DamagedActor->GetName());
 		return;
 	}
-	
-	ApplyHealthChange(DamagedActor, -Damage, DamageType, Instigator, DamageCauser);
+	UE_LOG(LogDamage, Log, TEXT("Taking point damage from %s, amount: %.0f"), *DamageCauser->GetName(), Damage);
+
+	const bool bWasAlive = !IsDead();
+	ApplyHealthChange(-Damage, DamageType, InstigatedBy, DamageCauser);
+	if (bWasAlive && IsDead())
+	{
+		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
+		Character->GetMesh()->AddImpulseAtLocation(ShotFromDirection * Damage * RagdollForce, HitLocation, BoneName);
+		UE_LOG(LogRagdoll, Log, TEXT("Applied %.0f force to ragdoll %s"), Damage * RagdollForce, *GetName());
+	}
+}
+
+void UHHealthComponent::HandleTakeRadialDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (Damage <= 0.f) {
+		UE_LOG(LogDamage, Warning, TEXT("Negative damage %.2f applied from %s to %s"), Damage, *InstigatedBy->GetName(), *DamagedActor->GetName());
+		return;
+	}
+	UE_LOG(LogDamage, Log, TEXT("Taking radial damage from %s, amount: %.0f"), *DamageCauser->GetName(), Damage);
+
+	ApplyHealthChange(-Damage, DamageType, InstigatedBy, DamageCauser);
 }
 
 float UHHealthComponent::GetHealthPercentage() const

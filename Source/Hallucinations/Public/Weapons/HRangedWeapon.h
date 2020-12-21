@@ -28,7 +28,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
 	FName ProjectileSocketName;
 
-	void ShootAtLocation(const FVector& Location, bool MatchSocketHeight) const;
+	void ShootAtLocation(const FVector& Location, bool MatchSocketHeight);
 
 public:
 	

@@ -9,6 +9,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHealthChanged, AActor*, Target, AActor*, Source, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActorDeath, AActor*, Victim, AActor*, Killer);
 
+DECLARE_LOG_CATEGORY_EXTERN(LogRagdoll, Log, All);
+
 UENUM()
 enum class ETeam
 {
@@ -36,8 +38,8 @@ public:
 
 private:
 
-	void ApplyHealthChange(AActor* Target, float Delta, const UDamageType* DamageType, AController* Instigator, AActor* Source);
-	
+	void ApplyHealthChange(float Delta, const UDamageType* DamageType, AController* Instigator, AActor* Source);
+
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "Health")
@@ -48,6 +50,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	ETeam Team;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	float RagdollForce;
 	
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -56,6 +61,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static bool AreEnemies(AActor* FirstActor, AActor* SecondActor);
+
+	UFUNCTION(BlueprintCallable)
+	static bool AreAllies(AActor* FirstActor, AActor* SecondActor);
 
 	bool IsEnemy(AActor* OtherActor) const;
 
@@ -72,8 +80,12 @@ public:
 	FOnActorDeath OnActorDeath;
 
 	UFUNCTION()
-	void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* Instigator, AActor* DamageCauser);
+	void HandleTakePointDamage(AActor* DamagedActor, float Damage, class AController* InstigatedBy, FVector HitLocation, class UPrimitiveComponent* FHitComponent, 
+		FName BoneName, FVector ShotFromDirection, const UDamageType* DamageType, AActor* DamageCauser);
 
+	UFUNCTION()
+	void HandleTakeRadialDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser);
+	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetHealthPercentage() const;
 };

@@ -6,6 +6,8 @@
 // Sets default values
 AHWeapon::AHWeapon()
 {
+	PrimaryActorTick.bCanEverTick = false;
+	
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetSimulatePhysics(false);
 	StaticMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -22,12 +24,6 @@ void AHWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
-}
-
-// Called every frame
-void AHWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 FName AHWeapon::GetAttachmentSocketName() const
@@ -54,5 +50,10 @@ void AHWeapon::AttackActor(AActor* const TargetActor)
 
 void AHWeapon::AttackLocation(const FVector& TargetLocation)
 {
+}
+
+float AHWeapon::GetAttackSpeed() const
+{
+	return AttackSpeed;
 }
 

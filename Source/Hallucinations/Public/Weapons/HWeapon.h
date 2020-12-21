@@ -30,13 +30,20 @@ protected:
 	// Animation used for attacking
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* AttackAnimation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float Damage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	TSubclassOf<UDamageType> DamageType;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	FName GetAttachmentSocketName() const;
 
@@ -48,5 +55,7 @@ public:
 	virtual void AttackActor(AActor* const TargetActor);
 
 	virtual void AttackLocation(const FVector& TargetLocation);
+
+	float GetAttackSpeed() const;
 
 };

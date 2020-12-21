@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 
-#define ECC_Click ECC_EngineTraceChannel1
+#define ECC_Click ECC_GameTraceChannel1
+#define ECC_Projectile ECC_GameTraceChannel2
 
 struct FHConstants
 {

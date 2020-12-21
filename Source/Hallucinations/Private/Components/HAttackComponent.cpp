@@ -10,6 +10,8 @@
 #include "HConstants.h"
 #include "Engine/World.h"
 
+DEFINE_LOG_CATEGORY(LogAttack);
+
 // Sets default values for this component's properties
 UHAttackComponent::UHAttackComponent()
 {
@@ -18,8 +20,6 @@ UHAttackComponent::UHAttackComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	AttackDelay = 1.f;
-	MaxAttacksPerSecond = 1.f;
-	BaseAttackSpeed = 1.f;
 
 	TargetActor = nullptr;
 	TargetLocation = FHConstants::Null_Vector;
@@ -35,8 +35,10 @@ void UHAttackComponent::BeginPlay()
 
 	if (WeaponClass) 
 	{
+		AHCharacter* Owner = Cast<AHCharacter>(GetOwner());
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = GetOwner();
+		SpawnParams.Owner = Owner;
+		SpawnParams.Instigator = Owner;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		Weapon = GetWorld()->SpawnActor<AHWeapon>(WeaponClass, SpawnParams);
 
@@ -57,7 +59,6 @@ void UHAttackComponent::BeginPlay()
 			if (AttackAnimation) 
 			{
 				AttackDelay = AttackAnimation->GetSectionLength(0);
-				MaxAttacksPerSecond = 1.f / BaseAttackSpeed;
 			}
 		}
 	}
@@ -128,11 +129,8 @@ void UHAttackComponent::CancelActorLock()
 {
 	if (AttackMode == EAttackMode::LockedActor)
 	{
-		if (!bHasAttackedWhileLocked)
-		{
-			AttackMode = EAttackMode::Actor;
-		}
-		else
+		AttackMode = EAttackMode::Actor;
+		if (bHasAttackedWhileLocked)
 		{
 			StopAttacking();
 		}
@@ -185,11 +183,21 @@ void UHAttackComponent::StartAttack()
 	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &UHAttackComponent::PerformAttack, AttackDelay);
 	bIsAttacking = true;
 
+	// Disable movement until contact frame
 	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
 	if (FollowComponent)
 	{
 		FollowComponent->LockMovement();
 	}
+
+	// Start attack animation
+	UAnimMontage* AttackAnimation = Weapon->GetAttackAnimation();
+	if (AttackAnimation)
+	{
+		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
+		Character->PlayAnimMontage(AttackAnimation);
+	}
+	
 	AttackStartedEvent.Broadcast();
 }
 
@@ -217,7 +225,7 @@ void UHAttackComponent::PerformAttack()
 		break;
 	}
 
-	const float AttackCooldown = BaseAttackSpeed - AttackDelay;
+	const float AttackCooldown = Weapon->GetAttackSpeed() - AttackDelay;
 	if (AttackCooldown > 0.0)
 	{
 		GetWorld()->GetTimerManager().SetTimer(AttackCooldownTimerHandle, this,

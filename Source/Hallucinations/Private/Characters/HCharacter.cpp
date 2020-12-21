@@ -2,6 +2,8 @@
 
 
 #include "Characters/HCharacter.h"
+
+#include "HConstants.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -23,6 +25,9 @@ AHCharacter::AHCharacter()
 	AttackComponent = CreateDefaultSubobject<UHAttackComponent>(TEXT("AttackComponent"));
 	FollowComponent = CreateDefaultSubobject<UHFollowComponent>(TEXT("FollowComponent"));
 
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Block);
+	
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationPitch = false;
@@ -44,6 +49,13 @@ void AHCharacter::BeginPlay()
 
 void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
 {
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	UE_LOG(LogDamage, Log, TEXT("%s has died"), *GetName());
+
 	if (Controller)
 	{
 		Controller->UnPossess();
