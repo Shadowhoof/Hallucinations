@@ -22,26 +22,32 @@ protected:
 
 	bool bIsMovementLocked;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	AActor* RotationActor;
 	
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	FVector RotationLocation;
 
 	void ResetRotationFields();
 
 public:
-	
-	void MoveTo(AActor* const Actor);
-	void MoveTo(const FVector& Location);
+
+	UFUNCTION(BlueprintCallable)
+	void MoveToActor(AActor* const Actor);
+
+	UFUNCTION(BlueprintCallable)
+	void MoveToLocation(const FVector& Location);
 
 	void StopMovement();
 
 	void LockMovement();
 	void UnlockMovement();
 
-	void RotateTowards(AActor* const Actor);
-	void RotateTowards(FVector Location);
+	UFUNCTION(BlueprintCallable)
+	void RotateTowardsActor(AActor* const Actor);
+
+	UFUNCTION(BlueprintCallable)
+	void RotateTowardsLocation(FVector Location);
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

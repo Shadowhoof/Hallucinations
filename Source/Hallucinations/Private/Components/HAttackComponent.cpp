@@ -78,11 +78,11 @@ bool UHAttackComponent::AttackActor(AActor* Actor) {
 	{
 		if (bIsInRange)
 		{
-			FollowComponent->RotateTowards(TargetActor);
+			FollowComponent->RotateTowardsActor(TargetActor);
 		}
 		else
 		{
-			FollowComponent->MoveTo(TargetActor);
+			FollowComponent->MoveToActor(TargetActor);
 		}
 	}
 	
@@ -108,7 +108,7 @@ void UHAttackComponent::AttackLocation(const FVector& Location)
 	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
 	if (FollowComponent)
 	{
-		FollowComponent->RotateTowards(Location);
+		FollowComponent->RotateTowardsLocation(Location);
 	}
 	
 	StartAttack();

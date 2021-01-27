@@ -106,11 +106,11 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated) {
 			AttackComponent->StopAttacking();
 			if (UHFollowComponent::CanBeFollowed(MouseoverActor))
 			{
-				FollowComponent->MoveTo(MouseoverActor);
+				FollowComponent->MoveToActor(MouseoverActor);
 			}
 			else
 			{
-				FollowComponent->MoveTo(MouseoverData.ImpactPoint);
+				FollowComponent->MoveToLocation(MouseoverData.ImpactPoint);
 			}
 		}
 	}

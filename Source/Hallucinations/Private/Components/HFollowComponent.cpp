@@ -30,7 +30,7 @@ void UHFollowComponent::ResetRotationFields()
 	RotationLocation = FHConstants::Null_Vector;
 }
 
-void UHFollowComponent::MoveTo(AActor* Actor)
+void UHFollowComponent::MoveToActor(AActor* Actor)
 {
 	if (bIsMovementLocked)
 	{
@@ -45,7 +45,7 @@ void UHFollowComponent::MoveTo(AActor* Actor)
 	ResetRotationFields();
 }
 
-void UHFollowComponent::MoveTo(const FVector& Location)
+void UHFollowComponent::MoveToLocation(const FVector& Location)
 {
 	if (bIsMovementLocked)
 	{
@@ -80,14 +80,14 @@ void UHFollowComponent::UnlockMovement()
 	bIsMovementLocked = false;
 }
 
-void UHFollowComponent::RotateTowards(AActor* const Actor)
+void UHFollowComponent::RotateTowardsActor(AActor* const Actor)
 {
 	StopMovement();
 	RotationActor = Actor;
 	RotationLocation = FHConstants::Null_Vector;
 }
 
-void UHFollowComponent::RotateTowards(FVector Location)
+void UHFollowComponent::RotateTowardsLocation(FVector Location)
 {
 	StopMovement();
 	RotationActor = nullptr;

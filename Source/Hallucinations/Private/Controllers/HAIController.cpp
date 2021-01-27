@@ -2,4 +2,9 @@
 
 
 #include "Controllers/HAIController.h"
+#include "Perception/AIPerceptionComponent.h"
 
+AHAIController::AHAIController()
+{
+	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
+}

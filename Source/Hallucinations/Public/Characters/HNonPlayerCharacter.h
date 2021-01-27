@@ -3,20 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
-#include "HAIController.generated.h"
+#include "Characters/HCharacter.h"
+#include "HNonPlayerCharacter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HALLUCINATIONS_API AHAIController : public AAIController
+class HALLUCINATIONS_API AHNonPlayerCharacter : public AHCharacter
 {
 	GENERATED_BODY()
 
 public:
 
-	AHAIController();
+	AHNonPlayerCharacter();
 
-	
 };
