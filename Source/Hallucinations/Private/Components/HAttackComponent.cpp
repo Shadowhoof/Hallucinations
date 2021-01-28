@@ -65,8 +65,10 @@ void UHAttackComponent::BeginPlay()
 }
 
 bool UHAttackComponent::AttackActor(AActor* Actor) {
-	if (Actor == GetOwner() || bIsAttacking || !UHUtils::AreEnemies(GetOwner(), Actor))
+	if (!Weapon || Actor == GetOwner() || bIsAttacking || !UHUtils::AreEnemies(GetOwner(), Actor))
+	{
 		return false;
+	}
 
 	TargetActor = Actor;
 	TargetLocation = FHConstants::Null_Vector;
@@ -96,7 +98,7 @@ bool UHAttackComponent::AttackActor(AActor* Actor) {
 
 void UHAttackComponent::AttackLocation(const FVector& Location)
 {
-	if (bIsAttacking)
+	if (!Weapon || bIsAttacking)
 	{
 		return;
 	}

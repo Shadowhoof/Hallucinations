@@ -87,9 +87,11 @@ public:
 	FOnAttackEnd AttackEndedEvent;
 
 	/** Locks on target that will be attacked if it's an enemy. Returns whether target is in range of the weapon */
+	UFUNCTION(BlueprintCallable)
 	bool AttackActor(AActor* Actor);
 
 	/** Starts attacking target location */
+	UFUNCTION(BlueprintCallable)
 	void AttackLocation(const FVector& Location);
 
 	/** Changes locked actor attack mode to regular actor attack mode */
