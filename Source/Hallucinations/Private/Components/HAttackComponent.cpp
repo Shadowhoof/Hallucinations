@@ -28,13 +28,29 @@ UHAttackComponent::UHAttackComponent()
 	bIsAttackOnCooldown = false;
 }
 
+void UHAttackComponent::FollowTargetActor()
+{
+	const bool bIsInRange = Weapon->IsInRange(GetOwner(), TargetActor);
+	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
+	if (FollowComponent) 
+	{
+		if (bIsInRange) 
+		{
+			FollowComponent->RotateTowardsActor(TargetActor);
+		}
+		else 
+		{
+			FollowComponent->MoveToActor(TargetActor);
+		}
+	}
+}
+
 // Called when the game starts
 void UHAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (WeaponClass) 
-	{
+	if (WeaponClass) {
 		AHCharacter* Owner = Cast<AHCharacter>(GetOwner());
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = Owner;
@@ -42,58 +58,55 @@ void UHAttackComponent::BeginPlay()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		Weapon = GetWorld()->SpawnActor<AHWeapon>(WeaponClass, SpawnParams);
 
-		if (Weapon)
-		{
+		if (Weapon) {
 			AHCharacter* Character = Cast<AHCharacter>(GetOwner());
 			Weapon->SetOwner(Character);
 
 			const FName SocketName = Weapon->GetAttachmentSocketName();
-			if (Character && !SocketName.IsNone())
-			{
+			if (Character && !SocketName.IsNone()) {
 				Weapon->AttachToComponent(Character->GetMesh(),
-				                          FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-				                          Weapon->GetAttachmentSocketName());
+					FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+					Weapon->GetAttachmentSocketName());
 			}
 
 			UAnimMontage* AttackAnimation = Weapon->GetAttackAnimation();
-			if (AttackAnimation) 
-			{
+			if (AttackAnimation) {
 				AttackDelay = AttackAnimation->GetSectionLength(0);
 			}
+		} else {
+			UE_LOG(LogAttack, Warning, TEXT("Actor %s with attack component has no weapon"), *GetOwner()->GetName());
 		}
+	}
+	else
+	{
+		UE_LOG(LogAttack, Log, TEXT("Actor %s with attack component has no weapon class specified"), *GetOwner()->GetName());
 	}
 }
 
-bool UHAttackComponent::AttackActor(AActor* Actor) {
+void UHAttackComponent::AttackActor(AActor* Actor) {
 	if (!Weapon || Actor == GetOwner() || bIsAttacking || !UHUtils::AreEnemies(GetOwner(), Actor))
 	{
-		return false;
+		return;
 	}
 
+	if (Actor == TargetActor && AttackMode == EAttackMode::LockedActor)
+	{
+		// ignore repeated attack orders
+		return;
+	}
+	
+	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName())
 	TargetActor = Actor;
 	TargetLocation = FHConstants::Null_Vector;
 	AttackMode = EAttackMode::LockedActor;
 
 	const bool bIsInRange = Weapon->IsInRange(GetOwner(), TargetActor);
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
-	if (FollowComponent)
-	{
-		if (bIsInRange)
-		{
-			FollowComponent->RotateTowardsActor(TargetActor);
-		}
-		else
-		{
-			FollowComponent->MoveToActor(TargetActor);
-		}
-	}
+	FollowTargetActor();
 	
 	if (bIsInRange)
 	{
 		StartAttack();
 	}
-
-	return bIsInRange;
 }
 
 void UHAttackComponent::AttackLocation(const FVector& Location)
@@ -103,6 +116,7 @@ void UHAttackComponent::AttackLocation(const FVector& Location)
 		return;
 	}
 
+	UE_LOG(LogAttack, Verbose, TEXT("%s is attacking location: %s"), *GetOwner()->GetName(), *Location.ToString())
 	TargetLocation = Location;
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::Ground;
@@ -118,13 +132,16 @@ void UHAttackComponent::AttackLocation(const FVector& Location)
 
 void UHAttackComponent::StopAttacking()
 {
-	if (!bIsAttacking)
+	if (bIsAttacking || AttackMode == EAttackMode::None)
 	{
-		TargetLocation = FHConstants::Null_Vector;
-		TargetActor = nullptr;
-		AttackMode = EAttackMode::None;
-		bHasAttackedWhileLocked = false;
+		return;
 	}
+	
+	UE_LOG(LogAttack, Verbose, TEXT("%s stopped attacking"), *GetOwner()->GetName())
+	TargetLocation = FHConstants::Null_Vector;
+	TargetActor = nullptr;
+	AttackMode = EAttackMode::None;
+	bHasAttackedWhileLocked = false;
 }
 
 void UHAttackComponent::CancelActorLock()
@@ -207,8 +224,12 @@ void UHAttackComponent::PerformAttack()
 {
 	ensure(TargetLocation != FHConstants::Null_Vector || TargetActor);
 
-	bIsAttacking = false;
+	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
+	if (FollowComponent) {
+		FollowComponent->UnlockMovement();
+	}
 
+	bIsAttacking = false;
 	switch (AttackMode)
 	{
 	case EAttackMode::Actor:
@@ -235,11 +256,6 @@ void UHAttackComponent::PerformAttack()
 		bIsAttackOnCooldown = true;
 	}
 
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
-	if (FollowComponent) {
-		FollowComponent->UnlockMovement();
-	}
-
 	AttackEndedEvent.Broadcast();
 }
 
@@ -253,14 +269,19 @@ void UHAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bIsAttacking || bIsAttackOnCooldown)
+	if (bIsAttacking)
 	{
 		return;
 	}
 
-	if (TargetActor && Weapon->IsInRange(GetOwner(), TargetActor) || TargetLocation != FHConstants::Null_Vector)
+	if (!bIsAttackOnCooldown && TargetActor && Weapon->IsInRange(GetOwner(), TargetActor) || TargetLocation != FHConstants::Null_Vector)
 	{
 		StartAttack();
+	}
+
+	if (TargetActor)
+	{
+		FollowTargetActor();
 	}
 }
 

@@ -72,6 +72,8 @@ protected:
 
 	bool bHasAttackedWhileLocked;
 
+	void FollowTargetActor();
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
@@ -88,7 +90,7 @@ public:
 
 	/** Locks on target that will be attacked if it's an enemy. Returns whether target is in range of the weapon */
 	UFUNCTION(BlueprintCallable)
-	bool AttackActor(AActor* Actor);
+	void AttackActor(AActor* Actor);
 
 	/** Starts attacking target location */
 	UFUNCTION(BlueprintCallable)
@@ -98,6 +100,7 @@ public:
 	void CancelActorLock();
 	
 	/** Cancels any issued attack orders */
+	UFUNCTION(BlueprintCallable)
 	void StopAttacking();
 
 	AActor* GetTargetActor() const;
