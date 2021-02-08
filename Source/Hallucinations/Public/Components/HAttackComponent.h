@@ -51,7 +51,10 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	FVector TargetLocation;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	bool bIsAttacking;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	bool bIsAttackOnCooldown;
 	
 	// Begins attack animation

@@ -142,6 +142,11 @@ void UHAttackComponent::StopAttacking()
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::None;
 	bHasAttackedWhileLocked = false;
+
+	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
+	if (FollowComponent) {
+		FollowComponent->StopMovement();
+	}
 }
 
 void UHAttackComponent::CancelActorLock()
