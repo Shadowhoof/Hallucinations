@@ -56,11 +56,10 @@ void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
 	GetMesh()->SetAllBodiesSimulatePhysics(true);
 	UE_LOG(LogDamage, Log, TEXT("%s has died"), *GetName());
 
-	if (Controller)
-	{
-		Controller->UnPossess();
-	}
+	DetachFromControllerPendingDestroy();
 	SetLifeSpan(10.f);
+	
+	DeathEvent.Broadcast(this, Killer);
 }
 
 void AHCharacter::OnAttackStart()

@@ -7,7 +7,13 @@
 
 bool UHUtils::CanBeTargeted(AActor* TargetActor)
 {
-	return TargetActor && TargetActor->GetComponentByClass(UHHealthComponent::StaticClass());
+	if (!TargetActor)
+	{
+		return false;
+	}
+
+	UHHealthComponent* HealthComponent = Cast<UHHealthComponent>(TargetActor->GetComponentByClass(UHHealthComponent::StaticClass()));
+	return HealthComponent && !HealthComponent->IsDead();
 }
 
 bool UHUtils::CanBeAttacked(AActor* Attacker, AActor* Victim)

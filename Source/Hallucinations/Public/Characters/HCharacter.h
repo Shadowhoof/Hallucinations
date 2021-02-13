@@ -10,6 +10,9 @@ class UHFollowComponent;
 class AHWeapon;
 class UHHealthComponent;
 class UHAttackComponent;
+class AHCharacter;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterDeathEvent, AHCharacter*, Victim, AActor*, Killer);
 
 UCLASS()
 class HALLUCINATIONS_API AHCharacter : public ACharacter
@@ -51,4 +54,7 @@ public:
 	bool IsDead() const;
 
 	virtual FVector GetTargetLocation(AActor* RequestedBy) const override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Death")
+	FCharacterDeathEvent DeathEvent;
 };

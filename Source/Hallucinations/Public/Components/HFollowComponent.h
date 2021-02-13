@@ -7,6 +7,9 @@
 #include "HFollowComponent.generated.h"
 
 
+class AHCharacter;
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HALLUCINATIONS_API UHFollowComponent : public UActorComponent
 {
@@ -29,6 +32,9 @@ protected:
 	FVector RotationLocation;
 
 	void ResetRotationFields();
+
+	UFUNCTION()
+	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);
 
 public:
 

@@ -51,8 +51,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	ETeam Team;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	UPROPERTY(EditDefaultsOnly, Category = "Ragdoll")
 	float RagdollForce;
+
+	UPROPERTY(EditAnywhere, Category = "Ragdoll")
+	float MaxRagdollForce;
 	
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -85,7 +88,7 @@ public:
 
 	UFUNCTION()
 	void HandleTakeRadialDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, FVector Origin, FHitResult HitInfo, AController* InstigatedBy, AActor* DamageCauser);
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetHealthPercentage() const;
 };

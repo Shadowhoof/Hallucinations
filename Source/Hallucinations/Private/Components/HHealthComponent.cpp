@@ -15,6 +15,7 @@ UHHealthComponent::UHHealthComponent()
 	Team = ETeam::BadGuys;
 
 	RagdollForce = 10000;
+	MaxRagdollForce = 100000;
 }
 
 // Called when the game starts
@@ -53,7 +54,7 @@ void UHHealthComponent::ApplyHealthChange(float Delta, const UDamageType* Damage
 	if (CurrentHealth <= 0.f)
 	{
 		OnActorDeath.Broadcast(GetOwner(), Source);
-		UE_LOG(LogTemp, Log, TEXT("Actor %s died, killer is %s"), *GetOwner()->GetName(), *Instigator->GetPawn()->GetName())
+		UE_LOG(LogTemp, Log, TEXT("Actor %s died, killer is %s"), *GetOwner()->GetName(), *Source->GetName())
 	}
 }
 
@@ -108,8 +109,9 @@ void UHHealthComponent::HandleTakePointDamage(AActor* DamagedActor, float Damage
 	if (bWasAlive && IsDead())
 	{
 		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
-		Character->GetMesh()->AddImpulseAtLocation(ShotFromDirection * Damage * RagdollForce, HitLocation, BoneName);
-		UE_LOG(LogRagdoll, Log, TEXT("Applied %.0f force to ragdoll %s"), Damage * RagdollForce, *GetName());
+		const float ActualRagdollForce = FMath::Min(Damage * RagdollForce, MaxRagdollForce);
+		Character->GetMesh()->AddImpulseAtLocation(ShotFromDirection * ActualRagdollForce, HitLocation, BoneName);
+		UE_LOG(LogRagdoll, Log, TEXT("Applied %.0f force to ragdoll %s"), ActualRagdollForce, *DamagedActor->GetName());
 	}
 }
 

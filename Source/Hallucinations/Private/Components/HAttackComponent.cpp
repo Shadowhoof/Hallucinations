@@ -50,21 +50,22 @@ void UHAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AHCharacter* CharacterOwner = Cast<AHCharacter>(GetOwner());
+	CharacterOwner->DeathEvent.AddDynamic(this, &UHAttackComponent::OnOwnerDeath);
+	
 	if (WeaponClass) {
-		AHCharacter* Owner = Cast<AHCharacter>(GetOwner());
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = Owner;
-		SpawnParams.Instigator = Owner;
+		SpawnParams.Owner = CharacterOwner;
+		SpawnParams.Instigator = CharacterOwner;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		Weapon = GetWorld()->SpawnActor<AHWeapon>(WeaponClass, SpawnParams);
 
 		if (Weapon) {
-			AHCharacter* Character = Cast<AHCharacter>(GetOwner());
-			Weapon->SetOwner(Character);
+			Weapon->SetOwner(CharacterOwner);
 
 			const FName SocketName = Weapon->GetAttachmentSocketName();
-			if (Character && !SocketName.IsNone()) {
-				Weapon->AttachToComponent(Character->GetMesh(),
+			if (CharacterOwner && !SocketName.IsNone()) {
+				Weapon->AttachToComponent(CharacterOwner->GetMesh(),
 					FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 					Weapon->GetAttachmentSocketName());
 			}
@@ -81,6 +82,11 @@ void UHAttackComponent::BeginPlay()
 	{
 		UE_LOG(LogAttack, Log, TEXT("Actor %s with attack component has no weapon class specified"), *GetOwner()->GetName());
 	}
+}
+
+void UHAttackComponent::OnOwnerDeath(AHCharacter* Victim, AActor* Killer)
+{
+	StopAttacking();
 }
 
 void UHAttackComponent::AttackActor(AActor* Actor) {
@@ -279,7 +285,7 @@ void UHAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		return;
 	}
 
-	if (!bIsAttackOnCooldown && TargetActor && Weapon->IsInRange(GetOwner(), TargetActor) || TargetLocation != FHConstants::Null_Vector)
+	if (!bIsAttackOnCooldown && (TargetActor && Weapon->IsInRange(GetOwner(), TargetActor)) || TargetLocation != FHConstants::Null_Vector)
 	{
 		StartAttack();
 	}

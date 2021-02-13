@@ -3,8 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/PlayerController.h"
 #include "HPlayerController.generated.h"
+
+class UCameraComponent;
+class AHCharacter;
 
 /**
  * 
@@ -14,6 +18,11 @@ class HALLUCINATIONS_API AHPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+protected:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPawnDeath(AHCharacter* Killer, AActor* Victim);
+	
 public:
 
 	AHPlayerController();
@@ -23,4 +32,10 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Target")
 	FHitResult MouseoverData;
 
+	virtual void OnPossess(APawn* InPawn) override;
+	
+	virtual void OnUnPossess() override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPlayerRestart();
 };

@@ -20,7 +20,11 @@ void UHFollowComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	AHCharacter* OwnerCharacter = Cast<AHCharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->DeathEvent.AddDynamic(this, &UHFollowComponent::OnOwnerDeath);
+	}
 	
 }
 
@@ -28,6 +32,11 @@ void UHFollowComponent::ResetRotationFields()
 {
 	RotationActor = nullptr;
 	RotationLocation = FHConstants::Null_Vector;
+}
+
+void UHFollowComponent::OnOwnerDeath(AHCharacter* Victim, AActor* Killer)
+{
+	StopMovement();
 }
 
 void UHFollowComponent::MoveToActor(AActor* Actor)
