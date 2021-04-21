@@ -138,8 +138,16 @@ void UHAttackComponent::AttackLocation(const FVector& Location)
 
 void UHAttackComponent::StopAttacking()
 {
-	if (bIsAttacking || AttackMode == EAttackMode::None)
+	if (AttackMode == EAttackMode::None)
 	{
+		// we're currently not attacking, return
+		return;
+	}
+
+	if (bIsAttacking)
+	{
+		// we're in the middle of an attack, wait for it to finish, then cancel
+		bIsAttackCancelPending = true;
 		return;
 	}
 	
@@ -148,6 +156,7 @@ void UHAttackComponent::StopAttacking()
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::None;
 	bHasAttackedWhileLocked = false;
+	bIsAttackCancelPending = false;
 
 	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
 	if (FollowComponent) {
@@ -202,6 +211,15 @@ EAttackMode UHAttackComponent::GetCurrentAttackMode() const
 {
 	return AttackMode;
 }
+
+void UHAttackComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	if (Weapon)
+	{
+		GetWorld()->DestroyActor(Weapon);
+	}
+}
+
 
 void UHAttackComponent::StartAttack()
 {
@@ -259,7 +277,8 @@ void UHAttackComponent::PerformAttack()
 		break;
 	}
 
-	const float AttackCooldown = Weapon->GetAttackSpeed() - AttackDelay;
+	AHCharacter* Character = Cast<AHCharacter>(GetOwner());
+	const float AttackCooldown = Character->GetAttackSpeed() - AttackDelay;
 	if (AttackCooldown > 0.0)
 	{
 		GetWorld()->GetTimerManager().SetTimer(AttackCooldownTimerHandle, this,
@@ -267,6 +286,11 @@ void UHAttackComponent::PerformAttack()
 		bIsAttackOnCooldown = true;
 	}
 
+	if (bIsAttackCancelPending)
+	{
+		StopAttacking();
+	}
+	
 	AttackEndedEvent.Broadcast();
 }
 

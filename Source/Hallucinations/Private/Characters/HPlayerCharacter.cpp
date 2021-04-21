@@ -14,10 +14,12 @@
 #include "Utils/HUtils.h"
 #include "Components/HAttackComponent.h"
 #include "Components/HFollowComponent.h"
+#include "Components/HAttributeComponent.h"
+#include "Abilities/HAbilityComponent.h"
 
 // Sets default values
-AHPlayerCharacter::AHPlayerCharacter() {
-
+AHPlayerCharacter::AHPlayerCharacter()
+{
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 1500.f;
@@ -29,20 +31,25 @@ AHPlayerCharacter::AHPlayerCharacter() {
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
+	AttributeComponent = CreateDefaultSubobject<UHAttributeComponent>(TEXT("AttributeComponent"));
+	AbilityComponent = CreateDefaultSubobject<UHAbilityComponent>(TEXT("AbilityComponent"));
+	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
 	bIsHoldingPrimaryAction = false;
 }
 
 // Called when the game starts or when spawned
-void AHPlayerCharacter::BeginPlay() {
+void AHPlayerCharacter::BeginPlay()
+{
 	Super::BeginPlay();
 
 	SpringArmComponent->SetUsingAbsoluteRotation(true);
 }
 
 // Called every frame
-void AHPlayerCharacter::Tick(float DeltaTime) {
+void AHPlayerCharacter::Tick(float DeltaTime)
+{
 	Super::Tick(DeltaTime);
 	
 	if (bIsHoldingPrimaryAction)
@@ -50,7 +57,8 @@ void AHPlayerCharacter::Tick(float DeltaTime) {
 }
 
 // Called to bind functionality to input
-void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
+void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis("Move", this, &AHPlayerCharacter::Move);
@@ -59,13 +67,21 @@ void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AHPlayerCharacter::OnPrimaryActionPress);
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Released, this, &AHPlayerCharacter::OnPrimaryActionRelease);
+
+	// Abilities
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability1", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)0);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability2", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)1);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability3", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)2);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability4", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)3);
 }
 
-void AHPlayerCharacter::Move(float Value) {
+void AHPlayerCharacter::Move(float Value)
+{
 	AddMovementInput(GetActorForwardVector() * Value);
 }
 
-void AHPlayerCharacter::Strafe(float Value) {
+void AHPlayerCharacter::Strafe(float Value)
+{
 	AddMovementInput(GetActorRightVector() * Value);
 }
 
@@ -74,12 +90,14 @@ void AHPlayerCharacter::Zoom(float Value)
 	SpringArmComponent->TargetArmLength = FMath::Clamp(SpringArmComponent->TargetArmLength + Value * 50.f, MinCameraDistance, MaxCameraDistance);
 }
 
-void AHPlayerCharacter::OnPrimaryActionPress() {
+void AHPlayerCharacter::OnPrimaryActionPress()
+{
 	bIsHoldingPrimaryAction = true;
 	PrimaryAction(false);
 }
 
-void AHPlayerCharacter::OnPrimaryActionRelease() {
+void AHPlayerCharacter::OnPrimaryActionRelease()
+{
 	bIsHoldingPrimaryAction = false;
 	AttackComponent->CancelActorLock();
 }

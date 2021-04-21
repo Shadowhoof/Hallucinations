@@ -8,3 +8,8 @@ AHAIController::AHAIController()
 {
 	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
 }
+
+void AHAIController::BeginPlay()
+{
+	Super::BeginPlay();
+}

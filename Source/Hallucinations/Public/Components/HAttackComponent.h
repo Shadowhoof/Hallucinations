@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEnd);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAttack, Log, All);
 
+
 UENUM()
 enum class EAttackMode : uint8
 {
@@ -22,6 +23,7 @@ enum class EAttackMode : uint8
 	LockedActor,	// attacking actor until lock is released
 	Ground			// attacking ground
 };
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HALLUCINATIONS_API UHAttackComponent : public UActorComponent
@@ -73,7 +75,8 @@ protected:
 
 	EAttackMode AttackMode;
 
-	bool bHasAttackedWhileLocked;
+	bool bHasAttackedWhileLocked = false;
+	bool bIsAttackCancelPending = false;
 
 	void FollowTargetActor();
 
@@ -116,4 +119,7 @@ public:
 	void HandlePlayerAttack(const FHitResult& MouseoverData, bool bIsRepeated, bool bIsGroundAttack);
 
 	EAttackMode GetCurrentAttackMode() const;
+
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+
 };

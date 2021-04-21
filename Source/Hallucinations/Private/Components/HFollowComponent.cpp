@@ -12,6 +12,8 @@
 UHFollowComponent::UHFollowComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	RotationLocation = FHConstants::Null_Vector;
 }
 
 
@@ -25,7 +27,6 @@ void UHFollowComponent::BeginPlay()
 	{
 		OwnerCharacter->DeathEvent.AddDynamic(this, &UHFollowComponent::OnOwnerDeath);
 	}
-	
 }
 
 void UHFollowComponent::ResetRotationFields()
@@ -113,7 +114,9 @@ void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		FRotator TargetRotation = (TargetLocation - GetOwner()->GetActorLocation()).Rotation();
 		TargetRotation.Pitch = 0.f;
 		if (!CurrentRotation.Equals(TargetRotation))
+		{
 			GetOwner()->SetActorRotation(FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 10.0));
+		}
 	}
 }
 

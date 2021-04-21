@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "HAIController.generated.h"
 
+
 /**
  * 
  */
@@ -18,5 +19,10 @@ public:
 
 	AHAIController();
 
+protected:
 	
+	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category = "Combat")
+	bool bInCombat = false;
 };

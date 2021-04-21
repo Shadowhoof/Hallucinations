@@ -2,7 +2,7 @@
 
 
 #include "Weapons/HMeleeWeapon.h"
-
+#include "Characters/HCharacter.h"
 #include "Kismet/GameplayStatics.h"
 
 const float AHMeleeWeapon::RangeLeewayMultiplier = 1.5f;
@@ -23,6 +23,9 @@ void AHMeleeWeapon::AttackActor(AActor* const TargetActor)
 {
 	if (TargetActor->GetDistanceTo(GetOwner()) <= RangeWithLeeway)
 	{
+		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
+		const float Damage = Character->GetCurrentDamage();
+		
 		const FVector ToTargetDirection = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 		FHitResult HitResult;
 		HitResult.Actor = TargetActor;

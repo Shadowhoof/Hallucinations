@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "HWeapon.generated.h"
 
+
 UCLASS()
 class HALLUCINATIONS_API AHWeapon : public AActor
 {
@@ -32,12 +33,6 @@ protected:
 	UAnimMontage* AttackAnimation;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
-	float Damage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
-	float AttackSpeed;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	TSubclassOf<UDamageType> DamageType;
 	
 	// Called when the game starts or when spawned
@@ -55,7 +50,5 @@ public:
 	virtual void AttackActor(AActor* const TargetActor);
 
 	virtual void AttackLocation(const FVector& TargetLocation);
-
-	float GetAttackSpeed() const;
 
 };

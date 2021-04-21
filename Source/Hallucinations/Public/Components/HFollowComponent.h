@@ -31,8 +31,6 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	FVector RotationLocation;
 
-	void ResetRotationFields();
-
 	UFUNCTION()
 	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);
 
@@ -55,7 +53,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RotateTowardsLocation(FVector Location);
 
+	UFUNCTION(BlueprintCallable)
+	void ResetRotationFields();
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	static bool CanBeFollowed(AActor* Target);
+
 };

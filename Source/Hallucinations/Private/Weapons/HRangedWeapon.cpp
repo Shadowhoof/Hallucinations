@@ -29,7 +29,7 @@ void AHRangedWeapon::ShootAtLocation(const FVector& Location, bool MatchSocketHe
 	if (Projectile)
 	{
 		FHProjectileData ProjectileData;
-		ProjectileData.Damage = Damage;
+		ProjectileData.Damage = Character->GetCurrentDamage();
 		ProjectileData.DamageType = DamageType;
 		Projectile->Data = ProjectileData;
 	}

@@ -10,6 +10,8 @@ class UCameraComponent;
 class USpringArmComponent;
 class AHProjectile;
 class AHPlayerController;
+class UHAttributeComponent;
+class UHAbilityComponent;
 
 /**
  * 
@@ -31,6 +33,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHAttributeComponent* AttributeComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHAbilityComponent* AbilityComponent;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MinCameraDistance;
 
@@ -50,6 +58,9 @@ protected:
 	void OnPrimaryActionPress();
 	void OnPrimaryActionRelease();
 	void PrimaryAction(bool bIsRepeated);
+
+	void UseAbility(uint8 Index);
+	DECLARE_DELEGATE_OneParam(FUseAbilityDelegate, uint8)
 
 public:
 	// Called every frame

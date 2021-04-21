@@ -51,9 +51,3 @@ void AHWeapon::AttackActor(AActor* const TargetActor)
 void AHWeapon::AttackLocation(const FVector& TargetLocation)
 {
 }
-
-float AHWeapon::GetAttackSpeed() const
-{
-	return AttackSpeed;
-}
-

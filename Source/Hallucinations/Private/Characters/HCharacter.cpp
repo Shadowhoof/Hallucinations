@@ -12,6 +12,7 @@
 #include "Components/HHealthComponent.h"
 #include "Components/HAttackComponent.h"
 #include "Components/HFollowComponent.h"
+#include "Components/HAttributeComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Weapons/HWeapon.h"
 
@@ -90,3 +91,12 @@ FVector AHCharacter::GetTargetLocation(AActor* RequestedBy) const
 	return FVector(Location.X, Location.Y, Location.Z + GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 }
 
+float AHCharacter::GetCurrentDamage() const
+{
+	return FMath::RandRange(MinDamage, MaxDamage);
+}
+
+float AHCharacter::GetAttackSpeed() const
+{
+	return AttackSpeed;
+}

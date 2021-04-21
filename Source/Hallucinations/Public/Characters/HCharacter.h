@@ -10,6 +10,7 @@ class UHFollowComponent;
 class AHWeapon;
 class UHHealthComponent;
 class UHAttackComponent;
+class UHAttributeComponent;
 class AHCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterDeathEvent, AHCharacter*, Victim, AActor*, Killer);
@@ -46,6 +47,15 @@ protected:
 	UFUNCTION()
 	void OnAttackEnd();
 
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float MinDamage = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float MaxDamage = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float AttackSpeed = 1.f;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -57,4 +67,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Death")
 	FCharacterDeathEvent DeathEvent;
+
+	virtual float GetCurrentDamage() const;
+
+	virtual float GetAttackSpeed() const;
 };

@@ -2,7 +2,31 @@
 
 
 #include "Characters/HNonPlayerCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AHNonPlayerCharacter::AHNonPlayerCharacter()
 {
+}
+
+
+
+void AHNonPlayerCharacter::EnterCombat()
+{
+	bInCombat = true;
+	GetCharacterMovement()->MaxWalkSpeed = CombatMovementSpeed;
+	UE_LOG(LogTemp, Log, TEXT("%s has entered combat"), *GetName())
+}
+
+void AHNonPlayerCharacter::LeaveCombat()
+{
+	bInCombat = false;
+	GetCharacterMovement()->MaxWalkSpeed = NonCombatMovementSpeed;
+	UE_LOG(LogTemp, Log, TEXT("%s has left combat"), *GetName())
+}
+
+void AHNonPlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	GetCharacterMovement()->MaxWalkSpeed = NonCombatMovementSpeed;
 }

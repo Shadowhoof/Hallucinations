@@ -76,15 +76,15 @@ bool UHHealthComponent::IsEnemy(AActor* OtherActor) const
 EThreatStatus UHHealthComponent::GetThreatStatus(AActor* FirstActor, AActor* SecondActor)
 {
 	if (!FirstActor || !SecondActor)
-		return EThreatStatus::Invalid;
+		return EThreatStatus::Neutral;
 
 	UHHealthComponent* FirstHealthComponent = Cast<UHHealthComponent>(FirstActor->GetComponentByClass(StaticClass()));
 	if (!FirstHealthComponent)
-		return EThreatStatus::Invalid;
+		return EThreatStatus::Neutral;
 
 	UHHealthComponent* SecondHealthComponent = Cast<UHHealthComponent>(SecondActor->GetComponentByClass(StaticClass()));
 	if (!SecondHealthComponent)
-		return EThreatStatus::Invalid;
+		return EThreatStatus::Neutral;
 
 	return FirstHealthComponent->Team == SecondHealthComponent->Team ? EThreatStatus::Ally : EThreatStatus::Enemy;
 }
@@ -111,7 +111,7 @@ void UHHealthComponent::HandleTakePointDamage(AActor* DamagedActor, float Damage
 		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
 		const float ActualRagdollForce = FMath::Min(Damage * RagdollForce, MaxRagdollForce);
 		Character->GetMesh()->AddImpulseAtLocation(ShotFromDirection * ActualRagdollForce, HitLocation, BoneName);
-		UE_LOG(LogRagdoll, Log, TEXT("Applied %.0f force to ragdoll %s"), ActualRagdollForce, *DamagedActor->GetName());
+		UE_LOG(LogRagdoll, Verbose, TEXT("Applied %.0f force to ragdoll %s"), ActualRagdollForce, *DamagedActor->GetName());
 	}
 }
 
