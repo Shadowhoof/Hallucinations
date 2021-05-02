@@ -3,10 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Actors/HAbstractProjectile.h"
 #include "HProjectile.generated.h"
-
-class UProjectileMovementComponent;
 
 
 // Holds projectile data filled by the shooter
@@ -18,7 +16,7 @@ struct FHProjectileData
 
 
 UCLASS()
-class HALLUCINATIONS_API AHProjectile : public AActor
+class HALLUCINATIONS_API AHProjectile : public AHAbstractProjectile
 {
 	GENERATED_BODY()
 	
@@ -27,18 +25,9 @@ public:
 	AHProjectile();
 
 protected:
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* StaticMesh;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-	UProjectileMovementComponent* MovementComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	float MaxRange;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Movement")
-	float DistanceTraveled;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -47,10 +36,8 @@ protected:
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 	
 	FHProjectileData Data;
 
-	UStaticMeshComponent* GetMesh() const;
+	virtual void IgnoreActor(AActor* Actor) override;
 };

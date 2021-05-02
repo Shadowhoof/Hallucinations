@@ -3,29 +3,21 @@
 
 #include "Actors/HProjectile.h"
 
-#include "HConstants.h"
-#include "Components/HHealthComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Components/HProjectileMovementComponent.h"
 
 // Sets default values
 AHProjectile::AHProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	StaticMesh->SetCollisionResponseToAllChannels(ECR_Block);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	StaticMesh->IgnoreActorWhenMoving(GetInstigator(), true);
+
 	RootComponent = StaticMesh;
-
-	MaxRange = 10000.f;
-	DistanceTraveled = 0.f;
-	
-	MovementComponent = CreateDefaultSubobject<UHProjectileMovementComponent>(TEXT("MovementComponent"));
-
 }
 
 // Called when the game starts or when spawned
@@ -42,23 +34,13 @@ void AHProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	{
 		UGameplayStatics::ApplyPointDamage(OtherActor, Data.Damage, -Hit.ImpactNormal, Hit, GetInstigatorController(), this, Data.DamageType);
 		GetWorld()->DestroyActor(this);
+
+		const FString OtherActorName = OtherActor ? OtherActor->GetName() : TEXT("Unknown");
+		UE_LOG(LogCollision, Verbose, TEXT("Projectile %s hit %s"), *GetName(), *OtherActorName);
 	}
 }
 
-// Called every frame
-void AHProjectile::Tick(float DeltaTime)
+void AHProjectile::IgnoreActor(AActor* Actor)
 {
-	Super::Tick(DeltaTime);
-
-	DistanceTraveled += MovementComponent->Velocity.Size() * DeltaTime;
-	if (DistanceTraveled > MaxRange)
-	{
-		GetWorld()->DestroyActor(this);
-	}
+	StaticMesh->IgnoreActorWhenMoving(Actor, true);
 }
-
-UStaticMeshComponent* AHProjectile::GetMesh() const
-{
-	return StaticMesh;
-}
-

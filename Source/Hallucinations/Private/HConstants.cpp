@@ -2,6 +2,8 @@
 
 #include "HConstants.h"
 
-const FName FHConstants::Arrow_Socket_Name = TEXT("ArrowSocket");
+const FName FHConstants::ArrowSocketName = TEXT("ArrowSocket");
 
-const FVector FHConstants::Null_Vector = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
+const FVector FHConstants::NullVector = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
+
+const float FHConstants::CapsuleHalfHeight = 100.f;

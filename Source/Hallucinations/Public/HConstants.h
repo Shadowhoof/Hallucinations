@@ -10,7 +10,9 @@
 struct FHConstants
 {
 	
-	static const FName Arrow_Socket_Name;
+	static const FName ArrowSocketName;
 	
-	static const FVector Null_Vector;
+	static const FVector NullVector;
+
+	static const float CapsuleHalfHeight;
 };

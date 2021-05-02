@@ -71,4 +71,8 @@ public:
 	virtual float GetCurrentDamage() const;
 
 	virtual float GetAttackSpeed() const;
+
+	virtual AActor* GetTargetActor() const;
+
+	virtual FVector GetTargetLocation() const;
 };

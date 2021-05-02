@@ -6,13 +6,19 @@
 #include "Components/HHealthComponent.h"
 #include "Actors/HProjectile.h"
 
+UHProjectileMovementComponent::UHProjectileMovementComponent()
+{
+	ProjectileGravityScale = 0.f;
+}
+
 UProjectileMovementComponent::EHandleBlockingHitResult UHProjectileMovementComponent::HandleBlockingHit(
 	const FHitResult& Hit, float TimeTick, const FVector& MoveDelta, float& SubTickTimeRemaining)
 {
-	if (UHHealthComponent::AreAllies(GetOwner()->GetInstigator(), Hit.GetActor()))
+	AActor* HitActor = Hit.GetActor();
+	if (UHHealthComponent::AreAllies(GetOwner()->GetInstigator(), HitActor))
 	{
-		AHProjectile* Projectile = Cast<AHProjectile>(GetOwner());
-		Projectile->GetMesh()->IgnoreActorWhenMoving(Hit.GetActor(), true);
+		AHAbstractProjectile* Projectile = Cast<AHAbstractProjectile>(GetOwner());
+		Projectile->IgnoreActor(HitActor);
 		return EHandleBlockingHitResult::AdvanceNextSubstep;
 	}
 

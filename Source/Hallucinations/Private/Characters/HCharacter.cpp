@@ -26,8 +26,9 @@ AHCharacter::AHCharacter()
 	AttackComponent = CreateDefaultSubobject<UHAttackComponent>(TEXT("AttackComponent"));
 	FollowComponent = CreateDefaultSubobject<UHFollowComponent>(TEXT("FollowComponent"));
 
+	GetCapsuleComponent()->SetCapsuleHalfHeight(FHConstants::CapsuleHalfHeight);
+
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Block);
 	
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	bUseControllerRotationYaw = false;
@@ -99,4 +100,14 @@ float AHCharacter::GetCurrentDamage() const
 float AHCharacter::GetAttackSpeed() const
 {
 	return AttackSpeed;
+}
+
+AActor* AHCharacter::GetTargetActor() const
+{
+	return nullptr;
+}
+
+FVector AHCharacter::GetTargetLocation() const
+{
+	return FHConstants::NullVector;
 }

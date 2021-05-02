@@ -2,6 +2,8 @@
 
 
 #include "Characters/HPlayerCharacter.h"
+
+#include "HConstants.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "NavigationSystem.h"
@@ -15,6 +17,7 @@
 #include "Components/HAttackComponent.h"
 #include "Components/HFollowComponent.h"
 #include "Components/HAttributeComponent.h"
+#include "Components/HHealthComponent.h"
 #include "Abilities/HAbilityComponent.h"
 
 // Sets default values
@@ -75,6 +78,44 @@ void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability4", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)3);
 }
 
+AActor* AHPlayerCharacter::GetTargetActor() const
+{
+	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
+	if (!PlayerController)
+	{
+		return nullptr;
+	}
+
+	FHitResult& MouseoverData = PlayerController->MouseoverData;
+	if (MouseoverData.bBlockingHit)
+	{
+		AActor* MouseoverActor = MouseoverData.GetActor();
+		if (HealthComponent->IsEnemy(MouseoverActor))
+		{
+			return MouseoverActor;
+		}
+	}
+
+	return nullptr;
+}
+
+FVector AHPlayerCharacter::GetTargetLocation() const
+{
+	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
+	if (!PlayerController)
+	{
+		return FHConstants::NullVector;
+	}
+
+	FHitResult& MouseoverData = PlayerController->MouseoverData;
+	if (MouseoverData.bBlockingHit)
+	{
+		return MouseoverData.ImpactPoint;
+	}
+
+	return FHConstants::NullVector;
+}
+
 void AHPlayerCharacter::Move(float Value)
 {
 	AddMovementInput(GetActorForwardVector() * Value);
@@ -132,5 +173,10 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated) {
 			}
 		}
 	}
+}
+
+void AHPlayerCharacter::UseAbility(uint8 Index)
+{
+	AbilityComponent->UseAbility(Index);
 }
 

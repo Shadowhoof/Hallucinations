@@ -13,7 +13,7 @@ UHFollowComponent::UHFollowComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	RotationLocation = FHConstants::Null_Vector;
+	RotationLocation = FHConstants::NullVector;
 }
 
 
@@ -32,7 +32,7 @@ void UHFollowComponent::BeginPlay()
 void UHFollowComponent::ResetRotationFields()
 {
 	RotationActor = nullptr;
-	RotationLocation = FHConstants::Null_Vector;
+	RotationLocation = FHConstants::NullVector;
 }
 
 void UHFollowComponent::OnOwnerDeath(AHCharacter* Victim, AActor* Killer)
@@ -94,7 +94,7 @@ void UHFollowComponent::RotateTowardsActor(AActor* const Actor)
 {
 	StopMovement();
 	RotationActor = Actor;
-	RotationLocation = FHConstants::Null_Vector;
+	RotationLocation = FHConstants::NullVector;
 }
 
 void UHFollowComponent::RotateTowardsLocation(FVector Location)
@@ -108,7 +108,7 @@ void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	const FVector TargetLocation = RotationActor ? RotationActor->GetTargetLocation(GetOwner()) : RotationLocation;
-	if (TargetLocation != FHConstants::Null_Vector)
+	if (TargetLocation != FHConstants::NullVector)
 	{
 		const FRotator CurrentRotation = GetOwner()->GetActorRotation();
 		FRotator TargetRotation = (TargetLocation - GetOwner()->GetActorLocation()).Rotation();

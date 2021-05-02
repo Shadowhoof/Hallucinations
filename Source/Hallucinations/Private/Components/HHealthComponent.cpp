@@ -58,22 +58,22 @@ void UHHealthComponent::ApplyHealthChange(float Delta, const UDamageType* Damage
 	}
 }
 
-bool UHHealthComponent::AreEnemies(AActor* FirstActor, AActor* SecondActor)
+bool UHHealthComponent::AreEnemies(const AActor* FirstActor, const AActor* SecondActor)
 {
 	return GetThreatStatus(FirstActor, SecondActor) == EThreatStatus::Enemy;
 }
 
-bool UHHealthComponent::AreAllies(AActor* FirstActor, AActor* SecondActor)
+bool UHHealthComponent::AreAllies(const AActor* FirstActor, const AActor* SecondActor)
 {
 	return GetThreatStatus(FirstActor, SecondActor) == EThreatStatus::Ally;
 }
 
-bool UHHealthComponent::IsEnemy(AActor* OtherActor) const
+bool UHHealthComponent::IsEnemy(const AActor* OtherActor) const
 {
 	return AreEnemies(this->GetOwner(), OtherActor);
 }
 
-EThreatStatus UHHealthComponent::GetThreatStatus(AActor* FirstActor, AActor* SecondActor)
+EThreatStatus UHHealthComponent::GetThreatStatus(const AActor* FirstActor, const AActor* SecondActor)
 {
 	if (!FirstActor || !SecondActor)
 		return EThreatStatus::Neutral;

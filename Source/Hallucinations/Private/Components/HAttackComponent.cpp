@@ -22,7 +22,7 @@ UHAttackComponent::UHAttackComponent()
 	AttackDelay = 1.f;
 
 	TargetActor = nullptr;
-	TargetLocation = FHConstants::Null_Vector;
+	TargetLocation = FHConstants::NullVector;
 	
 	bIsAttacking = false;
 	bIsAttackOnCooldown = false;
@@ -103,7 +103,7 @@ void UHAttackComponent::AttackActor(AActor* Actor) {
 	
 	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName())
 	TargetActor = Actor;
-	TargetLocation = FHConstants::Null_Vector;
+	TargetLocation = FHConstants::NullVector;
 	AttackMode = EAttackMode::LockedActor;
 
 	const bool bIsInRange = Weapon->IsInRange(GetOwner(), TargetActor);
@@ -152,7 +152,7 @@ void UHAttackComponent::StopAttacking()
 	}
 	
 	UE_LOG(LogAttack, Verbose, TEXT("%s stopped attacking"), *GetOwner()->GetName())
-	TargetLocation = FHConstants::Null_Vector;
+	TargetLocation = FHConstants::NullVector;
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::None;
 	bHasAttackedWhileLocked = false;
@@ -251,7 +251,7 @@ void UHAttackComponent::StartAttack()
 
 void UHAttackComponent::PerformAttack()
 {
-	ensure(TargetLocation != FHConstants::Null_Vector || TargetActor);
+	ensure(TargetLocation != FHConstants::NullVector || TargetActor);
 
 	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
 	if (FollowComponent) {
@@ -271,7 +271,7 @@ void UHAttackComponent::PerformAttack()
 		break;
 	case EAttackMode::Ground:
 		Weapon->AttackLocation(TargetLocation);
-		TargetLocation = FHConstants::Null_Vector;
+		TargetLocation = FHConstants::NullVector;
 		break;
 	case EAttackMode::None:
 		break;
@@ -309,7 +309,7 @@ void UHAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		return;
 	}
 
-	if (!bIsAttackOnCooldown && (TargetActor && Weapon->IsInRange(GetOwner(), TargetActor)) || TargetLocation != FHConstants::Null_Vector)
+	if (!bIsAttackOnCooldown && (TargetActor && Weapon->IsInRange(GetOwner(), TargetActor)) || TargetLocation != FHConstants::NullVector)
 	{
 		StartAttack();
 	}

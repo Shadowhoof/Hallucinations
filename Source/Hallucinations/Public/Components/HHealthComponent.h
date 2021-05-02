@@ -63,14 +63,14 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	static bool AreEnemies(AActor* FirstActor, AActor* SecondActor);
+	static bool AreEnemies(const AActor* FirstActor, const AActor* SecondActor);
 
 	UFUNCTION(BlueprintCallable)
-	static bool AreAllies(AActor* FirstActor, AActor* SecondActor);
+	static bool AreAllies(const AActor* FirstActor, const AActor* SecondActor);
 
-	bool IsEnemy(AActor* OtherActor) const;
+	bool IsEnemy(const AActor* OtherActor) const;
 
-	static EThreatStatus GetThreatStatus(AActor* FirstActor, AActor* SecondActor);
+	static EThreatStatus GetThreatStatus(const AActor* FirstActor, const AActor* SecondActor);
 
 	ETeam GetTeam() const;
 

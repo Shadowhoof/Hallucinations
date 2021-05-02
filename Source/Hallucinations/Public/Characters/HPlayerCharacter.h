@@ -68,4 +68,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual AActor* GetTargetActor() const override;
+
+	virtual FVector GetTargetLocation() const override;
 };
