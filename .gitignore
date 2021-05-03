@@ -3,9 +3,8 @@ DerivedDataCache/
 Intermediate/
 Saved/
 .vs/
-Content/AnimStarterPack/
-Content/Weapon_Pack/
-Content/Weapons_Kit_BuiltData.uasset
+Content/
+!Content/Hallucinations/
 Hallucinations.sln
 Hallucinations.uproject
 Hallucinations.sln.DotSettings.user
