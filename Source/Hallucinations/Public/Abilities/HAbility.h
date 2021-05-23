@@ -10,6 +10,8 @@
 
 class UHAbilityComponent;
 class AHAbilityImpl;
+class UAnimMontage;
+class UTexture2D;
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EAbilityTarget : uint8
@@ -38,9 +40,22 @@ protected:
 	uint8 TargetType = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Behaviour")
-	float Cooldown = 10.f;
+	float Cooldown = 0.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* CastAnimation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	UTexture2D* Icon;
 
 	FTimerHandle CooldownTimerHandle;
+
+	FTimerHandle CastTimerHandle;
+
+	bool bIsCasting = false;
+
+	void OnCastStarted(AHCharacter* Caster);
+	void OnCastFinished();
 
 	/** Use current ability on target actor */
 	virtual void Use(UHAbilityComponent* Context, AActor* TargetActor);
@@ -50,6 +65,17 @@ protected:
 
 	/** Use current ability on owner */
 	virtual void Use(UHAbilityComponent* Context);
+
+	void DelayCast(UHAbilityComponent* Context, const FTimerDelegate& Delegate);
+
+	UFUNCTION()
+	virtual void FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor);
+
+	UFUNCTION()
+	virtual void FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation);
+
+	UFUNCTION()
+	virtual void FinishSelfCast(UHAbilityComponent* Context);
 
 public:
 

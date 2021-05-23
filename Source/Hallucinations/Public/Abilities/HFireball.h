@@ -7,7 +7,7 @@
 #include "HFireball.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class HALLUCINATIONS_API UHFireball : public UHAbility
@@ -15,7 +15,7 @@ class HALLUCINATIONS_API UHFireball : public UHAbility
 	GENERATED_BODY()
 
 	friend class AHFireballImpl;
-	
+
 public:
 
 	UHFireball();
@@ -44,12 +44,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<AHFireballImpl> FireballClass;
 
-	virtual void Use(UHAbilityComponent* Context, AActor* TargetActor) override;
+	virtual void FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor) override;
 
-	virtual void Use(UHAbilityComponent* Context, FVector TargetLocation) override;
+	virtual void FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation) override;
 
 private:
 
 	void CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation);
-	
+
 };

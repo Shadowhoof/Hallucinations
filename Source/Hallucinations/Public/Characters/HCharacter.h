@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "HCharacter.generated.h"
 
+class AHFireballImpl;
 class UHFollowComponent;
 class AHWeapon;
 class UHHealthComponent;
@@ -75,4 +76,5 @@ public:
 	virtual AActor* GetTargetActor() const;
 
 	virtual FVector GetTargetLocation() const;
+
 };

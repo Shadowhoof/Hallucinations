@@ -27,7 +27,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Collision")
 	USphereComponent* CollisionComponent;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
 	UParticleSystemComponent* TrailEffect;
 	
 	float HitDamage;

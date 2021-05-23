@@ -11,6 +11,7 @@ struct FHConstants
 {
 	
 	static const FName ArrowSocketName;
+	static const FName SpellSocketName;
 	
 	static const FVector NullVector;
 

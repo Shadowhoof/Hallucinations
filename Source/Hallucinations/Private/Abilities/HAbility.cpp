@@ -9,6 +9,7 @@
 #include "Characters/HCharacter.h"
 #include "Utils/HEnumTools.h"
 #include "Core/HLogCategories.h"
+#include "TimerManager.h"
 
 
 void UHAbility::Use(UHAbilityComponent* Context, AActor* TargetActor)
@@ -17,6 +18,9 @@ void UHAbility::Use(UHAbilityComponent* Context, AActor* TargetActor)
 	AHCharacter* Caster = Context->GetCaster();
 	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(Caster->GetComponentByClass(UHFollowComponent::StaticClass()));
 	FollowComponent->RotateTowardsActor(TargetActor);
+
+	const FTimerDelegate Delegate = FTimerDelegate::CreateUFunction(this, FName("FinishActorCast"), Context, TargetActor);
+	DelayCast(Context, Delegate);
 }
 
 void UHAbility::Use(UHAbilityComponent* Context, FVector TargetLocation)
@@ -25,16 +29,55 @@ void UHAbility::Use(UHAbilityComponent* Context, FVector TargetLocation)
 	AHCharacter* Caster = Context->GetCaster();
 	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(Caster->GetComponentByClass(UHFollowComponent::StaticClass()));
 	FollowComponent->RotateTowardsLocation(TargetLocation);
+
+	const FTimerDelegate Delegate = FTimerDelegate::CreateUFunction(this, FName("FinishLocationCast"), Context, TargetLocation);
+	DelayCast(Context, Delegate);
 }
 
 void UHAbility::Use(UHAbilityComponent* Context)
 {
-	UE_LOG(LogAbility, Log, TEXT("Using ability %s on self"), *GetClass()->GetName())
+	UE_LOG(LogAbility, Log, TEXT("Using ability %s on self"), *GetClass()->GetName());
+
+	const FTimerDelegate Delegate = FTimerDelegate::CreateUFunction(this, FName("FinishSelfCast"), Context);
+	DelayCast(Context, Delegate);
+}
+
+void UHAbility::DelayCast(UHAbilityComponent* Context, const FTimerDelegate& Delegate)
+{
+	if (!CastAnimation)
+	{
+		UE_LOG(LogAbility, Error, TEXT("No animation specified for ability %s"), *GetClass()->GetName());
+		return;
+	}
+
+	const float CastTime = CastAnimation->GetSectionLength(0);
+	Context->GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, CastTime, false);
+	bIsCasting = true;
+}
+
+void UHAbility::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
+{
+	OnCastFinished();
+}
+
+void UHAbility::FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation)
+{
+	OnCastFinished();
+}
+
+void UHAbility::FinishSelfCast(UHAbilityComponent* Context)
+{
+	OnCastFinished();
 }
 
 bool UHAbility::TryUse(UHAbilityComponent* Context)
 {
-	const FTimerManager& TimerManager = Context->GetWorld()->GetTimerManager();
+	if (bIsCasting)
+	{
+		return false;
+	}
+
+	FTimerManager& TimerManager = Context->GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(CooldownTimerHandle))
 	{
 		// ability is still on cooldown
@@ -42,35 +85,54 @@ bool UHAbility::TryUse(UHAbilityComponent* Context)
 		return false;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("TargetType: %d"), TargetType);
-	
+	bool bWasUsed = false;
 	if (TEST_BIT(TargetType, EAbilityTarget::Actor))
 	{
 		AActor* TargetActor = Context->GetTargetActor();
 		if (TargetActor)
 		{
 			Use(Context, TargetActor);
-			return true;
+			bWasUsed = true;
 		}
 	}
 
-	if (TEST_BIT(TargetType, EAbilityTarget::Point))
+	if (!bWasUsed && TEST_BIT(TargetType, EAbilityTarget::Point))
 	{
 		const FVector TargetLocation = Context->GetTargetLocation();
 		if (TargetLocation != FHConstants::NullVector)
 		{
 			Use(Context, TargetLocation);
-			return true;
+			bWasUsed = true;
 		}
 	}
 
-	if (TEST_BIT(TargetType, EAbilityTarget::Self))
+	if (!bWasUsed && TEST_BIT(TargetType, EAbilityTarget::Self))
 	{
 		Use(Context);
-		return true;
+		bWasUsed = true;
 	}
 
-	UE_LOG(LogAbility, Warning, TEXT("No target found for ability %s"), *GetName());
-	return false;
+	if (bWasUsed)
+	{
+		OnCastStarted(Context->GetCaster());
+	}
+
+	//UE_LOG(LogAbility, VeryVerbose, TEXT("Tried to use ability %s, result: %s"), *GetName())
+	UE_LOG(LogAbility, Log, TEXT("Actor %s tried to use ability %s, result: %s"), *Context->GetCaster()->GetName(),
+		*GetClass()->GetName(), bWasUsed ? TEXT("true") : TEXT("false"));
+	return bWasUsed;
 }
 
+void UHAbility::OnCastStarted(AHCharacter* Caster)
+{
+	if (CastAnimation)
+	{
+		Caster->PlayAnimMontage(CastAnimation);
+	}
+}
+
+void UHAbility::OnCastFinished()
+{
+	GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, Cooldown, false);
+	bIsCasting = false;
+}

@@ -34,7 +34,8 @@ AHFireballImpl::AHFireballImpl()
 
 void AHFireballImpl::Initialize(UHFireball& AbilityDesc)
 {
-	MovementComponent->SetVelocityInLocalSpace(FVector(AbilityDesc.Speed, 0.f, 0.f));
+	const FVector Velocity = FVector(AbilityDesc.Speed, 0.f, 0.f);
+	MovementComponent->SetVelocityInLocalSpace(Velocity);
 	MovementComponent->ProjectileGravityScale = 0.f;
 
 	HitDamage = AbilityDesc.HitDamage;

@@ -2,6 +2,8 @@
 
 
 #include "Abilities/HFireball.h"
+
+#include "HConstants.h"
 #include "Abilities/HFireballImpl.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Characters/HCharacter.h"
@@ -12,18 +14,15 @@ UHFireball::UHFireball()
 {
 }
 
-void UHFireball::Use(UHAbilityComponent* Context, AActor* TargetActor)
+void UHFireball::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
 {
-	Super::Use(Context, TargetActor);
-	
-	ensure(TargetActor);
+	Super::FinishActorCast(Context, TargetActor);
 	CreateProjectile(Context, TargetActor->GetActorLocation());
 }
 
-void UHFireball::Use(UHAbilityComponent* Context, FVector TargetLocation)
+void UHFireball::FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation)
 {
-	Super::Use(Context, TargetLocation);
-	
+	Super::FinishLocationCast(Context, TargetLocation);
 	CreateProjectile(Context, TargetLocation);
 }
 
@@ -42,10 +41,11 @@ void UHFireball::CreateProjectile(UHAbilityComponent* Context, FVector TargetLoc
 	SpawnParams.Instigator = Caster;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FVector SpawnLocation = Caster->GetPawnViewLocation();
+	FVector SpawnLocation = Caster->GetMesh()->GetSocketLocation(FHConstants::SpellSocketName);
 	TargetLocation.Z = SpawnLocation.Z;
 	FRotator SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
-	
-	AHFireballImpl* Fireball = Cast<AHFireballImpl>(Caster->GetWorld()->SpawnActor(FireballClass, &SpawnLocation, &SpawnRotation, SpawnParams));
+
+	AActor* SpawnedActor = Caster->GetWorld()->SpawnActor(FireballClass, &SpawnLocation, &SpawnRotation, SpawnParams);
+	AHFireballImpl* Fireball = Cast<AHFireballImpl>(SpawnedActor);
 	Fireball->Initialize(*this);
 }

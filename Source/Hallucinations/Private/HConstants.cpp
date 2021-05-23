@@ -3,6 +3,7 @@
 #include "HConstants.h"
 
 const FName FHConstants::ArrowSocketName = TEXT("ArrowSocket");
+const FName FHConstants::SpellSocketName = TEXT("ProjectileSpellSocket");
 
 const FVector FHConstants::NullVector = FVector(FLT_MIN, FLT_MIN, FLT_MIN);
 
