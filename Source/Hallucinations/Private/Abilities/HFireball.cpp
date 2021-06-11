@@ -4,14 +4,14 @@
 #include "Abilities/HFireball.h"
 
 #include "HConstants.h"
-#include "Abilities/HFireballImpl.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Characters/HCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "Core/HLogCategories.h"
+#include "Utils/HEnumTools.h"
 
 UHFireball::UHFireball()
 {
+	TargetType = CombineBits(EAbilityTarget::Actor, EAbilityTarget::Point);
 }
 
 void UHFireball::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
@@ -28,12 +28,6 @@ void UHFireball::FinishLocationCast(UHAbilityComponent* Context, FVector TargetL
 
 void UHFireball::CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation)
 {
-	if (!FireballClass)
-	{
-		UE_LOG(LogAbility, Warning, TEXT("Couldn't spawn fireball actor because no fireball class was specified"));
-		return;
-	}
-
 	AHCharacter* Caster = Context->GetCaster();
 
 	FActorSpawnParameters SpawnParams;
@@ -45,7 +39,5 @@ void UHFireball::CreateProjectile(UHAbilityComponent* Context, FVector TargetLoc
 	TargetLocation.Z = SpawnLocation.Z;
 	FRotator SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
 
-	AActor* SpawnedActor = Caster->GetWorld()->SpawnActor(FireballClass, &SpawnLocation, &SpawnRotation, SpawnParams);
-	AHFireballImpl* Fireball = Cast<AHFireballImpl>(SpawnedActor);
-	Fireball->Initialize(*this);
+	CreateActor(Caster->GetWorld(), SpawnLocation, SpawnRotation, SpawnParams);
 }

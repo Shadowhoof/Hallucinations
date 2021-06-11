@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "HCharacter.generated.h"
 
-class AHFireballImpl;
+class AHFireballActor;
 class UHFollowComponent;
 class AHWeapon;
 class UHHealthComponent;

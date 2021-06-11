@@ -14,7 +14,7 @@ class HALLUCINATIONS_API UHFireball : public UHAbility
 {
 	GENERATED_BODY()
 
-	friend class AHFireballImpl;
+	friend class AHFireballActor;
 
 public:
 
@@ -40,9 +40,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float Radius;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<AHFireballImpl> FireballClass;
 
 	virtual void FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor) override;
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 
+#include "HAbilityActorInterface.h"
 #include "HAbilityComponent.h"
 #include "UObject/NoExportTypes.h"
 #include "HAbility.generated.h"
@@ -39,7 +40,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = "EAbilityTarget"))
 	uint8 TargetType = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Behaviour")
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	float Cooldown = 0.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
@@ -48,6 +49,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	UTexture2D* Icon;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Ability", Meta = (MustImplement = "HAbilityActorInterface"))
+	TSubclassOf<AActor> ImplementationClass;
+	
 	FTimerHandle CooldownTimerHandle;
 
 	FTimerHandle CastTimerHandle;
@@ -77,6 +81,9 @@ protected:
 	UFUNCTION()
 	virtual void FinishSelfCast(UHAbilityComponent* Context);
 
+	/** Creates actor in world that will perform all the gameplay logic */
+	virtual void CreateActor(UWorld* World, FVector& Location, FRotator& Rotator, FActorSpawnParameters& SpawnParams);
+	
 public:
 
 	bool TryUse(UHAbilityComponent* Context);

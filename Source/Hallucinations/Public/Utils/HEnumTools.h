@@ -1,3 +1,11 @@
 #pragma once
 
-#define TEST_BIT(value, enumBit) (value & static_cast<uint8>(enumBit))
+#define TEST_BIT(Mask, Bit) (Mask & static_cast<uint8>(Bit))
+#define SET_BIT(Mask, Bit) (Mask |= static_cast<uint8>(Bit))
+#define BIT_AS_INT(Bit) (static_cast<uint8>(Bit))
+
+template<typename... Args>
+uint8 CombineBits(Args... Bits)
+{
+	return (static_cast<uint8>(Bits) + ...);
+}

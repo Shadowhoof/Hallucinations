@@ -70,6 +70,25 @@ void UHAbility::FinishSelfCast(UHAbilityComponent* Context)
 	OnCastFinished();
 }
 
+void UHAbility::CreateActor(UWorld* World, FVector& Location, FRotator& Rotator, FActorSpawnParameters& SpawnParams)
+{
+	if (!ImplementationClass)
+	{
+		UE_LOG(LogAbility, Warning, TEXT("Couldn't spawn actor for %s because no implementation was specified"), *GetClass()->GetName());
+		return;
+	}
+	
+	AActor* Actor = World->SpawnActor(ImplementationClass, &Location, &Rotator, SpawnParams);
+	if (!Actor)
+	{
+		UE_LOG(LogAbility, Warning, TEXT("Actor for %s has not been spawned, check spawn log for more details"), *GetClass()->GetName());
+		return;
+	}
+
+	IHAbilityActorInterface* AbilityActor = Cast<IHAbilityActorInterface>(Actor);
+	AbilityActor->Initialize(this);
+}
+
 bool UHAbility::TryUse(UHAbilityComponent* Context)
 {
 	if (bIsCasting)

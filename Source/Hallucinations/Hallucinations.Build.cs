@@ -12,6 +12,8 @@ public class Hallucinations : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
+		CppStandard = CppStandardVersion.Cpp17;
+
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
