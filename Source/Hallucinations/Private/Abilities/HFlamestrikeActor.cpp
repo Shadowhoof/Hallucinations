@@ -7,6 +7,7 @@
 #include "Abilities/HFlamestrike.h"
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 AHFlamestrikeActor::AHFlamestrikeActor()
 {
@@ -27,7 +28,8 @@ void AHFlamestrikeActor::Tick(float DeltaSeconds)
 	UHAbilityStatics::AreaOfEffectDamage(GetActorLocation(), Damage, Radius, this, GetInstigatorController(),
 										 UDamageType::StaticClass());
 
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionFX, GetActorLocation());
+	UParticleSystemComponent* ParticleSystem = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionFX, GetActorLocation());
+	ParticleSystem->SetVectorParameter(TEXT("Size"), FVector(Radius * 2.f));
 
 	Destroy();
 }

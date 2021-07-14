@@ -89,6 +89,28 @@ void UHAbility::CreateActor(UWorld* World, FVector& Location, FRotator& Rotator,
 	AbilityActor->Initialize(this);
 }
 
+float UHAbility::GetRemainingCooldown(const UObject* WorldContextObject) const
+{
+	if (!GEngine)
+	{
+		UE_LOG(LogAbility, Error, TEXT("Pointer to GEngine is null"));
+		return 0.f;
+	}
+	
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	return World->GetTimerManager().GetTimerRemaining(CooldownTimerHandle);
+}
+
+float UHAbility::GetRemainingCooldownPercentage(const UObject* WorldContextObject) const
+{
+	if (Cooldown <= 0.f)
+	{
+		return 0.f;
+	}
+
+	return GetRemainingCooldown(WorldContextObject) / Cooldown;
+}
+
 bool UHAbility::TryUse(UHAbilityComponent* Context)
 {
 	if (bIsCasting)

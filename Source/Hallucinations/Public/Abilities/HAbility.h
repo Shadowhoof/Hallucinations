@@ -40,7 +40,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = "EAbilityTarget"))
 	uint8 TargetType = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
 	float Cooldown = 0.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
@@ -83,6 +83,16 @@ protected:
 
 	/** Creates actor in world that will perform all the gameplay logic */
 	virtual void CreateActor(UWorld* World, FVector& Location, FRotator& Rotator, FActorSpawnParameters& SpawnParams);
+
+	/* TODO: keep reference to ability component? so we don't have to pass world context to every method */
+
+	/* Gets remaining cooldown for current ability in seconds */
+	UFUNCTION(BlueprintPure, Category = "Cooldown", meta = (WorldContext = "WorldContextObject"))
+	float GetRemainingCooldown(const UObject* WorldContextObject) const;
+
+	/* Gets remaining cooldown percentage for current ability (in 0..1 range) */
+	UFUNCTION(BlueprintPure, Category = "Cooldown", meta = (WorldContext = "WorldContextObject"))
+	float GetRemainingCooldownPercentage(const UObject* WorldContextObject) const;
 	
 public:
 
