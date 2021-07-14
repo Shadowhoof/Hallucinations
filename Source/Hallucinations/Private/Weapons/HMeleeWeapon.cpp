@@ -28,7 +28,7 @@ void AHMeleeWeapon::AttackActor(AActor* const TargetActor)
 		
 		const FVector ToTargetDirection = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 		FHitResult HitResult;
-		HitResult.Actor = TargetActor;
+		HitResult.HitObjectHandle = FActorInstanceHandle(TargetActor);
 		HitResult.ImpactPoint = TargetActor->GetActorLocation();
 		HitResult.ImpactNormal = -ToTargetDirection;
 		UGameplayStatics::ApplyPointDamage(TargetActor, Damage, ToTargetDirection, HitResult, GetInstigatorController(), this, DamageType);
