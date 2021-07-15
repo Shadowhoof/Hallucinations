@@ -23,4 +23,8 @@ class IHAbilityActorInterface
 public:
 
 	virtual void Initialize(UHAbility* AbilityDesc);
+
+	virtual bool CanAffectAllies();
+
+	virtual bool CanAffectEnemies();
 };

@@ -40,10 +40,14 @@ void AHFireballActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 
 	UE_LOG(LogAbility, Log, TEXT("Fireball impact on %s"), OtherActor ? *OtherActor->GetName() : TEXT("Null (BSP?)"));
 
+	// apply damage
 	UHAbilityStatics::SingleTargetDamage(OtherActor, HitDamage, GetInstigator(), GetInstigatorController(), 
 										 UDamageType::StaticClass(), SweepResult);
 	UHAbilityStatics::AreaOfEffectDamage(GetActorLocation(), ExplosionDamage, ExplosionRadius, GetInstigator(), 
 										 GetInstigatorController(), UDamageType::StaticClass());
 
+	// spawn explosion FX
+	UGameplayStatics::SpawnEmitterAtLocation(this, ExplosionEffect, GetActorLocation());
+	
 	Destroy();
 }

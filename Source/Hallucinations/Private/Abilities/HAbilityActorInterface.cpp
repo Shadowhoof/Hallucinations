@@ -6,3 +6,13 @@
 void IHAbilityActorInterface::Initialize(UHAbility* AbilityDesc)
 {
 }
+
+bool IHAbilityActorInterface::CanAffectAllies()
+{
+	return true;
+}
+
+bool IHAbilityActorInterface::CanAffectEnemies()
+{
+	return true;
+}

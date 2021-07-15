@@ -14,6 +14,7 @@ void UHAbilityStatics::SingleTargetDamage(AActor* TargetActor, float Damage, AAc
 void UHAbilityStatics::AreaOfEffectDamage(const FVector& Origin, float Damage, float Radius,
 	AActor* SourceActor, AController* Instigator, TSubclassOf<UDamageType> DamageClass)
 {
+	// TODO - write own damage system so custom filters can be applied on actors
 	const TArray<AActor*> IgnoredActors;
 	UGameplayStatics::ApplyRadialDamage(SourceActor, Damage, Origin, Radius, DamageClass, IgnoredActors, 
 										SourceActor, Instigator, true);

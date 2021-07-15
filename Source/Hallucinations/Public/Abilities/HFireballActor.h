@@ -32,6 +32,9 @@ protected:
 	float ExplosionDamage;
 	float ExplosionRadius;
 	bool bIsFalloff;
+
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	UParticleSystem* ExplosionEffect;
 	
 public:
 
