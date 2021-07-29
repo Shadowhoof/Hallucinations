@@ -3,7 +3,7 @@ DerivedDataCache/
 Intermediate/
 Saved/
 .vs/
-Content/
+Content/*
 !Content/Hallucinations/
 Hallucinations.sln
 Hallucinations.uproject
