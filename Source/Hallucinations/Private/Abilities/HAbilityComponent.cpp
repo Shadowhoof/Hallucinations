@@ -15,6 +15,11 @@ UHAbilityComponent::UHAbilityComponent()
 
 bool UHAbilityComponent::CanUseAbility(uint8 Index) const
 {
+	if (GetCaster()->IsBusy())
+	{
+		return false;
+	}
+	
 	return Index < Abilities.Num() && Abilities[Index];
 }
 
@@ -65,6 +70,49 @@ void UHAbilityComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyC
 	const FName PropertyName = PropertyChangedEvent.GetPropertyName();
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(UHAbilityComponent, MaxAbilities))
 	{
+		// resize ability array to new value
 		SelectedAbilities.SetNum(MaxAbilities);
+	}
+	else if (PropertyName == GET_MEMBER_NAME_CHECKED(UHAbilityComponent, SelectedAbilities))
+	{
+		// prevent ability array from being larger than max abilities
+		if (SelectedAbilities.Num() > MaxAbilities)
+		{
+			SelectedAbilities.SetNum(MaxAbilities);
+		}
+	}
+}
+
+void UHAbilityComponent::StartCast(float CastTime, const FTimerDelegate& Delegate)
+{
+	if (bIsCasting)
+	{
+		return;
+	}
+
+	CastCallback = Delegate;
+	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, this, &UHAbilityComponent::FinishCast, CastTime);
+	bIsCasting = true;
+}
+
+void UHAbilityComponent::FinishCast()
+{
+	bool WasExecuted = CastCallback.ExecuteIfBound();
+	CastCallback.Unbind();
+	bIsCasting = false;
+}
+
+bool UHAbilityComponent::IsCasting() const
+{
+	return bIsCasting;
+}
+
+void UHAbilityComponent::Interrupt()
+{
+	if (bIsCasting)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(CastTimerHandle);
+		CastCallback.Unbind();
+		bIsCasting = false;
 	}
 }

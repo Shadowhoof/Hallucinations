@@ -22,11 +22,7 @@ void UHFollowComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AHCharacter* OwnerCharacter = Cast<AHCharacter>(GetOwner());
-	if (OwnerCharacter)
-	{
-		OwnerCharacter->DeathEvent.AddDynamic(this, &UHFollowComponent::OnOwnerDeath);
-	}
+	GetCharacter()->DeathEvent.AddDynamic(this, &UHFollowComponent::OnOwnerDeath);
 }
 
 void UHFollowComponent::ResetRotationFields()
@@ -40,43 +36,36 @@ void UHFollowComponent::OnOwnerDeath(AHCharacter* Victim, AActor* Killer)
 	StopMovement();
 }
 
+bool UHFollowComponent::CanIssueMoveOrder() const
+{
+	return !bIsMovementLocked && !GetCharacter()->IsBusy();
+}
+
 void UHFollowComponent::MoveToActor(AActor* Actor)
 {
-	if (bIsMovementLocked)
+	if (!CanIssueMoveOrder())
 	{
 		return;
 	}
 	
-	AHCharacter* Character = Cast<AHCharacter>(GetOwner());
-	if (Character)
-	{
-		UAIBlueprintHelperLibrary::SimpleMoveToActor(Character->Controller, Actor);
-	}
+	UAIBlueprintHelperLibrary::SimpleMoveToActor(GetCharacter()->Controller, Actor);
 	ResetRotationFields();
 }
 
 void UHFollowComponent::MoveToLocation(const FVector& Location)
 {
-	if (bIsMovementLocked)
+	if (!CanIssueMoveOrder())
 	{
 		return;
 	}
 	
-	AHCharacter* Character = Cast<AHCharacter>(GetOwner());
-	if (Character) 
-	{
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(Character->Controller, Location);
-	}
+	UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetCharacter()->Controller, Location);
 	ResetRotationFields();
 }
 
 void UHFollowComponent::StopMovement()
 {
-	AHCharacter* Character = Cast<AHCharacter>(GetOwner());
-	if (Character) 
-	{
-		Character->GetMovementComponent()->StopActiveMovement();
-	}
+	GetCharacter()->GetMovementComponent()->StopActiveMovement();
 }
 
 void UHFollowComponent::LockMovement()
@@ -123,5 +112,16 @@ void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 bool UHFollowComponent::CanBeFollowed(AActor* Target)
 {
 	return Target && Target->GetComponentByClass(UHHealthComponent::StaticClass());
+}
+
+AHCharacter* UHFollowComponent::GetCharacter() const
+{
+	return Cast<AHCharacter>(GetOwner());
+}
+
+void UHFollowComponent::Interrupt()
+{
+	StopMovement();
+	ResetRotationFields();
 }
 

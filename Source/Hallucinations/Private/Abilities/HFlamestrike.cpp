@@ -21,5 +21,6 @@ void UHFlamestrike::FinishLocationCast(UHAbilityComponent* Context, FVector Targ
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	FRotator Rotator;
-	CreateActor(Context->GetWorld(), TargetLocation, Rotator, SpawnParams);
+	IHAbilityActorInterface* AbilityActor = CreateActor(Context->GetWorld(), TargetLocation, Rotator, SpawnParams);
+	AbilityActor->Initialize(this, Caster);
 }

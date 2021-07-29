@@ -50,9 +50,7 @@ void UHAbility::DelayCast(UHAbilityComponent* Context, const FTimerDelegate& Del
 		return;
 	}
 
-	const float CastTime = CastAnimation->GetSectionLength(0);
-	Context->GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, CastTime, false);
-	bIsCasting = true;
+	Context->StartCast(GetCastTime(), Delegate);
 }
 
 void UHAbility::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
@@ -70,23 +68,23 @@ void UHAbility::FinishSelfCast(UHAbilityComponent* Context)
 	OnCastFinished();
 }
 
-void UHAbility::CreateActor(UWorld* World, FVector& Location, FRotator& Rotator, FActorSpawnParameters& SpawnParams)
+IHAbilityActorInterface* UHAbility::CreateActor(UWorld* World, FVector& Location, FRotator& Rotator,
+                                                FActorSpawnParameters& SpawnParams)
 {
 	if (!ImplementationClass)
 	{
 		UE_LOG(LogAbility, Warning, TEXT("Couldn't spawn actor for %s because no implementation was specified"), *GetClass()->GetName());
-		return;
+		return nullptr;
 	}
 	
 	AActor* Actor = World->SpawnActor(ImplementationClass, &Location, &Rotator, SpawnParams);
 	if (!Actor)
 	{
 		UE_LOG(LogAbility, Warning, TEXT("Actor for %s has not been spawned, check spawn log for more details"), *GetClass()->GetName());
-		return;
+		return nullptr;
 	}
 
-	IHAbilityActorInterface* AbilityActor = Cast<IHAbilityActorInterface>(Actor);
-	AbilityActor->Initialize(this);
+	return Cast<IHAbilityActorInterface>(Actor);
 }
 
 float UHAbility::GetRemainingCooldown(const UObject* WorldContextObject) const
@@ -113,11 +111,6 @@ float UHAbility::GetRemainingCooldownPercentage(const UObject* WorldContextObjec
 
 bool UHAbility::TryUse(UHAbilityComponent* Context)
 {
-	if (bIsCasting)
-	{
-		return false;
-	}
-
 	FTimerManager& TimerManager = Context->GetWorld()->GetTimerManager();
 	if (TimerManager.IsTimerActive(CooldownTimerHandle))
 	{
@@ -175,5 +168,15 @@ void UHAbility::OnCastStarted(AHCharacter* Caster)
 void UHAbility::OnCastFinished()
 {
 	GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, Cooldown, false);
-	bIsCasting = false;
+}
+
+float UHAbility::GetCastTime() const
+{
+	if (!CastAnimation)
+	{
+		UE_LOG(LogAbility, Error, TEXT("No animation set for ability %s"), *GetClass()->GetName());
+		return 0.f;
+	}
+	
+	return CastAnimation->GetSectionLength(0);
 }

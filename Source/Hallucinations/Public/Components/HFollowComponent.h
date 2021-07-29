@@ -34,6 +34,8 @@ protected:
 	UFUNCTION()
 	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);
 
+	bool CanIssueMoveOrder() const;
+	
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -59,5 +61,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	static bool CanBeFollowed(AActor* Target);
+
+	AHCharacter* GetCharacter() const;
+
+	void Interrupt();
 
 };

@@ -3,7 +3,11 @@
 
 #include "Abilities/HAbilityActorInterface.h"
 
-void IHAbilityActorInterface::Initialize(UHAbility* AbilityDesc)
+void IHAbilityActorInterface::Initialize(UHAbility* AbilityDesc, AActor* SourceActor)
+{
+}
+
+void IHAbilityActorInterface::Initialize(UHAbility* AbilityDesc, AActor* SourceActor, AActor* TargetActor)
 {
 }
 

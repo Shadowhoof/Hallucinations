@@ -14,7 +14,7 @@ AHFlamestrikeActor::AHFlamestrikeActor()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AHFlamestrikeActor::Initialize(UHAbility* AbilityDesc)
+void AHFlamestrikeActor::Initialize(UHAbility* AbilityDesc, AActor* SourceActor)
 {
 	UHFlamestrike* FlamestrikeDesc = Cast<UHFlamestrike>(AbilityDesc);
 	Damage = FlamestrikeDesc->Damage;

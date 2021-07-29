@@ -31,7 +31,7 @@ protected:
 	
 public:
 
-	virtual void Initialize(UHAbility* AbilityDesc) override;
+	virtual void Initialize(UHAbility* AbilityDesc, AActor* SourceActor) override;
 
 	virtual void Tick(float DeltaSeconds) override;
 	

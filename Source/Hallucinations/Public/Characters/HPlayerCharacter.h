@@ -36,9 +36,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHAttributeComponent* AttributeComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UHAbilityComponent* AbilityComponent;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MinCameraDistance;
 
@@ -47,8 +44,6 @@ protected:
 
 	bool bIsHoldingPrimaryAction;
 	
-protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void Move(float Value);
@@ -59,14 +54,11 @@ protected:
 	void OnPrimaryActionRelease();
 	void PrimaryAction(bool bIsRepeated);
 
-	void UseAbility(uint8 Index);
 	DECLARE_DELEGATE_OneParam(FUseAbilityDelegate, uint8)
 
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual AActor* GetTargetActor() const override;

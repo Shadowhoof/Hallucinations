@@ -15,33 +15,25 @@ DEFINE_LOG_CATEGORY(LogAttack);
 // Sets default values for this component's properties
 UHAttackComponent::UHAttackComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
 	AttackDelay = 1.f;
 
 	TargetActor = nullptr;
 	TargetLocation = FHConstants::NullVector;
-	
-	bIsAttacking = false;
-	bIsAttackOnCooldown = false;
 }
 
 void UHAttackComponent::FollowTargetActor()
 {
 	const bool bIsInRange = Weapon->IsInRange(GetOwner(), TargetActor);
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
-	if (FollowComponent) 
+	UHFollowComponent* FollowComponent = GetCharacter()->GetFollowComponent();
+	if (bIsInRange) 
 	{
-		if (bIsInRange) 
-		{
-			FollowComponent->RotateTowardsActor(TargetActor);
-		}
-		else 
-		{
-			FollowComponent->MoveToActor(TargetActor);
-		}
+		FollowComponent->RotateTowardsActor(TargetActor);
+	}
+	else 
+	{
+		FollowComponent->MoveToActor(TargetActor);
 	}
 }
 
@@ -50,7 +42,7 @@ void UHAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AHCharacter* CharacterOwner = Cast<AHCharacter>(GetOwner());
+	AHCharacter* CharacterOwner = GetCharacter();
 	CharacterOwner->DeathEvent.AddDynamic(this, &UHAttackComponent::OnOwnerDeath);
 	
 	if (WeaponClass) {
@@ -89,15 +81,39 @@ void UHAttackComponent::OnOwnerDeath(AHCharacter* Victim, AActor* Killer)
 	StopAttacking();
 }
 
-void UHAttackComponent::AttackActor(AActor* Actor) {
-	if (!Weapon || Actor == GetOwner() || bIsAttacking || !UHUtils::AreEnemies(GetOwner(), Actor))
+bool UHAttackComponent::CanIssueAttackOrder(AActor* Actor) const
+{
+	if (!Weapon || bIsAttacking || GetCharacter()->IsBusy())
 	{
-		return;
+		return false;
+	}
+
+	if (!UHUtils::AreEnemies(GetOwner(), Actor))
+	{
+		return false;
 	}
 
 	if (Actor == TargetActor && AttackMode == EAttackMode::LockedActor)
 	{
-		// ignore repeated attack orders
+		return false;
+	}
+	
+	return true;
+}
+
+bool UHAttackComponent::CanIssueAttackOrder(const FVector& Location) const
+{
+	return Weapon && !bIsAttacking && !GetCharacter()->IsBusy();
+}
+
+bool UHAttackComponent::CanStartAttack() const
+{
+	return Weapon && !bIsAttacking && !bIsAttackOnCooldown && !GetCharacter()->IsBusy();
+}
+
+void UHAttackComponent::AttackActor(AActor* Actor) {
+	if (!CanIssueAttackOrder(Actor))
+	{
 		return;
 	}
 	
@@ -117,7 +133,7 @@ void UHAttackComponent::AttackActor(AActor* Actor) {
 
 void UHAttackComponent::AttackLocation(const FVector& Location)
 {
-	if (!Weapon || bIsAttacking)
+	if (!CanIssueAttackOrder(Location))
 	{
 		return;
 	}
@@ -126,17 +142,13 @@ void UHAttackComponent::AttackLocation(const FVector& Location)
 	TargetLocation = Location;
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::Ground;
-
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
-	if (FollowComponent)
-	{
-		FollowComponent->RotateTowardsLocation(Location);
-	}
+	
+	GetCharacter()->GetFollowComponent()->RotateTowardsLocation(Location);
 	
 	StartAttack();
 }
 
-void UHAttackComponent::StopAttacking()
+void UHAttackComponent::StopAttacking(bool bInterruptAttack)
 {
 	if (AttackMode == EAttackMode::None)
 	{
@@ -146,9 +158,16 @@ void UHAttackComponent::StopAttacking()
 
 	if (bIsAttacking)
 	{
-		// we're in the middle of an attack, wait for it to finish, then cancel
-		bIsAttackCancelPending = true;
-		return;
+		if (!bInterruptAttack)
+		{
+			// we're in the middle of an attack and this is not an interrupt, wait for it to finish, then cancel
+			bIsAttackCancelPending = true;
+			return;
+		}
+		
+		GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+		GetCharacter()->StopAnimMontage(Weapon->GetAttackAnimation());
+		bIsAttacking = false;
 	}
 	
 	UE_LOG(LogAttack, Verbose, TEXT("%s stopped attacking"), *GetOwner()->GetName())
@@ -158,10 +177,18 @@ void UHAttackComponent::StopAttacking()
 	bHasAttackedWhileLocked = false;
 	bIsAttackCancelPending = false;
 
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
-	if (FollowComponent) {
-		FollowComponent->StopMovement();
-	}
+	GetCharacter()->GetFollowComponent()->StopMovement();
+}
+
+void UHAttackComponent::EnableAttack()
+{
+	bIsAttackEnabled = true;
+}
+
+void UHAttackComponent::DisableAttack()
+{
+	bIsAttackEnabled = false;
+	StopAttacking(true);
 }
 
 void UHAttackComponent::CancelActorLock()
@@ -188,7 +215,7 @@ bool UHAttackComponent::CanBeAttacked(AActor* Attacker, AActor* Victim)
 
 void UHAttackComponent::HandlePlayerAttack(const FHitResult& MouseoverData, bool bIsRepeated, bool bIsGroundAttack)
 {
-	if (!MouseoverData.bBlockingHit)
+	if (!MouseoverData.bBlockingHit || GetCharacter()->IsBusy())
 	{
 		return;
 	}
@@ -220,10 +247,19 @@ void UHAttackComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 	}
 }
 
+bool UHAttackComponent::IsAttacking() const
+{
+	return bIsAttacking;
+}
+
+AHCharacter* UHAttackComponent::GetCharacter() const
+{
+	return Cast<AHCharacter>(GetOwner());
+}
 
 void UHAttackComponent::StartAttack()
 {
-	if (!Weapon || bIsAttacking || bIsAttackOnCooldown)
+	if (!CanStartAttack())
 	{
 		return;
 	}
@@ -232,18 +268,13 @@ void UHAttackComponent::StartAttack()
 	bIsAttacking = true;
 
 	// Disable movement until contact frame
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
-	if (FollowComponent)
-	{
-		FollowComponent->LockMovement();
-	}
+	GetCharacter()->GetFollowComponent()->LockMovement();
 
 	// Start attack animation
 	UAnimMontage* AttackAnimation = Weapon->GetAttackAnimation();
 	if (AttackAnimation)
 	{
-		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
-		Character->PlayAnimMontage(AttackAnimation);
+		GetCharacter()->PlayAnimMontage(AttackAnimation);
 	}
 	
 	AttackStartedEvent.Broadcast();
@@ -253,10 +284,7 @@ void UHAttackComponent::PerformAttack()
 {
 	ensure(TargetLocation != FHConstants::NullVector || TargetActor);
 
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(GetOwner()->GetComponentByClass(UHFollowComponent::StaticClass()));
-	if (FollowComponent) {
-		FollowComponent->UnlockMovement();
-	}
+	GetCharacter()->GetFollowComponent()->UnlockMovement();
 
 	bIsAttacking = false;
 	switch (AttackMode)
@@ -277,8 +305,7 @@ void UHAttackComponent::PerformAttack()
 		break;
 	}
 
-	AHCharacter* Character = Cast<AHCharacter>(GetOwner());
-	const float AttackCooldown = Character->GetAttackSpeed() - AttackDelay;
+	const float AttackCooldown = GetCharacter()->GetAttackSpeed() - AttackDelay;
 	if (AttackCooldown > 0.0)
 	{
 		GetWorld()->GetTimerManager().SetTimer(AttackCooldownTimerHandle, this,

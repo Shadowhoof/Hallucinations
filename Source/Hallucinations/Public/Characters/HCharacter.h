@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "StatusEffects/HStatusEffectComponent.h"
 #include "HCharacter.generated.h"
 
+class UHAbilityComponent;
+class UHStatusEffectComponent;
 class AHFireballActor;
 class UHFollowComponent;
 class AHWeapon;
@@ -36,7 +39,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHFollowComponent* FollowComponent;
 
-	// Called when the game starts or when spawned
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHStatusEffectComponent* StatusEffectComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHAbilityComponent* AbilityComponent;
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -48,6 +56,9 @@ protected:
 	UFUNCTION()
 	void OnAttackEnd();
 
+	UFUNCTION()
+	void OnConditionApplied(EStatusCondition Condition);
+	
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float MinDamage = 0.f;
 
@@ -57,10 +68,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float AttackSpeed = 1.f;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+public:
+	
 	UFUNCTION(BlueprintCallable)
 	bool IsDead() const;
 
@@ -77,4 +86,21 @@ public:
 
 	virtual FVector GetTargetLocation() const;
 
+	// component getters
+	UHHealthComponent* GetHealthComponent() const;
+	UHAttackComponent* GetAttackComponent() const;
+	UHFollowComponent* GetFollowComponent() const;
+	UHStatusEffectComponent* GetStatusEffectComponent() const;
+	UHAbilityComponent* GetAbilityComponent() const;
+	
+	void UseAbility(uint8 Index);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsStunned() const;
+
+	/** Determines whether character is currently busy and is unable to be interrupted by any other commands
+	 * until its current task is finished (i.e. it's in the middle of an attack or in the middle of a spell cast
+	 * or it's stunned and is unable to act altogether) */
+	bool IsBusy() const;
+	
 };

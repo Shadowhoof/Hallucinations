@@ -35,7 +35,6 @@ AHPlayerCharacter::AHPlayerCharacter()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	AttributeComponent = CreateDefaultSubobject<UHAttributeComponent>(TEXT("AttributeComponent"));
-	AbilityComponent = CreateDefaultSubobject<UHAbilityComponent>(TEXT("AbilityComponent"));
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
@@ -173,10 +172,5 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated) {
 			}
 		}
 	}
-}
-
-void AHPlayerCharacter::UseAbility(uint8 Index)
-{
-	AbilityComponent->UseAbility(Index);
 }
 

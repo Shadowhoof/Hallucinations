@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+
+#include "HConstants.h"
 #include "Components/ActorComponent.h"
 #include "HAbilityComponent.generated.h"
 
@@ -31,10 +33,18 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Abilities")
 	TArray<UHAbility*> Abilities;
 
+	FTimerHandle CastTimerHandle;
+
+	bool bIsCasting = false;
+	
 	virtual void BeginPlay() override;
 
 	bool CanUseAbility(uint8 Index) const;
+	
+	void FinishCast();
 
+	FTimerDelegate CastCallback;
+	
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -47,4 +57,10 @@ public:
 	AHCharacter* GetCaster() const;
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	void StartCast(float CastTime, const FTimerDelegate& Delegate);
+	
+	bool IsCasting() const;
+
+	void Interrupt();
 };

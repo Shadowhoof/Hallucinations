@@ -54,10 +54,12 @@ protected:
 	FVector TargetLocation;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	bool bIsAttacking;
+	bool bIsAttacking = false;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	bool bIsAttackOnCooldown;
+	bool bIsAttackOnCooldown = false;
+
+	bool bIsAttackEnabled = true;
 	
 	// Begins attack animation
 	void StartAttack();
@@ -86,6 +88,10 @@ protected:
 	UFUNCTION()
 	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);
 
+	bool CanIssueAttackOrder(AActor* Actor) const;
+	bool CanIssueAttackOrder(const FVector& Location) const;
+	bool CanStartAttack() const;
+
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
@@ -110,8 +116,11 @@ public:
 	
 	/** Cancels any issued attack orders */
 	UFUNCTION(BlueprintCallable)
-	void StopAttacking();
+	void StopAttacking(bool bInterruptAttack = false);
 
+	void EnableAttack();
+	void DisableAttack();
+	
 	AActor* GetTargetActor() const;
 
 	static bool CanBeAttacked(AActor* Attacker, AActor* Victim);
@@ -122,4 +131,8 @@ public:
 
 	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
+	bool IsAttacking() const;
+
+	AHCharacter* GetCharacter() const;
+	
 };

@@ -12,8 +12,9 @@
 #include "Components/HHealthComponent.h"
 #include "Components/HAttackComponent.h"
 #include "Components/HFollowComponent.h"
-#include "Components/HAttributeComponent.h"
+#include "StatusEffects/HStatusEffectComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Abilities/HAbilityComponent.h"
 #include "Weapons/HWeapon.h"
 
 // Sets default values
@@ -22,10 +23,16 @@ AHCharacter::AHCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// initialize components
 	HealthComponent = CreateDefaultSubobject<UHHealthComponent>(TEXT("HealthComponent"));
 	AttackComponent = CreateDefaultSubobject<UHAttackComponent>(TEXT("AttackComponent"));
 	FollowComponent = CreateDefaultSubobject<UHFollowComponent>(TEXT("FollowComponent"));
+	AbilityComponent = CreateDefaultSubobject<UHAbilityComponent>(TEXT("AbilityComponent"));
+	StatusEffectComponent = CreateDefaultSubobject<UHStatusEffectComponent>(TEXT("StatusEffectComponent"));
 
+	// subscribe to events
+	StatusEffectComponent->OnConditionApplied().AddUObject(this, &AHCharacter::OnConditionApplied);
+	
 	GetCapsuleComponent()->SetCapsuleHalfHeight(FHConstants::CapsuleHalfHeight);
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -74,11 +81,14 @@ void AHCharacter::OnAttackEnd()
 	FollowComponent->UnlockMovement();
 }
 
-// Called every frame
-void AHCharacter::Tick(float DeltaTime)
+void AHCharacter::OnConditionApplied(EStatusCondition Condition)
 {
-	Super::Tick(DeltaTime);
-
+	if (Condition == EStatusCondition::Stunned)
+	{
+		AttackComponent->StopAttacking(true);
+		FollowComponent->Interrupt();
+		AbilityComponent->Interrupt();
+	}
 }
 
 bool AHCharacter::IsDead() const
@@ -110,4 +120,52 @@ AActor* AHCharacter::GetTargetActor() const
 FVector AHCharacter::GetTargetLocation() const
 {
 	return FHConstants::NullVector;
+}
+
+UHHealthComponent* AHCharacter::GetHealthComponent() const
+{
+	return HealthComponent;
+}
+
+UHAttackComponent* AHCharacter::GetAttackComponent() const
+{
+	return AttackComponent;
+}
+
+UHFollowComponent* AHCharacter::GetFollowComponent() const
+{
+	return FollowComponent;
+}
+
+UHStatusEffectComponent* AHCharacter::GetStatusEffectComponent() const
+{
+	return StatusEffectComponent;
+}
+
+UHAbilityComponent* AHCharacter::GetAbilityComponent() const
+{
+	return AbilityComponent;
+}
+
+bool AHCharacter::IsStunned() const
+{
+	return StatusEffectComponent->IsConditionActive(EStatusCondition::Stunned);
+}
+
+bool AHCharacter::IsBusy() const
+{
+	if (AttackComponent->IsAttacking() || AbilityComponent->IsCasting() || IsStunned())
+	{
+		return true;
+	}
+	
+	return false;
+}
+
+void AHCharacter::UseAbility(uint8 Index)
+{
+	if (!IsBusy())
+	{
+		AbilityComponent->UseAbility(Index);
+	}
 }

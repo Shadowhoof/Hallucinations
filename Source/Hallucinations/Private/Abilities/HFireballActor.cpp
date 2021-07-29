@@ -15,7 +15,7 @@ AHFireballActor::AHFireballActor()
 {
 }
 
-void AHFireballActor::Initialize(UHAbility* AbilityDesc)
+void AHFireballActor::Initialize(UHAbility* AbilityDesc, AActor* SourceActor)
 {
 	UHFireball* FireballDesc = Cast<UHFireball>(AbilityDesc);
 	const FVector Velocity = FVector(FireballDesc->Speed, 0.f, 0.f);

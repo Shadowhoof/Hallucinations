@@ -47,6 +47,6 @@ protected:
 
 private:
 
-	void CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation);
+	IHAbilityActorInterface* CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation);
 
 };

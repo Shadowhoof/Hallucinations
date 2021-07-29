@@ -17,16 +17,18 @@ UHFireball::UHFireball()
 void UHFireball::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
 {
 	Super::FinishActorCast(Context, TargetActor);
-	CreateProjectile(Context, TargetActor->GetActorLocation());
+	IHAbilityActorInterface* Projectile = CreateProjectile(Context, TargetActor->GetActorLocation());
+	Projectile->Initialize(this, Context->GetCaster(), TargetActor);
 }
 
 void UHFireball::FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation)
 {
 	Super::FinishLocationCast(Context, TargetLocation);
-	CreateProjectile(Context, TargetLocation);
+	IHAbilityActorInterface* Projectile = CreateProjectile(Context, TargetLocation);
+	Projectile->Initialize(this, Context->GetCaster());
 }
 
-void UHFireball::CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation)
+IHAbilityActorInterface* UHFireball::CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation)
 {
 	AHCharacter* Caster = Context->GetCaster();
 
@@ -39,5 +41,5 @@ void UHFireball::CreateProjectile(UHAbilityComponent* Context, FVector TargetLoc
 	TargetLocation.Z = SpawnLocation.Z;
 	FRotator SpawnRotation = (TargetLocation - SpawnLocation).Rotation();
 
-	CreateActor(Caster->GetWorld(), SpawnLocation, SpawnRotation, SpawnParams);
+	return CreateActor(Caster->GetWorld(), SpawnLocation, SpawnRotation, SpawnParams);
 }

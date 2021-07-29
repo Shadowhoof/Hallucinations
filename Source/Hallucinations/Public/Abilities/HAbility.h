@@ -54,10 +54,6 @@ protected:
 	
 	FTimerHandle CooldownTimerHandle;
 
-	FTimerHandle CastTimerHandle;
-
-	bool bIsCasting = false;
-
 	void OnCastStarted(AHCharacter* Caster);
 	void OnCastFinished();
 
@@ -82,7 +78,8 @@ protected:
 	virtual void FinishSelfCast(UHAbilityComponent* Context);
 
 	/** Creates actor in world that will perform all the gameplay logic */
-	virtual void CreateActor(UWorld* World, FVector& Location, FRotator& Rotator, FActorSpawnParameters& SpawnParams);
+	virtual IHAbilityActorInterface* CreateActor(UWorld* World, FVector& Location, FRotator& Rotator,
+	                                             FActorSpawnParameters& SpawnParams);
 
 	/* TODO: keep reference to ability component? so we don't have to pass world context to every method */
 
@@ -93,6 +90,8 @@ protected:
 	/* Gets remaining cooldown percentage for current ability (in 0..1 range) */
 	UFUNCTION(BlueprintPure, Category = "Cooldown", meta = (WorldContext = "WorldContextObject"))
 	float GetRemainingCooldownPercentage(const UObject* WorldContextObject) const;
+
+	float GetCastTime() const;
 	
 public:
 
