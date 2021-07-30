@@ -35,6 +35,8 @@ protected:
 	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);
 
 	bool CanIssueMoveOrder() const;
+
+	bool CanRotate() const;
 	
 public:
 

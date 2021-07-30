@@ -41,6 +41,11 @@ bool UHFollowComponent::CanIssueMoveOrder() const
 	return !bIsMovementLocked && !GetCharacter()->IsBusy();
 }
 
+bool UHFollowComponent::CanRotate() const
+{
+	return !GetCharacter()->IsBusy();
+}
+
 void UHFollowComponent::MoveToActor(AActor* Actor)
 {
 	if (!CanIssueMoveOrder())
@@ -81,6 +86,11 @@ void UHFollowComponent::UnlockMovement()
 
 void UHFollowComponent::RotateTowardsActor(AActor* const Actor)
 {
+	if (!CanRotate())
+	{
+		return;
+	}
+	
 	StopMovement();
 	RotationActor = Actor;
 	RotationLocation = FHConstants::NullVector;
@@ -88,6 +98,11 @@ void UHFollowComponent::RotateTowardsActor(AActor* const Actor)
 
 void UHFollowComponent::RotateTowardsLocation(FVector Location)
 {
+	if (!CanRotate())
+	{
+		return;
+	}
+	
 	StopMovement();
 	RotationActor = nullptr;
 	RotationLocation = Location;
@@ -96,6 +111,11 @@ void UHFollowComponent::RotateTowardsLocation(FVector Location)
 void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
+	if (!CanRotate())
+	{
+		return;
+	}
+	
 	const FVector TargetLocation = RotationActor ? RotationActor->GetTargetLocation(GetOwner()) : RotationLocation;
 	if (TargetLocation != FHConstants::NullVector)
 	{

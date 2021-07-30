@@ -32,6 +32,7 @@ AHCharacter::AHCharacter()
 
 	// subscribe to events
 	StatusEffectComponent->OnConditionApplied().AddUObject(this, &AHCharacter::OnConditionApplied);
+	StatusEffectComponent->OnConditionRemoved().AddUObject(this, &AHCharacter::OnConditionRemoved);
 	
 	GetCapsuleComponent()->SetCapsuleHalfHeight(FHConstants::CapsuleHalfHeight);
 
@@ -88,6 +89,16 @@ void AHCharacter::OnConditionApplied(EStatusCondition Condition)
 		AttackComponent->StopAttacking(true);
 		FollowComponent->Interrupt();
 		AbilityComponent->Interrupt();
+		GetCharacterMovement()->DisableMovement();
+	}
+}
+
+void AHCharacter::OnConditionRemoved(EStatusCondition Condition)
+{
+	if (Condition == EStatusCondition::Stunned)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Setting default movement mode"));
+		GetCharacterMovement()->SetDefaultMovementMode();
 	}
 }
 

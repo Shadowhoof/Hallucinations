@@ -34,6 +34,9 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Effects")
 	TArray<UHStatusEffect*> ActiveEffects;
 
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UParticleSystem* StunnedVFX;
+
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Conditions")
@@ -54,8 +57,11 @@ public:
 	DECLARE_EVENT_OneParam(UHStatusEffectComponent, FConditionAppliedEvent, EStatusCondition)
 	FConditionAppliedEvent& OnConditionApplied();
 
+	DECLARE_EVENT_OneParam(UHStatusEffectComponent, FConditionRemovedEvent, EStatusCondition)
+	FConditionRemovedEvent& OnConditionRemoved();
+
 private:
 
 	FConditionAppliedEvent ConditionAppliedEvent;
-	
+	FConditionRemovedEvent ConditionRemovedEvent;
 };

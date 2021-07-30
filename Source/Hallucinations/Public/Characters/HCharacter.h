@@ -58,6 +58,9 @@ protected:
 
 	UFUNCTION()
 	void OnConditionApplied(EStatusCondition Condition);
+
+	UFUNCTION()
+	void OnConditionRemoved(EStatusCondition Condition);
 	
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float MinDamage = 0.f;

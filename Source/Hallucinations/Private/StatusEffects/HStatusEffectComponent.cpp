@@ -1,5 +1,8 @@
 #include "StatusEffects/HStatusEffectComponent.h"
+
+#include "Characters/HCharacter.h"
 #include "Core/HLogCategories.h"
+#include "Kismet/GameplayStatics.h"
 #include "StatusEffects/HStatusEffect.h"
 #include "Utils/HEnumTools.h"
 
@@ -51,8 +54,14 @@ void UHStatusEffectComponent::ApplyCondition(EStatusCondition Condition)
 	}
 
 	SET_BIT(Conditions, Condition);
-
 	ConditionAppliedEvent.Broadcast(Condition);
+
+	if (Condition == EStatusCondition::Stunned && StunnedVFX)
+	{
+		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
+		FVector Offset(0.f, 0.f, Character->GetDefaultHalfHeight());
+		UGameplayStatics::SpawnEmitterAttached(StunnedVFX, Character->GetDefaultAttachComponent(), NAME_None, Offset);
+	}
 
 	UE_LOG(LogStatusEffect, Log, TEXT("Condition %s applied to %s"), *EnumToString(Condition), *GetOwner()->GetName());
 }
@@ -73,6 +82,7 @@ void UHStatusEffectComponent::RemoveCondition(EStatusCondition Condition)
 	}
 
 	UNSET_BIT(Conditions, Condition);
+	ConditionRemovedEvent.Broadcast(Condition);
 	
 	UE_LOG(LogStatusEffect, Log, TEXT("Condition %s removed from %s"), *EnumToString(Condition), *GetOwner()->GetName());
 }
@@ -80,6 +90,11 @@ void UHStatusEffectComponent::RemoveCondition(EStatusCondition Condition)
 UHStatusEffectComponent::FConditionAppliedEvent& UHStatusEffectComponent::OnConditionApplied()
 {
 	return ConditionAppliedEvent;
+}
+
+UHStatusEffectComponent::FConditionRemovedEvent& UHStatusEffectComponent::OnConditionRemoved()
+{
+	return ConditionRemovedEvent;
 }
 
 
