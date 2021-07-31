@@ -15,7 +15,15 @@
 #include "StatusEffects/HStatusEffectComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Abilities/HAbilityComponent.h"
+#include "Components/BoxComponent.h"
 #include "Weapons/HWeapon.h"
+
+
+namespace CharacterConstants
+{
+	const float BoxExtraExtent = 50.f;
+}
+
 
 // Sets default values
 AHCharacter::AHCharacter()
@@ -24,6 +32,7 @@ AHCharacter::AHCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// initialize components
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	HealthComponent = CreateDefaultSubobject<UHHealthComponent>(TEXT("HealthComponent"));
 	AttackComponent = CreateDefaultSubobject<UHAttackComponent>(TEXT("AttackComponent"));
 	FollowComponent = CreateDefaultSubobject<UHFollowComponent>(TEXT("FollowComponent"));
@@ -33,10 +42,18 @@ AHCharacter::AHCharacter()
 	// subscribe to events
 	StatusEffectComponent->OnConditionApplied().AddUObject(this, &AHCharacter::OnConditionApplied);
 	StatusEffectComponent->OnConditionRemoved().AddUObject(this, &AHCharacter::OnConditionRemoved);
-	
-	GetCapsuleComponent()->SetCapsuleHalfHeight(FHConstants::CapsuleHalfHeight);
 
+	UCapsuleComponent* Capsule = GetCapsuleComponent();
+	Capsule->SetCapsuleHalfHeight(FHConstants::CapsuleHalfHeight);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	float BoxRadius = Capsule->GetUnscaledCapsuleRadius() + CharacterConstants::BoxExtraExtent;
+	float BoxHeight = FHConstants::CapsuleHalfHeight + BoxRadius;
+	BoxComponent->SetBoxExtent(FVector(BoxRadius, BoxRadius, BoxHeight));
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	BoxComponent->SetCollisionResponseToChannel(ECC_Click, ECR_Block);
+	BoxComponent->SetupAttachment(Capsule);
 	
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	bUseControllerRotationYaw = false;

@@ -29,8 +29,7 @@ void AHPlayerController::PlayerTick(float DeltaSeconds)
 
 void AHPlayerController::OnPossess(APawn* InPawn)
 {
-	AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(InPawn);
-	if (PlayerCharacter)
+	if (AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(InPawn); PlayerCharacter)
 	{
 		PlayerCharacter->DeathEvent.AddDynamic(this, &AHPlayerController::OnPawnDeath);
 	}

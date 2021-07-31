@@ -219,18 +219,17 @@ void UHAttackComponent::HandlePlayerAttack(const FHitResult& MouseoverData, bool
 	{
 		return;
 	}
-	
+
+	AActor* MouseoverActor = MouseoverData.GetActor();
+	bool bIsAttackable = CanBeAttacked(GetOwner(), MouseoverActor);
 	if (bIsGroundAttack)
 	{
-		AttackLocation(MouseoverData.ImpactPoint);
+		FVector Location = bIsAttackable ? MouseoverActor->GetActorLocation() : MouseoverData.ImpactPoint;
+		AttackLocation(Location);
 	}
-	else if (!bIsRepeated)
+	else if (!bIsRepeated && bIsAttackable)
 	{
-		AActor* MouseoverActor = MouseoverData.GetActor();
-		if (CanBeAttacked(GetOwner(), MouseoverActor))
-		{
-			AttackActor(MouseoverActor);
-		}
+		AttackActor(MouseoverActor);
 	}
 }
 

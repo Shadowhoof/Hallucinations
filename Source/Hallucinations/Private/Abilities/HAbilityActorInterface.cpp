@@ -9,6 +9,7 @@ void IHAbilityActorInterface::Initialize(UHAbility* AbilityDesc, AActor* SourceA
 
 void IHAbilityActorInterface::Initialize(UHAbility* AbilityDesc, AActor* SourceActor, AActor* TargetActor)
 {
+	Initialize(AbilityDesc, SourceActor);
 }
 
 bool IHAbilityActorInterface::CanAffectAllies()

@@ -12,13 +12,12 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Controllers/HPlayerController.h"
-#include "Actors/HProjectile.h"
-#include "Utils/HUtils.h"
 #include "Components/HAttackComponent.h"
 #include "Components/HFollowComponent.h"
 #include "Components/HAttributeComponent.h"
 #include "Components/HHealthComponent.h"
-#include "Abilities/HAbilityComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AHPlayerCharacter::AHPlayerCharacter()
@@ -37,7 +36,7 @@ AHPlayerCharacter::AHPlayerCharacter()
 	AttributeComponent = CreateDefaultSubobject<UHAttributeComponent>(TEXT("AttributeComponent"));
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	
+
 	bIsHoldingPrimaryAction = false;
 }
 
@@ -47,6 +46,14 @@ void AHPlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SpringArmComponent->SetUsingAbsoluteRotation(true);
+
+	// disable all click collision for local player
+	if (IsLocallyControlled())
+	{
+		BoxComponent->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
+	}
 }
 
 // Called every frame

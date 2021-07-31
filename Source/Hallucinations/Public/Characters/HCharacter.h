@@ -7,6 +7,7 @@
 #include "StatusEffects/HStatusEffectComponent.h"
 #include "HCharacter.generated.h"
 
+class UBoxComponent;
 class UHAbilityComponent;
 class UHStatusEffectComponent;
 class AHFireballActor;
@@ -29,6 +30,10 @@ public:
 	AHCharacter();
 
 protected:
+
+	/** Used for mouse targeting raycast */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UBoxComponent* BoxComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHHealthComponent* HealthComponent;
