@@ -81,11 +81,13 @@ void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
 	
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetAllBodiesSimulatePhysics(true);
-	UE_LOG(LogDamage, Log, TEXT("%s has died"), *GetName());
 
+	StatusEffectComponent->OnDeath();
+	
 	DetachFromControllerPendingDestroy();
 	SetLifeSpan(10.f);
-	
+
+	UE_LOG(LogDamage, Log, TEXT("%s has died"), *GetName());
 	DeathEvent.Broadcast(this, Killer);
 }
 

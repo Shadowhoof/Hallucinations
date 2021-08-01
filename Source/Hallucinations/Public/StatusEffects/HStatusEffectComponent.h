@@ -37,6 +37,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 	UParticleSystem* StunnedVFX;
 
+	UPROPERTY()
+	TWeakObjectPtr<UParticleSystemComponent> ActiveStunnedVFX;
+
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Conditions")
@@ -59,6 +62,8 @@ public:
 
 	DECLARE_EVENT_OneParam(UHStatusEffectComponent, FConditionRemovedEvent, EStatusCondition)
 	FConditionRemovedEvent& OnConditionRemoved();
+
+	void OnDeath();
 
 private:
 

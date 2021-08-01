@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "StatusEffects/HStatusEffect.h"
 #include "Utils/HEnumTools.h"
+#include "Particles/ParticleSystemComponent.h"
 
 DEFINE_LOG_CATEGORY(LogStatusEffect);
 
@@ -60,7 +61,7 @@ void UHStatusEffectComponent::ApplyCondition(EStatusCondition Condition)
 	{
 		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
 		FVector Offset(0.f, 0.f, Character->GetDefaultHalfHeight());
-		UGameplayStatics::SpawnEmitterAttached(StunnedVFX, Character->GetDefaultAttachComponent(), NAME_None, Offset);
+		ActiveStunnedVFX = UGameplayStatics::SpawnEmitterAttached(StunnedVFX, Character->GetDefaultAttachComponent(), NAME_None, Offset);
 	}
 
 	UE_LOG(LogStatusEffect, Log, TEXT("Condition %s applied to %s"), *EnumToString(Condition), *GetOwner()->GetName());
@@ -95,6 +96,22 @@ UHStatusEffectComponent::FConditionAppliedEvent& UHStatusEffectComponent::OnCond
 UHStatusEffectComponent::FConditionRemovedEvent& UHStatusEffectComponent::OnConditionRemoved()
 {
 	return ConditionRemovedEvent;
+}
+
+void UHStatusEffectComponent::OnDeath()
+{
+	for (UHStatusEffect* Effect : ActiveEffects)
+	{
+		Effect->End();
+	}
+	ActiveEffects.Empty();
+
+	Conditions = 0;
+
+	if (ActiveStunnedVFX.IsValid())
+	{
+		ActiveStunnedVFX->DestroyComponent();
+	}
 }
 
 
