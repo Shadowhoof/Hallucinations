@@ -101,8 +101,6 @@ public:
 	UHStatusEffectComponent* GetStatusEffectComponent() const;
 	UHAbilityComponent* GetAbilityComponent() const;
 	
-	void UseAbility(uint8 Index);
-
 	UFUNCTION(BlueprintCallable)
 	bool IsStunned() const;
 

@@ -191,11 +191,3 @@ bool AHCharacter::IsBusy() const
 	
 	return false;
 }
-
-void AHCharacter::UseAbility(uint8 Index)
-{
-	if (!IsBusy())
-	{
-		AbilityComponent->UseAbility(Index);
-	}
-}

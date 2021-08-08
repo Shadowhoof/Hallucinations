@@ -157,6 +157,11 @@ bool UHAbility::TryUse(UHAbilityComponent* Context)
 	return bWasUsed;
 }
 
+FText UHAbility::GetSkillName() const
+{
+	return Name.IsEmpty() ? FText::FromString(GetClass()->GetName()) : Name;
+}
+
 void UHAbility::OnCastStarted(AHCharacter* Caster)
 {
 	if (CastAnimation)

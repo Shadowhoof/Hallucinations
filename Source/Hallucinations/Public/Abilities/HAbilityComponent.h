@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 
-#include "HConstants.h"
 #include "Components/ActorComponent.h"
 #include "HAbilityComponent.generated.h"
 
@@ -22,25 +21,21 @@ public:
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	uint8 MaxAbilities = 4;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<UHAbility>> AvailableAbilities;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TArray<TSubclassOf<UHAbility>> SelectedAbilities;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Abilities")
 	TArray<UHAbility*> Abilities;
-
+	
 	FTimerHandle CastTimerHandle;
 
 	bool bIsCasting = false;
 	
 	virtual void BeginPlay() override;
 
-	bool CanUseAbility(uint8 Index) const;
-	
+	/** Returns whether provided ability is allowed to be used by the component. Things like stun, silence, etc. are checked here. \
+	 * Things that are controlled by ability itself (like cooldown) aren't checked here. */
+	bool CanUseAbility(UHAbility* Ability) const;
+
 	void FinishCast();
 
 	FTimerDelegate CastCallback;
@@ -48,7 +43,7 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	void UseAbility(uint8 Index);
+	void UseAbility(UHAbility* Ability);
 
 	AActor* GetTargetActor() const;
 
@@ -56,11 +51,57 @@ public:
 
 	AHCharacter* GetCaster() const;
 
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
 	void StartCast(float CastTime, const FTimerDelegate& Delegate);
 	
 	bool IsCasting() const;
 
 	void Interrupt();
+
+	TArray<UHAbility*> GetAbilities() const;
+
+	bool HasAbility(UHAbility* Ability);
+};
+
+/**
+ * Action bar of a player character
+ */
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class HALLUCINATIONS_API UHActionBarComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+
+	UHActionBarComponent();
+
+protected:
+
+	UPROPERTY(BlueprintReadOnly, Category = "ActionBar")
+	TArray<UHAbility*> EquippedAbilities;
+
+	UPROPERTY()
+	TWeakObjectPtr<UHAbilityComponent> AbilityComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ActionBar")
+	uint8 MaxAbilities = 4;
+
+	/** Returns ability based on provided action bar index */
+	UHAbility* GetAbilityByIndex(uint8 Index) const;
+
+	virtual void BeginPlay() override;
+
+public:
+	
+	UFUNCTION(BlueprintCallable)
+	void UseAbilityByIndex(uint8 Index);
+
+	/**
+	 * Assigns provided ability to an action bar slot. Can be nullptr to remove ability from action bar.
+	 * @return whether operation was successful
+	 */
+	UFUNCTION(BlueprintCallable, Category = "ActionBar")
+	bool SetActionBarAbility(UHAbility* Ability, uint8 Index);
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
 };

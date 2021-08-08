@@ -9,6 +9,7 @@
 #include "NavigationSystem.h"
 #include "Engine/World.h"
 #include "NavigationPath.h"
+#include "Abilities/HAbilityComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Controllers/HPlayerController.h"
@@ -34,6 +35,7 @@ AHPlayerCharacter::AHPlayerCharacter()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	AttributeComponent = CreateDefaultSubobject<UHAttributeComponent>(TEXT("AttributeComponent"));
+	ActionBarComponent = CreateDefaultSubobject<UHActionBarComponent>(TEXT("ActionBarComponent"));
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
@@ -82,6 +84,13 @@ void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability2", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)1);
 	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability3", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)2);
 	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability4", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)3);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability5", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)4);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability6", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)5);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability7", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)6);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability8", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)7);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability9", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)8);
+
+	PlayerInputComponent->BindAction("SkillBook", IE_Pressed, this, &AHPlayerCharacter::ToggleSkillBook);
 }
 
 AActor* AHPlayerCharacter::GetTargetActor() const
@@ -120,6 +129,14 @@ FVector AHPlayerCharacter::GetTargetLocation() const
 	}
 
 	return FHConstants::NullVector;
+}
+
+void AHPlayerCharacter::UseAbility(uint8 Index)
+{
+	if (!IsBusy())
+	{
+		ActionBarComponent->UseAbilityByIndex(Index);
+	}
 }
 
 void AHPlayerCharacter::Move(float Value)

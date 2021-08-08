@@ -12,6 +12,7 @@ class AHProjectile;
 class AHPlayerController;
 class UHAttributeComponent;
 class UHAbilityComponent;
+class UHActionBarComponent;
 
 /**
  * 
@@ -36,6 +37,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHAttributeComponent* AttributeComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHActionBarComponent* ActionBarComponent;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MinCameraDistance;
 
@@ -56,6 +60,9 @@ protected:
 
 	DECLARE_DELEGATE_OneParam(FUseAbilityDelegate, uint8)
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void ToggleSkillBook();
+
 public:
 	virtual void Tick(float DeltaTime) override;
 
@@ -64,4 +71,6 @@ public:
 	virtual AActor* GetTargetActor() const override;
 
 	virtual FVector GetTargetLocation() const override;
+
+	void UseAbility(uint8 Index);
 };

@@ -37,7 +37,7 @@ class HALLUCINATIONS_API UHAbility : public UObject
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = "EAbilityTarget"))
+	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (Bitmask, BitmaskEnum = "EAbilityTarget"))
 	uint8 TargetType = 0;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
@@ -49,6 +49,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	UTexture2D* Icon;
 
+	/** Skill display name. Can be empty. Use GetSkillName if non-empty value is required */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	FText Name = FText::GetEmpty();
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", Meta = (MustImplement = "HAbilityActorInterface"))
 	TSubclassOf<AActor> ImplementationClass;
 	
@@ -96,5 +100,9 @@ protected:
 public:
 
 	bool TryUse(UHAbilityComponent* Context);
+
+	/** Returns ability name if it is specified, otherwise returns class name */
+	UFUNCTION(BlueprintCallable)
+	FText GetSkillName() const;
 
 };

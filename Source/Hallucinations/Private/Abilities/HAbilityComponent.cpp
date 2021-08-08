@@ -8,19 +8,16 @@
 
 DEFINE_LOG_CATEGORY(LogAbility);
 
+// Ability component
+
 UHAbilityComponent::UHAbilityComponent()
 {
 }
 
 
-bool UHAbilityComponent::CanUseAbility(uint8 Index) const
+bool UHAbilityComponent::CanUseAbility(UHAbility* Ability) const
 {
-	if (GetCaster()->IsBusy())
-	{
-		return false;
-	}
-	
-	return Index < Abilities.Num() && Abilities[Index];
+	return !GetCaster()->IsBusy();
 }
 
 AActor* UHAbilityComponent::GetTargetActor() const
@@ -42,12 +39,11 @@ void UHAbilityComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Abilities.Init(nullptr, MaxAbilities);
-	ensure(SelectedAbilities.Num() <= MaxAbilities);
+	Abilities.Init(nullptr, AvailableAbilities.Num());
 
-	for (uint8 i = 0; i < SelectedAbilities.Num(); i++)
+	for (uint8 i = 0; i < AvailableAbilities.Num(); i++)
 	{
-		TSubclassOf<UHAbility> AbilityClass = SelectedAbilities[i];
+		TSubclassOf<UHAbility> AbilityClass = AvailableAbilities[i];
 		if (AbilityClass)
 		{
 			Abilities[i] = NewObject<UHAbility>(this, AbilityClass);
@@ -55,31 +51,11 @@ void UHAbilityComponent::BeginPlay()
 	}
 }
 
-void UHAbilityComponent::UseAbility(uint8 Index)
+void UHAbilityComponent::UseAbility(UHAbility* Ability)
 {
-	if (CanUseAbility(Index))
+	if (CanUseAbility(Ability))
 	{
-		Abilities[Index]->TryUse(this);
-	}
-}
-
-void UHAbilityComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	const FName PropertyName = PropertyChangedEvent.GetPropertyName();
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UHAbilityComponent, MaxAbilities))
-	{
-		// resize ability array to new value
-		SelectedAbilities.SetNum(MaxAbilities);
-	}
-	else if (PropertyName == GET_MEMBER_NAME_CHECKED(UHAbilityComponent, SelectedAbilities))
-	{
-		// prevent ability array from being larger than max abilities
-		if (SelectedAbilities.Num() > MaxAbilities)
-		{
-			SelectedAbilities.SetNum(MaxAbilities);
-		}
+		Ability->TryUse(this);
 	}
 }
 
@@ -115,4 +91,102 @@ void UHAbilityComponent::Interrupt()
 		CastCallback.Unbind();
 		bIsCasting = false;
 	}
+}
+
+TArray<UHAbility*> UHAbilityComponent::GetAbilities() const
+{
+	return Abilities;
+}
+
+bool UHAbilityComponent::HasAbility(UHAbility* Ability)
+{
+	return Ability && Abilities.Contains(Ability);
+}
+
+
+// Action bar component
+
+UHActionBarComponent::UHActionBarComponent()
+{
+	
+}
+
+UHAbility* UHActionBarComponent::GetAbilityByIndex(uint8 Index) const
+{
+	if (Index >= EquippedAbilities.Num())
+	{
+		return nullptr;
+	}
+
+	return EquippedAbilities[Index];
+}
+
+void UHActionBarComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	AbilityComponent = Cast<UHAbilityComponent>(GetOwner()->GetComponentByClass(UHAbilityComponent::StaticClass()));
+	if (!AbilityComponent.IsValid())
+	{
+		UE_LOG(LogAbility, Log, TEXT("ActionBarComponent owner has no AbilityComponent"));
+		return;
+	}
+
+	EquippedAbilities.Init(nullptr, MaxAbilities);
+	TArray<UHAbility*> AllAbilities = AbilityComponent->GetAbilities();
+	int32 ForLimit = FMath::Min(AllAbilities.Num(), static_cast<int32>(MaxAbilities));
+	for (uint8 i = 0; i < ForLimit; i++)
+	{
+		EquippedAbilities[i] = AllAbilities[i];
+	}
+}
+
+void UHActionBarComponent::UseAbilityByIndex(uint8 Index)
+{
+	UHAbility* Ability = GetAbilityByIndex(Index);
+	if (!Ability)
+	{
+		return;
+	}
+
+	if (AbilityComponent.IsValid())
+	{
+		AbilityComponent->UseAbility(Ability);
+	}
+}
+
+void UHActionBarComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	const FName PropertyName = PropertyChangedEvent.GetPropertyName();
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UHActionBarComponent, MaxAbilities))
+	{
+		// resize ability array to new value
+		EquippedAbilities.SetNum(MaxAbilities);
+	}
+}
+
+bool UHActionBarComponent::SetActionBarAbility(UHAbility* Ability, uint8 Index)
+{
+	if (!AbilityComponent.IsValid())
+	{
+		UE_LOG(LogAbility, Error, TEXT("ActionBarComponent has invalid reference to AbilityComponent"));
+		return false;
+	}
+	
+	if (Ability && !AbilityComponent->HasAbility(Ability))
+	{
+		UE_LOG(LogAbility, Error, TEXT("Trying to add ability %s which is unavailable to this character"), *Ability->GetSkillName().ToString());
+		return false;
+	}
+
+	if (Index >= EquippedAbilities.Num())
+	{
+		UE_LOG(LogAbility, Error, TEXT("Invalid index %d for action bar ability"), Index);
+		return false;
+	}
+
+	EquippedAbilities[Index] = Ability;
+	return true;
 }

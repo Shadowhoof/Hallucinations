@@ -12,6 +12,7 @@
 UHFireball::UHFireball()
 {
 	TargetType = CombineBits(EAbilityTarget::Actor, EAbilityTarget::Point);
+	Name = FText::FromString("Fireball");
 }
 
 void UHFireball::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)

@@ -8,6 +8,7 @@
 UHHeadBlow::UHHeadBlow()
 {
 	TargetType = BIT_AS_INT(EAbilityTarget::Actor);
+	Name = FText::FromString("Head Blow");
 }
 
 void UHHeadBlow::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
