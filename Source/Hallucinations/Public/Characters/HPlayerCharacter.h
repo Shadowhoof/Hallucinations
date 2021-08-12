@@ -6,6 +6,7 @@
 #include "Characters/HCharacter.h"
 #include "HPlayerCharacter.generated.h"
 
+class UHSaveGame;
 class UCameraComponent;
 class USpringArmComponent;
 class AHProjectile;
@@ -73,4 +74,6 @@ public:
 	virtual FVector GetTargetLocation() const override;
 
 	void UseAbility(uint8 Index);
+
+	UHSaveGame* GetSaveData();
 };

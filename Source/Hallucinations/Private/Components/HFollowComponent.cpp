@@ -124,7 +124,7 @@ void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		TargetRotation.Pitch = 0.f;
 		if (!CurrentRotation.Equals(TargetRotation))
 		{
-			GetOwner()->SetActorRotation(FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 10.0));
+			GetOwner()->SetActorRotation(FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 20.0));
 		}
 	}
 }

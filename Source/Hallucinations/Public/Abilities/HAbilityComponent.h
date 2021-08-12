@@ -5,8 +5,10 @@
 #include "Components/ActorComponent.h"
 #include "HAbilityComponent.generated.h"
 
+class UHSaveGame;
 class AHCharacter;
 class UHAbility;
+class UHSaveGame;
 
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -89,6 +91,13 @@ protected:
 	UHAbility* GetAbilityByIndex(uint8 Index) const;
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	/** Populates action bar with some abilities if save file wasn't found */
+	void SetDefaultActionBar(const TArray<UHAbility*>& AllAbilities);
+
+	/** Loads action bar from a save file */
+	void LoadActionBar(TArray<UHAbility*>& AllAbilities, const TArray<FString>& SavedAbilities);
 
 public:
 	
@@ -104,4 +113,8 @@ public:
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
+private:
+
+	static const FName EmptyAbilityName;
+	
 };

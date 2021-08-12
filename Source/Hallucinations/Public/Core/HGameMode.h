@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "HGameMode.generated.h"
 
+class UHSaveGame;
 /**
  * 
  */
@@ -17,8 +18,9 @@ class HALLUCINATIONS_API AHGameMode : public AGameModeBase
 public:
 
 	AHGameMode();
-	
+
 protected:
 	
 	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
+
 };

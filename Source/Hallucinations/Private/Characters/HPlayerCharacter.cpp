@@ -19,6 +19,10 @@
 #include "Components/HHealthComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Core/HGameMode.h"
+#include "Core/HSaveGame.h"
+#include "Core/Subsystems/HSaveLoadSubsystem.h"
+#include "Utils/HLogUtils.h"
 
 // Sets default values
 AHPlayerCharacter::AHPlayerCharacter()
@@ -137,6 +141,13 @@ void AHPlayerCharacter::UseAbility(uint8 Index)
 	{
 		ActionBarComponent->UseAbilityByIndex(Index);
 	}
+}
+
+UHSaveGame* AHPlayerCharacter::GetSaveData()
+{
+	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
+	UHSaveLoadSubsystem* SaveLoadSubsystem = GameInstance->GetSubsystem<UHSaveLoadSubsystem>();
+	return SaveLoadSubsystem->GetSaveData();
 }
 
 void AHPlayerCharacter::Move(float Value)

@@ -7,6 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "HPlayerController.generated.h"
 
+class AHPlayerCharacter;
+class UHSaveGame;
 class UCameraComponent;
 class AHCharacter;
 
@@ -18,14 +20,18 @@ class HALLUCINATIONS_API AHPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+
+	AHPlayerController();
+	
 protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPawnDeath(AHCharacter* Killer, AActor* Victim);
+
+	AHPlayerCharacter* GetPlayerCharacter() const;
 	
 public:
-
-	AHPlayerController();
 
 	virtual void PlayerTick(float DeltaSeconds) override;
 

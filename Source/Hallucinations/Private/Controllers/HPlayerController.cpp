@@ -13,6 +13,11 @@ AHPlayerController::AHPlayerController()
 	CurrentClickTraceChannel = ECC_Click;
 }
 
+AHPlayerCharacter* AHPlayerController::GetPlayerCharacter() const
+{
+	return Cast<AHPlayerCharacter>(GetCharacter());
+}
+
 void AHPlayerController::PlayerTick(float DeltaSeconds)
 {	
 	FHitResult HitResult;

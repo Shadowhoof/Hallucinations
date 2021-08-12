@@ -4,8 +4,14 @@
 #include "Abilities/HAbilityComponent.h"
 #include "Abilities/HAbility.h"
 #include "Characters/HCharacter.h"
+#include "Core/HGameMode.h"
 #include "Core/HLogCategories.h"
+#include "Core/HSaveGame.h"
+#include "Kismet/GameplayStatics.h"
+#include "Utils/HLogUtils.h"
+#include "Characters/HPlayerCharacter.h"
 
+class AHPlayerCharacter;
 DEFINE_LOG_CATEGORY(LogAbility);
 
 // Ability component
@@ -106,6 +112,8 @@ bool UHAbilityComponent::HasAbility(UHAbility* Ability)
 
 // Action bar component
 
+const FName UHActionBarComponent::EmptyAbilityName = "Ability_NONE";
+
 UHActionBarComponent::UHActionBarComponent()
 {
 	
@@ -132,12 +140,56 @@ void UHActionBarComponent::BeginPlay()
 		return;
 	}
 
-	EquippedAbilities.Init(nullptr, MaxAbilities);
 	TArray<UHAbility*> AllAbilities = AbilityComponent->GetAbilities();
+	EquippedAbilities.Init(nullptr, MaxAbilities);
+
+	AHPlayerCharacter* Character = Cast<AHPlayerCharacter>(GetOwner());
+	TArray<FString> SavedAbilities = Character->GetSaveData()->EquippedAbilities;
+	if (SavedAbilities.Num() == 0)
+	{
+		SetDefaultActionBar(AllAbilities);
+	}
+	else
+	{
+		LoadActionBar(AllAbilities, SavedAbilities);
+	}
+}
+
+void UHActionBarComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	AHPlayerCharacter* Character = Cast<AHPlayerCharacter>(GetOwner());
+	UHSaveGame* SaveData = Character->GetSaveData();
+	// clear old ability array and fill it with up-to-date data
+	SaveData->EquippedAbilities.Empty(MaxAbilities);
+	for (UHAbility* Ability : EquippedAbilities)
+	{
+		FString AbilityName = Ability ? Ability->GetClass()->GetName() : EmptyAbilityName.ToString();
+		SaveData->EquippedAbilities.Add(AbilityName);
+	}
+}
+
+void UHActionBarComponent::SetDefaultActionBar(const TArray<UHAbility*>& AllAbilities)
+{
 	int32 ForLimit = FMath::Min(AllAbilities.Num(), static_cast<int32>(MaxAbilities));
 	for (uint8 i = 0; i < ForLimit; i++)
 	{
 		EquippedAbilities[i] = AllAbilities[i];
+	}
+}
+
+void UHActionBarComponent::LoadActionBar(TArray<UHAbility*>& AllAbilities, const TArray<FString>& SavedAbilities)
+{
+	int32 ForLimit = FMath::Min(SavedAbilities.Num(), static_cast<int32>(MaxAbilities));
+	for (uint8 i = 0; i < ForLimit; i++)
+	{
+		FString AbilityName = SavedAbilities[i];
+		UHAbility** FoundAbilityPtr = AllAbilities.FindByPredicate([AbilityName](UHAbility* Ability)
+																   {
+																	   return Ability->GetClass()->GetName() == AbilityName;
+																   });
+		EquippedAbilities[i] = FoundAbilityPtr ? *FoundAbilityPtr : nullptr;
 	}
 }
 
