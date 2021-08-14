@@ -16,6 +16,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Components/BoxComponent.h"
+#include "Utils/HLogUtils.h"
 #include "Weapons/HWeapon.h"
 
 
@@ -190,4 +191,10 @@ bool AHCharacter::IsBusy() const
 	}
 	
 	return false;
+}
+
+void AHCharacter::IgnoreActorWhenMoving(AActor* Actor)
+{
+	GetCapsuleComponent()->IgnoreActorWhenMoving(Actor, true);
+	GetMesh()->IgnoreActorWhenMoving(Actor, true);
 }

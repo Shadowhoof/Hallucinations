@@ -3,7 +3,9 @@
 
 #include "Actors/HProjectile.h"
 
+#include "Characters/HCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Utils/HLogUtils.h"
 
 // Sets default values
 AHProjectile::AHProjectile()
@@ -15,8 +17,7 @@ AHProjectile::AHProjectile()
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	StaticMesh->SetCollisionResponseToAllChannels(ECR_Block);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
-	StaticMesh->IgnoreActorWhenMoving(GetInstigator(), true);
-
+	
 	RootComponent = StaticMesh;
 }
 
@@ -25,6 +26,7 @@ void AHProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	IgnoreActor(GetInstigator());
 	StaticMesh->OnComponentHit.AddDynamic(this, &AHProjectile::OnHit);
 }
 
@@ -43,4 +45,9 @@ void AHProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 void AHProjectile::IgnoreActor(AActor* Actor)
 {
 	StaticMesh->IgnoreActorWhenMoving(Actor, true);
+	AHCharacter* AsCharacter = Cast<AHCharacter>(Actor);
+	if (AsCharacter)
+	{
+		AsCharacter->IgnoreActorWhenMoving(this);
+	}
 }

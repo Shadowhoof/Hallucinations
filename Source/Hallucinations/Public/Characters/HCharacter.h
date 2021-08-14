@@ -108,5 +108,7 @@ public:
 	 * until its current task is finished (i.e. it's in the middle of an attack or in the middle of a spell cast
 	 * or it's stunned and is unable to act altogether) */
 	bool IsBusy() const;
+
+	void IgnoreActorWhenMoving(AActor* Actor);
 	
 };
