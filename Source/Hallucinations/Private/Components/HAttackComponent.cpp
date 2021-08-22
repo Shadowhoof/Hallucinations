@@ -111,24 +111,37 @@ bool UHAttackComponent::CanStartAttack() const
 	return Weapon && !bIsAttacking && !bIsAttackOnCooldown && !GetCharacter()->IsBusy();
 }
 
-void UHAttackComponent::AttackActor(AActor* Actor) {
+void UHAttackComponent::AttackActor(AActor* Actor)
+{
 	if (!CanIssueAttackOrder(Actor))
 	{
 		return;
 	}
-	
-	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName())
+
+	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName());
 	TargetActor = Actor;
 	TargetLocation = FHConstants::NullVector;
 	AttackMode = EAttackMode::LockedActor;
 
 	const bool bIsInRange = Weapon->IsInRange(GetOwner(), TargetActor);
 	FollowTargetActor();
-	
+
 	if (bIsInRange)
 	{
 		StartAttack();
 	}
+}
+
+bool UHAttackComponent::AttackActorWithAbility(AActor* Actor)
+{
+	if (!CanIssueAttackOrder(Actor))
+	{
+		return false;
+	}
+	
+	bIsAbilityAttack = true;
+	AttackActor(Actor);
+	return true;
 }
 
 void UHAttackComponent::AttackLocation(const FVector& Location)
@@ -138,14 +151,26 @@ void UHAttackComponent::AttackLocation(const FVector& Location)
 		return;
 	}
 
-	UE_LOG(LogAttack, Verbose, TEXT("%s is attacking location: %s"), *GetOwner()->GetName(), *Location.ToString())
+	UE_LOG(LogAttack, Verbose, TEXT("%s is attacking location: %s"), *GetOwner()->GetName(), *Location.ToString());
 	TargetLocation = Location;
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::Ground;
-	
+
 	GetCharacter()->GetFollowComponent()->RotateTowardsLocation(Location);
-	
+
 	StartAttack();
+}
+
+bool UHAttackComponent::AttackLocationWithAbility(const FVector& Location)
+{
+	if (!CanIssueAttackOrder(Location))
+	{
+		return false;
+	}
+
+	bIsAbilityAttack = true;
+	AttackLocation(Location);
+	return true;
 }
 
 void UHAttackComponent::StopAttacking(bool bInterruptAttack)
@@ -174,6 +199,7 @@ void UHAttackComponent::StopAttacking(bool bInterruptAttack)
 	TargetLocation = FHConstants::NullVector;
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::None;
+	bIsAbilityAttack = false;
 	bHasAttackedWhileLocked = false;
 	bIsAttackCancelPending = false;
 
@@ -285,19 +311,20 @@ void UHAttackComponent::PerformAttack()
 
 	GetCharacter()->GetFollowComponent()->UnlockMovement();
 
+	FAttackResult ResultParams;
 	bIsAttacking = false;
 	switch (AttackMode)
 	{
 	case EAttackMode::Actor:
-		Weapon->AttackActor(TargetActor);
+		Weapon->AttackActor(TargetActor, bIsAbilityAttack, ResultParams);
 		StopAttacking();
 		break;
 	case EAttackMode::LockedActor:
-		Weapon->AttackActor(TargetActor);
+		Weapon->AttackActor(TargetActor, bIsAbilityAttack, ResultParams);
 		bHasAttackedWhileLocked = true;
 		break;
 	case EAttackMode::Ground:
-		Weapon->AttackLocation(TargetLocation);
+		Weapon->AttackLocation(TargetLocation, bIsAbilityAttack, ResultParams);
 		TargetLocation = FHConstants::NullVector;
 		break;
 	case EAttackMode::None:
@@ -316,8 +343,8 @@ void UHAttackComponent::PerformAttack()
 	{
 		StopAttacking();
 	}
-	
-	AttackEndedEvent.Broadcast();
+
+	AttackEndedEvent.Broadcast(ResultParams);
 }
 
 void UHAttackComponent::OnAttackCooldownOver()

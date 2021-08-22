@@ -15,23 +15,23 @@ UHFireball::UHFireball()
 	Name = FText::FromString("Fireball");
 }
 
-void UHFireball::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
+void UHFireball::FinishActorCast(AActor* TargetActor)
 {
-	Super::FinishActorCast(Context, TargetActor);
-	IHAbilityActorInterface* Projectile = CreateProjectile(Context, TargetActor->GetActorLocation());
-	Projectile->Initialize(this, Context->GetCaster(), TargetActor);
+	Super::FinishActorCast(TargetActor);
+	IHAbilityActorInterface* Projectile = CreateProjectile(TargetActor->GetActorLocation());
+	Projectile->Initialize(this, AbilityComponent->GetCaster(), TargetActor);
 }
 
-void UHFireball::FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation)
+void UHFireball::FinishLocationCast(FVector TargetLocation)
 {
-	Super::FinishLocationCast(Context, TargetLocation);
-	IHAbilityActorInterface* Projectile = CreateProjectile(Context, TargetLocation);
-	Projectile->Initialize(this, Context->GetCaster());
+	Super::FinishLocationCast(TargetLocation);
+	IHAbilityActorInterface* Projectile = CreateProjectile(TargetLocation);
+	Projectile->Initialize(this, AbilityComponent->GetCaster());
 }
 
-IHAbilityActorInterface* UHFireball::CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation)
+IHAbilityActorInterface* UHFireball::CreateProjectile(FVector TargetLocation)
 {
-	AHCharacter* Caster = Context->GetCaster();
+	AHCharacter* Caster = AbilityComponent->GetCaster();
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = Caster;

@@ -11,9 +11,9 @@ UHHeadBlow::UHHeadBlow()
 	Name = FText::FromString("Head Blow");
 }
 
-void UHHeadBlow::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
+void UHHeadBlow::FinishActorCast(AActor* TargetActor)
 {
-	AHCharacter* Caster = Context->GetCaster();
+	AHCharacter* Caster = AbilityComponent->GetCaster();
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = Caster;
 	SpawnParams.Instigator = Caster;
@@ -21,8 +21,8 @@ void UHHeadBlow::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActo
 
 	FRotator Rotator;
 	FVector Location = TargetActor->GetActorLocation();
-	IHAbilityActorInterface* AbilityActor = CreateActor(Context->GetWorld(), Location, Rotator, SpawnParams);
+	IHAbilityActorInterface* AbilityActor = CreateActor(AbilityComponent->GetWorld(), Location, Rotator, SpawnParams);
 	AbilityActor->Initialize(this, Caster, TargetActor);
 
-	Super::FinishActorCast(Context, TargetActor);
+	Super::FinishActorCast(TargetActor);
 }

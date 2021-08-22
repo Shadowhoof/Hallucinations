@@ -24,4 +24,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Actor")
 	static bool AreEnemies(AActor* First, AActor* Second);
+
+	static bool IsVectorValid(const FVector& Vector);
 };

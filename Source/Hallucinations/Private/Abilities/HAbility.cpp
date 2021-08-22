@@ -3,80 +3,134 @@
 
 #include "Abilities/HAbility.h"
 
-#include "HConstants.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Components/HFollowComponent.h"
 #include "Characters/HCharacter.h"
 #include "Utils/HEnumTools.h"
 #include "Core/HLogCategories.h"
 #include "TimerManager.h"
+#include "Utils/HUtils.h"
 
 
-void UHAbility::Use(UHAbilityComponent* Context, AActor* TargetActor)
-{
-	UE_LOG(LogAbility, Log, TEXT("Using ability %s on actor %s"), *GetClass()->GetName(), TargetActor ? *TargetActor->GetName() : TEXT("NULL"));
-	AHCharacter* Caster = Context->GetCaster();
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(Caster->GetComponentByClass(UHFollowComponent::StaticClass()));
-	FollowComponent->RotateTowardsActor(TargetActor);
-
-	const FTimerDelegate Delegate = FTimerDelegate::CreateUFunction(this, FName("FinishActorCast"), Context, TargetActor);
-	DelayCast(Context, Delegate);
+float UHAbility::GetRemainingCooldown() const
+{	
+	UWorld* World = AbilityComponent->GetWorld();
+	return World->GetTimerManager().GetTimerRemaining(CooldownTimerHandle);
 }
 
-void UHAbility::Use(UHAbilityComponent* Context, FVector TargetLocation)
+float UHAbility::GetRemainingCooldownPercentage() const
 {
-	UE_LOG(LogAbility, Log, TEXT("Using ability %s at location %s"), *GetClass()->GetName(), *TargetLocation.ToString());
-	AHCharacter* Caster = Context->GetCaster();
-	UHFollowComponent* FollowComponent = Cast<UHFollowComponent>(Caster->GetComponentByClass(UHFollowComponent::StaticClass()));
-	FollowComponent->RotateTowardsLocation(TargetLocation);
-
-	const FTimerDelegate Delegate = FTimerDelegate::CreateUFunction(this, FName("FinishLocationCast"), Context, TargetLocation);
-	DelayCast(Context, Delegate);
+	return GetRemainingCooldown() / Cooldown;
 }
 
-void UHAbility::Use(UHAbilityComponent* Context)
+FText UHAbility::GetSkillName() const
 {
-	UE_LOG(LogAbility, Log, TEXT("Using ability %s on self"), *GetClass()->GetName());
-
-	const FTimerDelegate Delegate = FTimerDelegate::CreateUFunction(this, FName("FinishSelfCast"), Context);
-	DelayCast(Context, Delegate);
+	return Name.IsEmpty() ? FText::FromString(GetClass()->GetName()) : Name;
 }
 
-void UHAbility::DelayCast(UHAbilityComponent* Context, const FTimerDelegate& Delegate)
+const FString& UHAbility::GetSkillNameAsString() const
 {
-	if (!CastAnimation)
+	return GetSkillName().ToString();
+}
+
+bool UHAbility::CanBeUsed(const FAbilityTargetParameters& TargetParams) const
+{
+	FTimerManager& TimerManager = AbilityComponent->GetWorld()->GetTimerManager();
+	if (TimerManager.IsTimerActive(CooldownTimerHandle))
 	{
-		UE_LOG(LogAbility, Error, TEXT("No animation specified for ability %s"), *GetClass()->GetName());
+		UE_LOG(LogAbility, VeryVerbose, TEXT("Ability is on cooldown, %.2f remaining"), TimerManager.GetTimerRemaining(CooldownTimerHandle));
+		return false;
+	}
+
+	return IsTargetTypeValid(TargetParams);
+}
+
+bool UHAbility::IsTargetTypeValid(const FAbilityTargetParameters& TargetParams) const
+{
+	return GetTargetType(TargetParams) != EAbilityTarget::None;
+}
+
+void UHAbility::StartCooldown()
+{
+	GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, Cooldown, false);
+}
+
+EAbilityType UHAbility::GetType() const
+{
+	return Type;
+}
+
+EAbilityTarget UHAbility::GetTargetType(const FAbilityTargetParameters& TargetParams) const
+{
+	if (TEST_BIT(TargetType, EAbilityTarget::Actor) && TargetParams.Actor.IsValid())
+	{
+		return EAbilityTarget::Actor;
+	}
+	if (TEST_BIT(TargetType, EAbilityTarget::Point) && UHUtils::IsVectorValid(TargetParams.Location))
+	{
+		return EAbilityTarget::Point;
+	}
+	if (TEST_BIT(TargetType, EAbilityTarget::Self))
+	{
+		return EAbilityTarget::Self;
+	}
+	return EAbilityTarget::None;
+}
+
+UAnimMontage* UHAbility::GetCastAnimation() const
+{
+	return CastAnimation;
+}
+
+void UHAbility::OnCastFinished(const FAbilityTargetParameters& TargetParams)
+{
+	EAbilityTarget Target = GetTargetType(TargetParams);
+	switch (Target)
+	{
+	case EAbilityTarget::Actor:
+		FinishActorCast(TargetParams.Actor.Get());
+		break;
+	case EAbilityTarget::Point:
+		FinishLocationCast(TargetParams.Location);
+		break;
+	case EAbilityTarget::Self:
+		FinishSelfCast();
+		break;
+	default:
+		// cast is unavailable for provided target params, just return and do nothing
 		return;
 	}
 
-	Context->StartCast(GetCastTime(), Delegate);
+	StartCooldown();
 }
 
-void UHAbility::FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor)
+void UHAbility::SetAbilityComponent(UHAbilityComponent* Component)
 {
-	OnCastFinished();
+	ensure(!AbilityComponent && Component);
+	AbilityComponent = Component;
 }
 
-void UHAbility::FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation)
+void UHAbility::FinishActorCast(AActor* TargetActor)
 {
-	OnCastFinished();
 }
 
-void UHAbility::FinishSelfCast(UHAbilityComponent* Context)
+void UHAbility::FinishLocationCast(FVector TargetLocation)
 {
-	OnCastFinished();
+}
+
+void UHAbility::FinishSelfCast()
+{
 }
 
 IHAbilityActorInterface* UHAbility::CreateActor(UWorld* World, FVector& Location, FRotator& Rotator,
-                                                FActorSpawnParameters& SpawnParams)
+												FActorSpawnParameters& SpawnParams)
 {
 	if (!ImplementationClass)
 	{
 		UE_LOG(LogAbility, Warning, TEXT("Couldn't spawn actor for %s because no implementation was specified"), *GetClass()->GetName());
 		return nullptr;
 	}
-	
+
 	AActor* Actor = World->SpawnActor(ImplementationClass, &Location, &Rotator, SpawnParams);
 	if (!Actor)
 	{
@@ -85,103 +139,4 @@ IHAbilityActorInterface* UHAbility::CreateActor(UWorld* World, FVector& Location
 	}
 
 	return Cast<IHAbilityActorInterface>(Actor);
-}
-
-float UHAbility::GetRemainingCooldown(const UObject* WorldContextObject) const
-{
-	if (!GEngine)
-	{
-		UE_LOG(LogAbility, Error, TEXT("Pointer to GEngine is null"));
-		return 0.f;
-	}
-	
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
-	return World->GetTimerManager().GetTimerRemaining(CooldownTimerHandle);
-}
-
-float UHAbility::GetRemainingCooldownPercentage(const UObject* WorldContextObject) const
-{
-	if (Cooldown <= 0.f)
-	{
-		return 0.f;
-	}
-
-	return GetRemainingCooldown(WorldContextObject) / Cooldown;
-}
-
-bool UHAbility::TryUse(UHAbilityComponent* Context)
-{
-	FTimerManager& TimerManager = Context->GetWorld()->GetTimerManager();
-	if (TimerManager.IsTimerActive(CooldownTimerHandle))
-	{
-		// ability is still on cooldown
-		UE_LOG(LogAbility, Log, TEXT("Ability is on cooldown, %.2f remaining"), TimerManager.GetTimerRemaining(CooldownTimerHandle));
-		return false;
-	}
-
-	bool bWasUsed = false;
-	if (TEST_BIT(TargetType, EAbilityTarget::Actor))
-	{
-		AActor* TargetActor = Context->GetTargetActor();
-		if (TargetActor)
-		{
-			Use(Context, TargetActor);
-			bWasUsed = true;
-		}
-	}
-
-	if (!bWasUsed && TEST_BIT(TargetType, EAbilityTarget::Point))
-	{
-		const FVector TargetLocation = Context->GetTargetLocation();
-		if (TargetLocation != FHConstants::NullVector)
-		{
-			Use(Context, TargetLocation);
-			bWasUsed = true;
-		}
-	}
-
-	if (!bWasUsed && TEST_BIT(TargetType, EAbilityTarget::Self))
-	{
-		Use(Context);
-		bWasUsed = true;
-	}
-
-	if (bWasUsed)
-	{
-		OnCastStarted(Context->GetCaster());
-	}
-
-	//UE_LOG(LogAbility, VeryVerbose, TEXT("Tried to use ability %s, result: %s"), *GetName())
-	UE_LOG(LogAbility, Log, TEXT("Actor %s tried to use ability %s, result: %s"), *Context->GetCaster()->GetName(),
-		*GetClass()->GetName(), bWasUsed ? TEXT("true") : TEXT("false"));
-	return bWasUsed;
-}
-
-FText UHAbility::GetSkillName() const
-{
-	return Name.IsEmpty() ? FText::FromString(GetClass()->GetName()) : Name;
-}
-
-void UHAbility::OnCastStarted(AHCharacter* Caster)
-{
-	if (CastAnimation)
-	{
-		Caster->PlayAnimMontage(CastAnimation);
-	}
-}
-
-void UHAbility::OnCastFinished()
-{
-	GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, Cooldown, false);
-}
-
-float UHAbility::GetCastTime() const
-{
-	if (!CastAnimation)
-	{
-		UE_LOG(LogAbility, Error, TEXT("No animation set for ability %s"), *GetClass()->GetName());
-		return 0.f;
-	}
-	
-	return CastAnimation->GetSectionLength(0);
 }

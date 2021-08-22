@@ -6,11 +6,9 @@
 #include "Components/ActorComponent.h"
 #include "HAttackComponent.generated.h"
 
+class UHAbility;
 class AHCharacter;
 class AHWeapon;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackStart);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEnd);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAttack, Log, All);
 
@@ -23,6 +21,29 @@ enum class EAttackMode : uint8
 	LockedActor,	// attacking actor until lock is released
 	Ground			// attacking ground
 };
+
+
+USTRUCT(BlueprintType)
+struct FAttackResult
+{
+	GENERATED_BODY()
+	
+	/** Actor which was targeted or hit (in case of melee weapons) by an attack */
+	TWeakObjectPtr<AActor> Actor;
+
+	/** Location which was targeted during attack */
+	FVector Location;
+
+	/**
+	 *	Either a location where projectile is spawned (for ranged weapons) or where weapon is
+	 *	located during contact frame (for melee weapons).
+	 */
+	FVector SpawnOrWeaponLocation;
+};
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAttackStartedEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttackEndedEvent, const FAttackResult&, AttackResult);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -60,6 +81,9 @@ protected:
 	bool bIsAttackOnCooldown = false;
 
 	bool bIsAttackEnabled = true;
+
+	// Is current attack requested by an ability
+	bool bIsAbilityAttack;
 	
 	// Begins attack animation
 	void StartAttack();
@@ -98,18 +122,32 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(BlueprintAssignable, Category = "Attack")
-	FOnAttackStart AttackStartedEvent;
+	FAttackStartedEvent AttackStartedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Attack")
-	FOnAttackEnd AttackEndedEvent;
+	FAttackEndedEvent AttackEndedEvent;
 
 	/** Locks on target that will be attacked if it's an enemy. Returns whether target is in range of the weapon */
 	UFUNCTION(BlueprintCallable)
 	void AttackActor(AActor* Actor);
 
+	/**
+	 *	Regular actor attack logic except an ability will handle the logic that executes when attack finishes.
+	 *	@return Whether attack was successfully queued (either ready to execute now or moving towards the target)
+	 **/
+	UFUNCTION(BlueprintCallable)
+	bool AttackActorWithAbility(AActor* Actor);
+	
 	/** Starts attacking target location */
 	UFUNCTION(BlueprintCallable)
 	void AttackLocation(const FVector& Location);
+
+	/**
+	 *	Regular location attack logic except an ability will handle the logic that executes when attack finishes.
+	 *	@return Whether attack was successfully queued (either ready to execute now or moving towards the target)
+	 **/
+	UFUNCTION(BlueprintCallable)
+	bool AttackLocationWithAbility(const FVector& Location);
 
 	/** Changes locked actor attack mode to regular actor attack mode */
 	void CancelActorLock();

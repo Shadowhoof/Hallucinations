@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "StatusEffects/HStatusEffectComponent.h"
+#include "Components/HAttackComponent.h"
 #include "HCharacter.generated.h"
 
 class UBoxComponent;
@@ -59,7 +60,7 @@ protected:
 	void OnAttackStart();
 
 	UFUNCTION()
-	void OnAttackEnd();
+	void OnAttackEnd(const FAttackResult& AttackResult);
 
 	UFUNCTION()
 	void OnConditionApplied(EStatusCondition Condition);

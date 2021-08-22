@@ -3,6 +3,7 @@
 
 #include "Weapons/HMeleeWeapon.h"
 #include "Characters/HCharacter.h"
+#include "Components/HAttackComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 const float AHMeleeWeapon::RangeLeewayMultiplier = 1.5f;
@@ -19,13 +20,14 @@ void AHMeleeWeapon::BeginPlay()
 	RangeWithLeeway = WeaponRange * RangeLeewayMultiplier;
 }
 
-void AHMeleeWeapon::AttackActor(AActor* const TargetActor)
+void AHMeleeWeapon::AttackActor(AActor* TargetActor, bool bIsAbilityAttack, FAttackResult& OutResult)
 {
-	if (TargetActor->GetDistanceTo(GetOwner()) <= RangeWithLeeway)
+	bool bIsInRange = TargetActor->GetDistanceTo(GetOwner()) <= RangeWithLeeway;
+	if (!bIsAbilityAttack && bIsInRange)
 	{
 		AHCharacter* Character = Cast<AHCharacter>(GetOwner());
 		const float Damage = Character->GetCurrentDamage();
-		
+
 		const FVector ToTargetDirection = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 		FHitResult HitResult;
 		HitResult.HitObjectHandle = FActorInstanceHandle(TargetActor);
@@ -33,9 +35,22 @@ void AHMeleeWeapon::AttackActor(AActor* const TargetActor)
 		HitResult.ImpactNormal = -ToTargetDirection;
 		UGameplayStatics::ApplyPointDamage(TargetActor, Damage, ToTargetDirection, HitResult, GetInstigatorController(), this, DamageType);
 	}
+
+	if (bIsInRange)
+	{
+		OutResult.Actor = TargetActor;
+		OutResult.Location = TargetActor->GetActorLocation();
+	}
+	else
+	{
+		FVector ToTargetDir = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		OutResult.Location = GetActorLocation() + ToTargetDir * RangeWithLeeway;
+	}
+	OutResult.SpawnOrWeaponLocation = GetActorLocation();
 }
 
-void AHMeleeWeapon::AttackLocation(const FVector& TargetLocation)
+void AHMeleeWeapon::AttackLocation(const FVector& TargetLocation, bool bIsAbilityAttack,
+	FAttackResult& OutResult)
 {
-	// melee ground attack does nothing
+	OutResult.Location = TargetLocation;
 }

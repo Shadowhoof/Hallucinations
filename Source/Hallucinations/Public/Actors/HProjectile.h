@@ -8,9 +8,12 @@
 
 
 // Holds projectile data filled by the shooter
-struct FHProjectileData
+struct FProjectileData
 {
+	// Base damage that will be dealt by the projectiles
 	float Damage;
+
+	// Damage type of projectile
 	TSubclassOf<UDamageType> DamageType;
 };
 
@@ -37,7 +40,7 @@ protected:
 
 public:	
 	
-	FHProjectileData Data;
+	FProjectileData Data;
 
 	virtual void IgnoreActor(AActor* Actor) override;
 };

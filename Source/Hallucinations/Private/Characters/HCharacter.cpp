@@ -97,7 +97,7 @@ void AHCharacter::OnAttackStart()
 	FollowComponent->LockMovement();
 }
 
-void AHCharacter::OnAttackEnd()
+void AHCharacter::OnAttackEnd(const FAttackResult& AttackResult)
 {
 	FollowComponent->UnlockMovement();
 }

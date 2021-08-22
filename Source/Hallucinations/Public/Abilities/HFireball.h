@@ -3,14 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/HAbility.h"
+
+#include "HSpellAbility.h"
 #include "HFireball.generated.h"
 
 /**
  *
  */
 UCLASS()
-class HALLUCINATIONS_API UHFireball : public UHAbility
+class HALLUCINATIONS_API UHFireball : public UHSpellAbility
 {
 	GENERATED_BODY()
 
@@ -41,12 +42,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float Radius;
 
-	virtual void FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor) override;
+	virtual void FinishActorCast(AActor* TargetActor) override;
 
-	virtual void FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation) override;
+	virtual void FinishLocationCast(FVector TargetLocation) override;
 
 private:
 
-	IHAbilityActorInterface* CreateProjectile(UHAbilityComponent* Context, FVector TargetLocation);
+	IHAbilityActorInterface* CreateProjectile(FVector TargetLocation);
 
 };

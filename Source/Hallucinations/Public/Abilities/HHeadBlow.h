@@ -3,14 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/HAbility.h"
+
+#include "HSpellAbility.h"
 #include "HHeadBlow.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HALLUCINATIONS_API UHHeadBlow : public UHAbility
+class HALLUCINATIONS_API UHHeadBlow : public UHSpellAbility
 {
 	GENERATED_BODY()
 
@@ -25,6 +26,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	float Duration;
 
-	virtual void FinishActorCast(UHAbilityComponent* Context, AActor* TargetActor) override;
+	virtual void FinishActorCast(AActor* TargetActor) override;
 	
 };

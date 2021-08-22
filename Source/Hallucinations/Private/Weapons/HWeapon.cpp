@@ -34,7 +34,9 @@ FName AHWeapon::GetAttachmentSocketName() const
 bool AHWeapon::IsInRange(AActor* OwnerActor, AActor* TargetActor) const
 {
 	if (!OwnerActor || !TargetActor)
+	{
 		return false;
+	}
 	
 	return FVector::Dist(OwnerActor->GetActorLocation(), TargetActor->GetActorLocation()) <= WeaponRange;
 }
@@ -42,12 +44,4 @@ bool AHWeapon::IsInRange(AActor* OwnerActor, AActor* TargetActor) const
 UAnimMontage* AHWeapon::GetAttackAnimation() const
 {
 	return AttackAnimation;
-}
-
-void AHWeapon::AttackActor(AActor* const TargetActor)
-{
-}
-
-void AHWeapon::AttackLocation(const FVector& TargetLocation)
-{
 }

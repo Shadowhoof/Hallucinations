@@ -3,15 +3,17 @@
 
 #include "Abilities/HAbilityComponent.h"
 #include "Abilities/HAbility.h"
+#include "Abilities/HAttackAbility.h"
+#include "Abilities/HSpellAbility.h"
 #include "Characters/HCharacter.h"
-#include "Core/HGameMode.h"
 #include "Core/HLogCategories.h"
 #include "Core/HSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"
 #include "Characters/HPlayerCharacter.h"
+#include "Components/HFollowComponent.h"
+#include "Utils/HEnumTools.h"
 
-class AHPlayerCharacter;
 DEFINE_LOG_CATEGORY(LogAbility);
 
 // Ability component
@@ -21,9 +23,77 @@ UHAbilityComponent::UHAbilityComponent()
 }
 
 
-bool UHAbilityComponent::CanUseAbility(UHAbility* Ability) const
+bool UHAbilityComponent::CanUseAbility(UHAbility* Ability, const FAbilityTargetParameters& TargetParams) const
 {
-	return !GetCaster()->IsBusy();
+	return !GetCaster()->IsBusy() && Ability->CanBeUsed(TargetParams);
+}
+
+void UHAbilityComponent::UseSpellAbility(UHAbility* Ability)
+{
+	ensure(Ability);
+	UHSpellAbility* SpellAbility = Cast<UHSpellAbility>(Ability);
+	if (!SpellAbility)
+	{
+		UE_LOG(LogAbility, Error, TEXT("Ability %s does not inherit UHSpellAbility"), *Ability->GetSkillNameAsString());
+		return;
+	}
+
+	UHFollowComponent* FollowComponent = GetCaster()->GetFollowComponent();
+	EAbilityTarget TargetType = Ability->GetTargetType(CurrentTargetParams);
+	switch (TargetType)
+	{
+	case EAbilityTarget::Actor:
+		FollowComponent->RotateTowardsActor(CurrentTargetParams.Actor.Get());
+		break;
+	case EAbilityTarget::Point:
+		FollowComponent->RotateTowardsLocation(CurrentTargetParams.Location);
+		break;
+	default:
+		break;
+	}
+
+	UAnimMontage* CastAnimation = Ability->GetCastAnimation() ? Ability->GetCastAnimation() : DefaultCastAnimation;
+	if (!CastAnimation)
+	{
+		UE_LOG(LogAbility, Error, TEXT("No animation specified for ability %s"), *Ability->GetSkillNameAsString());
+		return;
+	}
+
+	GetCaster()->PlayAnimMontage(CastAnimation);
+	float CastTime = CastAnimation->GetSectionLength(0);
+	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCast, Ability);
+	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, CastTime, false);
+}
+
+void UHAbilityComponent::UseAttackAbility(UHAbility* Ability)
+{
+	ensure(Ability);
+	UHAttackAbility* AttackAbility = Cast<UHAttackAbility>(Ability);
+	if (!AttackAbility)
+	{
+		UE_LOG(LogAbility, Error, TEXT("Ability %s is not of Spell type"), *Ability->GetSkillNameAsString());
+		return;
+	}
+
+	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
+	EAbilityTarget TargetType = Ability->GetTargetType(CurrentTargetParams);
+	bool bIsAttackQueued = false;
+	switch (TargetType)
+	{
+	case EAbilityTarget::Actor:
+		bIsAttackQueued = AttackComponent->AttackActorWithAbility(CurrentTargetParams.Actor.Get());
+		break;
+	case EAbilityTarget::Point:
+		bIsAttackQueued = AttackComponent->AttackLocationWithAbility(CurrentTargetParams.Location);
+		break;
+	default:
+		break;
+	}
+
+	if (bIsAttackQueued)
+	{
+		QueuedAttackAbility = AttackAbility;
+	}
 }
 
 AActor* UHAbilityComponent::GetTargetActor() const
@@ -52,35 +122,43 @@ void UHAbilityComponent::BeginPlay()
 		TSubclassOf<UHAbility> AbilityClass = AvailableAbilities[i];
 		if (AbilityClass)
 		{
-			Abilities[i] = NewObject<UHAbility>(this, AbilityClass);
+			UHAbility* Ability = NewObject<UHAbility>(this, AbilityClass);
+			Ability->SetAbilityComponent(this);
+			Abilities[i] = Ability;
 		}
 	}
+
+	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
+	AttackComponent->AttackEndedEvent.AddDynamic(this, &UHAbilityComponent::OnAttackEnded);
 }
 
 void UHAbilityComponent::UseAbility(UHAbility* Ability)
 {
-	if (CanUseAbility(Ability))
+	FAbilityTargetParameters TargetParams;
+	TargetParams.Actor = GetTargetActor();
+	TargetParams.Location = GetTargetLocation();
+	if (CanUseAbility(Ability, TargetParams))
 	{
-		Ability->TryUse(this);
+		CurrentTargetParams = TargetParams;
+		EAbilityType AbilityType = Ability->GetType();
+		switch (AbilityType)
+		{
+		case EAbilityType::Spell:
+			UseSpellAbility(Ability);
+			break;
+		case EAbilityType::Attack:
+			UseAttackAbility(Ability);
+			break;
+		default:
+			UE_LOG(LogAbility, Error, TEXT("Unknown ability type %s of ability %s"), *EnumToString(AbilityType), *Ability->GetSkillNameAsString());
+			break;
+		}
 	}
 }
 
-void UHAbilityComponent::StartCast(float CastTime, const FTimerDelegate& Delegate)
+void UHAbilityComponent::FinishCast(UHAbility* Ability)
 {
-	if (bIsCasting)
-	{
-		return;
-	}
-
-	CastCallback = Delegate;
-	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, this, &UHAbilityComponent::FinishCast, CastTime);
-	bIsCasting = true;
-}
-
-void UHAbilityComponent::FinishCast()
-{
-	bool WasExecuted = CastCallback.ExecuteIfBound();
-	CastCallback.Unbind();
+	Ability->OnCastFinished(CurrentTargetParams);
 	bIsCasting = false;
 }
 
@@ -94,7 +172,6 @@ void UHAbilityComponent::Interrupt()
 	if (bIsCasting)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(CastTimerHandle);
-		CastCallback.Unbind();
 		bIsCasting = false;
 	}
 }
@@ -107,6 +184,17 @@ TArray<UHAbility*> UHAbilityComponent::GetAbilities() const
 bool UHAbilityComponent::HasAbility(UHAbility* Ability)
 {
 	return Ability && Abilities.Contains(Ability);
+}
+
+void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
+{
+	if (!QueuedAttackAbility)
+	{
+		return;
+	}
+
+	QueuedAttackAbility->OnAttackFinished(AttackResult);
+	QueuedAttackAbility = nullptr;
 }
 
 
@@ -229,7 +317,7 @@ bool UHActionBarComponent::SetActionBarAbility(UHAbility* Ability, uint8 Index)
 	
 	if (Ability && !AbilityComponent->HasAbility(Ability))
 	{
-		UE_LOG(LogAbility, Error, TEXT("Trying to add ability %s which is unavailable to this character"), *Ability->GetSkillName().ToString());
+		UE_LOG(LogAbility, Error, TEXT("Trying to add ability %s which is unavailable to this character"), *Ability->GetSkillNameAsString());
 		return false;
 	}
 

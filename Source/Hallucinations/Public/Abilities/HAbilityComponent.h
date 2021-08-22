@@ -3,12 +3,27 @@
 #include "CoreMinimal.h"
 
 #include "Components/ActorComponent.h"
+#include "Components/HAttackComponent.h"
 #include "HAbilityComponent.generated.h"
 
 class UHSaveGame;
 class AHCharacter;
 class UHAbility;
+class UHAttackAbility;
 class UHSaveGame;
+
+
+USTRUCT()
+struct FAbilityTargetParameters
+{
+	GENERATED_BODY()
+
+	// target actor
+	TWeakObjectPtr<AActor> Actor;
+
+	// target location
+	FVector Location;
+};
 
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -20,30 +35,6 @@ public:
 
 	UHAbilityComponent();
 
-protected:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TArray<TSubclassOf<UHAbility>> AvailableAbilities;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Abilities")
-	TArray<UHAbility*> Abilities;
-	
-	FTimerHandle CastTimerHandle;
-
-	bool bIsCasting = false;
-	
-	virtual void BeginPlay() override;
-
-	/** Returns whether provided ability is allowed to be used by the component. Things like stun, silence, etc. are checked here. \
-	 * Things that are controlled by ability itself (like cooldown) aren't checked here. */
-	bool CanUseAbility(UHAbility* Ability) const;
-
-	void FinishCast();
-
-	FTimerDelegate CastCallback;
-	
-public:
-
 	UFUNCTION(BlueprintCallable)
 	void UseAbility(UHAbility* Ability);
 
@@ -53,8 +44,6 @@ public:
 
 	AHCharacter* GetCaster() const;
 
-	void StartCast(float CastTime, const FTimerDelegate& Delegate);
-	
 	bool IsCasting() const;
 
 	void Interrupt();
@@ -62,7 +51,47 @@ public:
 	TArray<UHAbility*> GetAbilities() const;
 
 	bool HasAbility(UHAbility* Ability);
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TArray<TSubclassOf<UHAbility>> AvailableAbilities;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Abilities")
+	TArray<UHAbility*> Abilities;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* DefaultCastAnimation;
+	
+	FTimerHandle CastTimerHandle;
+
+	bool bIsCasting = false;
+
+	virtual void BeginPlay() override;
+
+	/**
+	 * Returns whether provided ability is allowed to be used by the component. Things like stun, silence, etc. are checked here.
+	 * Also queries ability if it's ready to be used (i.e. if it's off cooldown).
+	 */
+	bool CanUseAbility(UHAbility* Ability, const FAbilityTargetParameters& TargetParams) const;
+
+	void FinishCast(UHAbility* Ability);
+
+private:
+
+	void UseSpellAbility(UHAbility* Ability);
+	void UseAttackAbility(UHAbility* Ability);
+
+	FAbilityTargetParameters CurrentTargetParams;
+
+	UPROPERTY()
+	UHAttackAbility* QueuedAttackAbility;
+
+	UFUNCTION()
+	void OnAttackEnded(const FAttackResult& AttackResult);
+	
 };
+
 
 /**
  * Action bar of a player character

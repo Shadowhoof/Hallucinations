@@ -11,17 +11,17 @@ UHFlamestrike::UHFlamestrike()
 	Name = FText::FromString("Flamestrike");
 }
 
-void UHFlamestrike::FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation)
+void UHFlamestrike::FinishLocationCast(FVector TargetLocation)
 {
-	Super::FinishLocationCast(Context, TargetLocation);
+	Super::FinishLocationCast(TargetLocation);
 
-	AHCharacter* Caster = Context->GetCaster();
+	AHCharacter* Caster = AbilityComponent->GetCaster();
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = Caster;
 	SpawnParams.Instigator = Caster;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	FRotator Rotator;
-	IHAbilityActorInterface* AbilityActor = CreateActor(Context->GetWorld(), TargetLocation, Rotator, SpawnParams);
+	IHAbilityActorInterface* AbilityActor = CreateActor(AbilityComponent->GetWorld(), TargetLocation, Rotator, SpawnParams);
 	AbilityActor->Initialize(this, Caster);
 }

@@ -3,14 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/HAbility.h"
+
+#include "HSpellAbility.h"
 #include "HFlamestrike.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HALLUCINATIONS_API UHFlamestrike : public UHAbility
+class HALLUCINATIONS_API UHFlamestrike : public UHSpellAbility
 {
 	GENERATED_BODY()
 
@@ -28,6 +29,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	float Radius;
 
-	virtual void FinishLocationCast(UHAbilityComponent* Context, FVector TargetLocation) override;
+	virtual void FinishLocationCast(FVector TargetLocation) override;
 	
 };

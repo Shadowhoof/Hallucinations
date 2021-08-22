@@ -28,12 +28,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
 	FName ProjectileSocketName;
 
-	void ShootAtLocation(const FVector& Location, bool MatchSocketHeight);
+	void ShootAtLocation(const FVector& Location, bool MatchSocketHeight, const FVector& SpawnLocation);
+
+	FVector GetProjectileSpawnLocation();
 
 public:
 	
-	virtual void AttackActor(AActor* const TargetActor) override;
+	virtual void AttackActor(AActor* TargetActor, bool bIsAbilityAttack, FAttackResult& OutResult) override;
 
-	virtual void AttackLocation(const FVector& TargetLocation) override;
+	virtual void AttackLocation(const FVector& TargetLocation, bool bIsAbilityAttack, FAttackResult& OutResult) override;
 	
 };

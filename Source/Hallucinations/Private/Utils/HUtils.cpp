@@ -3,6 +3,7 @@
 
 #include "Utils/HUtils.h"
 
+#include "HConstants.h"
 #include "Components/HHealthComponent.h"
 
 bool UHUtils::CanBeTargeted(AActor* TargetActor)
@@ -24,5 +25,10 @@ bool UHUtils::CanBeAttacked(AActor* Attacker, AActor* Victim)
 bool UHUtils::AreEnemies(AActor* First, AActor* Second)
 {
 	return UHHealthComponent::AreEnemies(First, Second);
+}
+
+bool UHUtils::IsVectorValid(const FVector& Vector)
+{
+	return Vector != FHConstants::NullVector;
 }
 

@@ -7,6 +7,7 @@
 #include "HWeapon.generated.h"
 
 
+struct FAttackResult;
 UCLASS()
 class HALLUCINATIONS_API AHWeapon : public AActor
 {
@@ -47,8 +48,7 @@ public:
 
 	UAnimMontage* GetAttackAnimation() const;
 
-	virtual void AttackActor(AActor* const TargetActor);
-
-	virtual void AttackLocation(const FVector& TargetLocation);
-
+	virtual void AttackActor(AActor* TargetActor, bool bIsAbilityAttack, FAttackResult& OutResult) PURE_VIRTUAL(AHWeapon::AttackActor);
+	
+	virtual void AttackLocation(const FVector& TargetLocation, bool bIsAbilityAttack, FAttackResult& OutResult) PURE_VIRTUAL(AHWeapon::AttackLocation);
 };

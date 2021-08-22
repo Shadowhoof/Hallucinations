@@ -3,6 +3,7 @@
 
 #include "Actors/HProjectile.h"
 
+#include "HConstants.h"
 #include "Characters/HCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"
@@ -16,6 +17,8 @@ AHProjectile::AHProjectile()
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	StaticMesh->SetCollisionResponseToAllChannels(ECR_Block);
+	StaticMesh->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
+	StaticMesh->SetCollisionResponseToChannel(ECC_Projectile, ECR_Ignore);
 	StaticMesh->SetNotifyRigidBodyCollision(true);
 	
 	RootComponent = StaticMesh;
