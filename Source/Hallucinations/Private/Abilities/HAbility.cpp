@@ -77,66 +77,8 @@ EAbilityTarget UHAbility::GetTargetType(const FAbilityTargetParameters& TargetPa
 	return EAbilityTarget::None;
 }
 
-UAnimMontage* UHAbility::GetCastAnimation() const
-{
-	return CastAnimation;
-}
-
-void UHAbility::OnCastFinished(const FAbilityTargetParameters& TargetParams)
-{
-	EAbilityTarget Target = GetTargetType(TargetParams);
-	switch (Target)
-	{
-	case EAbilityTarget::Actor:
-		FinishActorCast(TargetParams.Actor.Get());
-		break;
-	case EAbilityTarget::Point:
-		FinishLocationCast(TargetParams.Location);
-		break;
-	case EAbilityTarget::Self:
-		FinishSelfCast();
-		break;
-	default:
-		// cast is unavailable for provided target params, just return and do nothing
-		return;
-	}
-
-	StartCooldown();
-}
-
 void UHAbility::SetAbilityComponent(UHAbilityComponent* Component)
 {
 	ensure(!AbilityComponent && Component);
 	AbilityComponent = Component;
-}
-
-void UHAbility::FinishActorCast(AActor* TargetActor)
-{
-}
-
-void UHAbility::FinishLocationCast(FVector TargetLocation)
-{
-}
-
-void UHAbility::FinishSelfCast()
-{
-}
-
-IHAbilityActorInterface* UHAbility::CreateActor(UWorld* World, FVector& Location, FRotator& Rotator,
-												FActorSpawnParameters& SpawnParams)
-{
-	if (!ImplementationClass)
-	{
-		UE_LOG(LogAbility, Warning, TEXT("Couldn't spawn actor for %s because no implementation was specified"), *GetClass()->GetName());
-		return nullptr;
-	}
-
-	AActor* Actor = World->SpawnActor(ImplementationClass, &Location, &Rotator, SpawnParams);
-	if (!Actor)
-	{
-		UE_LOG(LogAbility, Warning, TEXT("Actor for %s has not been spawned, check spawn log for more details"), *GetClass()->GetName());
-		return nullptr;
-	}
-
-	return Cast<IHAbilityActorInterface>(Actor);
 }

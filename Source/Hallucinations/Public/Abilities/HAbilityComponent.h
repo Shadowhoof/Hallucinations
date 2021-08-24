@@ -6,6 +6,7 @@
 #include "Components/HAttackComponent.h"
 #include "HAbilityComponent.generated.h"
 
+class UHSpellAbility;
 class UHSaveGame;
 class AHCharacter;
 class UHAbility;
@@ -75,7 +76,7 @@ protected:
 	 */
 	bool CanUseAbility(UHAbility* Ability, const FAbilityTargetParameters& TargetParams) const;
 
-	void FinishCast(UHAbility* Ability);
+	void FinishCast(UHSpellAbility* Ability);
 
 private:
 

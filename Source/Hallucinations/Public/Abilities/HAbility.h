@@ -56,18 +56,13 @@ public:
 
 	/**
 	 * Returns whether current ability can be used with provided target parameters. For example if this ability only
-	 * supports actor targeting and a valid actor is specified in target parameters.
+	 * supports actor targeting then a valid actor is required to be specified in target parameters.
 	 */
 	bool CanBeUsed(const FAbilityTargetParameters& TargetParams) const;
 
 	EAbilityType GetType() const;
 
 	EAbilityTarget GetTargetType(const FAbilityTargetParameters& TargetParams) const;
-
-	UAnimMontage* GetCastAnimation() const;
-
-	/** Called by AbilityComponent when cast finishes */
-	void OnCastFinished(const FAbilityTargetParameters& TargetParams);
 
 	void SetAbilityComponent(UHAbilityComponent* Component);
 	
@@ -88,10 +83,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
 	float Cooldown = 0.f;
 
-	/** Custom cast animation for this spell */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UAnimMontage* CastAnimation;
-
 	/** Icon to be displayed in the UI */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	UTexture2D* Icon;
@@ -100,21 +91,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	FText Name = FText::GetEmpty();
 
-	/** Class of an actor spawned whenever a spell cast finishes which will perform gameplay actions */
-	UPROPERTY(EditDefaultsOnly, Category = "Ability", Meta = (MustImplement = "HAbilityActorInterface"))
-	TSubclassOf<AActor> ImplementationClass;
-
 	FTimerHandle CooldownTimerHandle;
-
-	virtual void FinishActorCast(AActor* TargetActor);
-	virtual void FinishLocationCast(FVector TargetLocation);
-	virtual void FinishSelfCast();
-
-	/** Creates actor in world that will perform all the gameplay logic */
-	virtual IHAbilityActorInterface* CreateActor(UWorld* World, FVector& Location, FRotator& Rotator,
-												 FActorSpawnParameters& SpawnParams);
-
-	/* TODO: keep reference to ability component? so we don't have to pass world context to every method */
 
 	/* Gets remaining cooldown for current ability in seconds */
 	UFUNCTION(BlueprintPure, Category = "Cooldown")

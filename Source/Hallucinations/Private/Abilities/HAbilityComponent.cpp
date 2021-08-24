@@ -52,7 +52,12 @@ void UHAbilityComponent::UseSpellAbility(UHAbility* Ability)
 		break;
 	}
 
-	UAnimMontage* CastAnimation = Ability->GetCastAnimation() ? Ability->GetCastAnimation() : DefaultCastAnimation;
+	UAnimMontage* CastAnimation = SpellAbility->GetCastAnimation();
+	if (!CastAnimation)
+	{
+		CastAnimation = DefaultCastAnimation;
+	}
+
 	if (!CastAnimation)
 	{
 		UE_LOG(LogAbility, Error, TEXT("No animation specified for ability %s"), *Ability->GetSkillNameAsString());
@@ -61,7 +66,7 @@ void UHAbilityComponent::UseSpellAbility(UHAbility* Ability)
 
 	GetCaster()->PlayAnimMontage(CastAnimation);
 	float CastTime = CastAnimation->GetSectionLength(0);
-	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCast, Ability);
+	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCast, SpellAbility);
 	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, CastTime, false);
 }
 
@@ -156,7 +161,7 @@ void UHAbilityComponent::UseAbility(UHAbility* Ability)
 	}
 }
 
-void UHAbilityComponent::FinishCast(UHAbility* Ability)
+void UHAbilityComponent::FinishCast(UHSpellAbility* Ability)
 {
 	Ability->OnCastFinished(CurrentTargetParams);
 	bIsCasting = false;
@@ -195,6 +200,7 @@ void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
 
 	QueuedAttackAbility->OnAttackFinished(AttackResult);
 	QueuedAttackAbility = nullptr;
+	GetCaster()->GetAttackComponent()->StopAttacking();
 }
 
 
