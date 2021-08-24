@@ -206,14 +206,13 @@ void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
 
 // Action bar component
 
-const FName UHActionBarComponent::EmptyAbilityName = "Ability_NONE";
+const FName EmptyAbilityName = "Ability_NONE";
 
 UHActionBarComponent::UHActionBarComponent()
 {
-	
 }
 
-UHAbility* UHActionBarComponent::GetAbilityByIndex(uint8 Index) const
+UHAbility* UHActionBarComponent::GetAbilityByIndex(int32 Index) const
 {
 	if (Index >= EquippedAbilities.Num())
 	{
@@ -266,8 +265,8 @@ void UHActionBarComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UHActionBarComponent::SetDefaultActionBar(const TArray<UHAbility*>& AllAbilities)
 {
-	int32 ForLimit = FMath::Min(AllAbilities.Num(), static_cast<int32>(MaxAbilities));
-	for (uint8 i = 0; i < ForLimit; i++)
+	int32 ForLimit = FMath::Min(AllAbilities.Num(), MaxAbilities);
+	for (int32 i = 0; i < ForLimit; i++)
 	{
 		EquippedAbilities[i] = AllAbilities[i];
 	}
@@ -275,7 +274,7 @@ void UHActionBarComponent::SetDefaultActionBar(const TArray<UHAbility*>& AllAbil
 
 void UHActionBarComponent::LoadActionBar(TArray<UHAbility*>& AllAbilities, const TArray<FString>& SavedAbilities)
 {
-	int32 ForLimit = FMath::Min(SavedAbilities.Num(), static_cast<int32>(MaxAbilities));
+	int32 ForLimit = FMath::Min(SavedAbilities.Num(), MaxAbilities);
 	for (uint8 i = 0; i < ForLimit; i++)
 	{
 		FString AbilityName = SavedAbilities[i];
@@ -287,7 +286,7 @@ void UHActionBarComponent::LoadActionBar(TArray<UHAbility*>& AllAbilities, const
 	}
 }
 
-void UHActionBarComponent::UseAbilityByIndex(uint8 Index)
+void UHActionBarComponent::UseAbilityByIndex(int32 Index)
 {
 	UHAbility* Ability = GetAbilityByIndex(Index);
 	if (!Ability)
@@ -313,7 +312,7 @@ void UHActionBarComponent::PostEditChangeProperty(FPropertyChangedEvent& Propert
 	}
 }
 
-bool UHActionBarComponent::SetActionBarAbility(UHAbility* Ability, uint8 Index)
+bool UHActionBarComponent::SetActionBarAbility(UHAbility* Ability, int32 Index)
 {
 	if (!AbilityComponent.IsValid())
 	{

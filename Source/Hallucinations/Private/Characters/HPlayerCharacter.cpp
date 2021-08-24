@@ -84,15 +84,15 @@ void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Released, this, &AHPlayerCharacter::OnPrimaryActionRelease);
 
 	// Abilities
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability1", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)0);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability2", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)1);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability3", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)2);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability4", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)3);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability5", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)4);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability6", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)5);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability7", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)6);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability8", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)7);
-	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability9", IE_Pressed, this, &AHPlayerCharacter::UseAbility, (uint8)8);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability1", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 0);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability2", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 1);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability3", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 2);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability4", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 3);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability5", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 4);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability6", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 5);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability7", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 6);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability8", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 7);
+	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability9", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 8);
 
 	PlayerInputComponent->BindAction("SkillBook", IE_Pressed, this, &AHPlayerCharacter::ToggleSkillBook);
 }
@@ -135,7 +135,7 @@ FVector AHPlayerCharacter::GetTargetLocation() const
 	return FHConstants::NullVector;
 }
 
-void AHPlayerCharacter::UseAbility(uint8 Index)
+void AHPlayerCharacter::UseAbility(int32 Index)
 {
 	if (!IsBusy())
 	{
@@ -177,7 +177,8 @@ void AHPlayerCharacter::OnPrimaryActionRelease()
 	AttackComponent->CancelActorLock();
 }
 
-void AHPlayerCharacter::PrimaryAction(bool bIsRepeated) {
+void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
+{
 	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
 	if (!PlayerController)
 	{

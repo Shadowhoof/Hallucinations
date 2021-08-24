@@ -114,11 +114,11 @@ protected:
 	UPROPERTY()
 	TWeakObjectPtr<UHAbilityComponent> AbilityComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ActionBar")
-	uint8 MaxAbilities = 4;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ActionBar", meta = (ClampMin = 0))
+	int32 MaxAbilities = 4;
 
 	/** Returns ability based on provided action bar index */
-	UHAbility* GetAbilityByIndex(uint8 Index) const;
+	UHAbility* GetAbilityByIndex(int32 Index) const;
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -132,19 +132,15 @@ protected:
 public:
 	
 	UFUNCTION(BlueprintCallable)
-	void UseAbilityByIndex(uint8 Index);
+	void UseAbilityByIndex(int32 Index);
 
 	/**
 	 * Assigns provided ability to an action bar slot. Can be nullptr to remove ability from action bar.
 	 * @return whether operation was successful
 	 */
 	UFUNCTION(BlueprintCallable, Category = "ActionBar")
-	bool SetActionBarAbility(UHAbility* Ability, uint8 Index);
+	bool SetActionBarAbility(UHAbility* Ability, int32 Index);
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
-private:
-
-	static const FName EmptyAbilityName;
-	
 };

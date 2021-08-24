@@ -59,7 +59,7 @@ protected:
 	void OnPrimaryActionRelease();
 	void PrimaryAction(bool bIsRepeated);
 
-	DECLARE_DELEGATE_OneParam(FUseAbilityDelegate, uint8)
+	DECLARE_DELEGATE_OneParam(FUseAbilityDelegate, int32)
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void ToggleSkillBook();
@@ -73,7 +73,7 @@ public:
 
 	virtual FVector GetTargetLocation() const override;
 
-	void UseAbility(uint8 Index);
+	void UseAbility(int32 Index);
 
 	UHSaveGame* GetSaveData();
 };
