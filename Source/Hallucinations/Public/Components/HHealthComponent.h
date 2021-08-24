@@ -42,7 +42,7 @@ private:
 
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	float MaxHealth;
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Health")
