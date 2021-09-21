@@ -51,4 +51,5 @@ public:
 	virtual void AttackActor(AActor* TargetActor, bool bIsAbilityAttack, FAttackResult& OutResult) PURE_VIRTUAL(AHWeapon::AttackActor);
 	
 	virtual void AttackLocation(const FVector& TargetLocation, bool bIsAbilityAttack, FAttackResult& OutResult) PURE_VIRTUAL(AHWeapon::AttackLocation);
+
 };

@@ -18,6 +18,8 @@ DEFINE_LOG_CATEGORY(LogAbility);
 
 // Ability component
 
+const float UHAbilityComponent::ChilledCastTimeMultiplier = 2.f;
+
 UHAbilityComponent::UHAbilityComponent()
 {
 }
@@ -28,18 +30,18 @@ bool UHAbilityComponent::CanUseAbility(UHAbility* Ability, const FAbilityTargetP
 	return !GetCaster()->IsBusy() && Ability->CanBeUsed(TargetParams);
 }
 
-void UHAbilityComponent::UseSpellAbility(UHAbility* Ability)
+void UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
 {
-	ensure(Ability);
-	UHSpellAbility* SpellAbility = Cast<UHSpellAbility>(Ability);
-	if (!SpellAbility)
+	ensure(BaseAbility);
+	UHSpellAbility* Ability = Cast<UHSpellAbility>(BaseAbility);
+	if (!Ability)
 	{
-		UE_LOG(LogAbility, Error, TEXT("Ability %s does not inherit UHSpellAbility"), *Ability->GetSkillNameAsString());
+		UE_LOG(LogAbility, Error, TEXT("Ability %s does not inherit UHSpellAbility"), *BaseAbility->GetSkillNameAsString());
 		return;
 	}
 
 	UHFollowComponent* FollowComponent = GetCaster()->GetFollowComponent();
-	EAbilityTarget TargetType = Ability->GetTargetType(CurrentTargetParams);
+	EAbilityTarget TargetType = BaseAbility->GetTargetType(CurrentTargetParams);
 	switch (TargetType)
 	{
 	case EAbilityTarget::Actor:
@@ -52,36 +54,24 @@ void UHAbilityComponent::UseSpellAbility(UHAbility* Ability)
 		break;
 	}
 
-	UAnimMontage* CastAnimation = SpellAbility->GetCastAnimation();
-	if (!CastAnimation)
-	{
-		CastAnimation = DefaultCastAnimation;
-	}
-
-	if (!CastAnimation)
-	{
-		UE_LOG(LogAbility, Error, TEXT("No animation specified for ability %s"), *Ability->GetSkillNameAsString());
-		return;
-	}
-
+	UAnimMontage* CastAnimation = GetCastAnimation(Ability);
 	GetCaster()->PlayAnimMontage(CastAnimation);
-	float CastTime = CastAnimation->GetSectionLength(0);
-	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCast, SpellAbility);
-	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, CastTime, false);
+	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCast, Ability);
+	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, GetCastTime(Ability), false);
 }
 
-void UHAbilityComponent::UseAttackAbility(UHAbility* Ability)
+void UHAbilityComponent::UseAttackAbility(UHAbility* UncastAbility)
 {
-	ensure(Ability);
-	UHAttackAbility* AttackAbility = Cast<UHAttackAbility>(Ability);
-	if (!AttackAbility)
+	ensure(UncastAbility);
+	UHAttackAbility* Ability = Cast<UHAttackAbility>(UncastAbility);
+	if (!Ability)
 	{
-		UE_LOG(LogAbility, Error, TEXT("Ability %s is not of Spell type"), *Ability->GetSkillNameAsString());
+		UE_LOG(LogAbility, Error, TEXT("Ability %s is not of Spell type"), *UncastAbility->GetSkillNameAsString());
 		return;
 	}
 
 	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
-	EAbilityTarget TargetType = Ability->GetTargetType(CurrentTargetParams);
+	EAbilityTarget TargetType = UncastAbility->GetTargetType(CurrentTargetParams);
 	bool bIsAttackQueued = false;
 	switch (TargetType)
 	{
@@ -97,7 +87,7 @@ void UHAbilityComponent::UseAttackAbility(UHAbility* Ability)
 
 	if (bIsAttackQueued)
 	{
-		QueuedAttackAbility = AttackAbility;
+		QueuedAttackAbility = Ability;
 	}
 }
 
@@ -201,6 +191,20 @@ void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
 	QueuedAttackAbility->OnAttackFinished(AttackResult);
 	QueuedAttackAbility = nullptr;
 	GetCaster()->GetAttackComponent()->StopAttacking();
+}
+
+float UHAbilityComponent::GetCastTime(UHSpellAbility* Ability) const
+{
+	UAnimMontage* CastAnimation = GetCastAnimation(Ability);
+	float BaseCastTime = CastAnimation->GetSectionLength(0);
+	bool bIsChilled = GetCaster()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
+	return bIsChilled ? BaseCastTime * ChilledCastTimeMultiplier : BaseCastTime;
+}
+
+UAnimMontage* UHAbilityComponent::GetCastAnimation(UHSpellAbility* Ability) const
+{
+	UAnimMontage* CustomAnimation = Ability->GetCastAnimation();
+	return CustomAnimation ? CustomAnimation : DefaultCastAnimation;
 }
 
 

@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 
+#include "StatusEffects/HStatusEffectComponent.h"
 #include "UObject/NoExportTypes.h"
 #include "HAbilityStatics.generated.h"
 
+class UHConditionEffect;
+
 /**
- *
+ *  Helper static functions for various common gameplay cases.
  */
 UCLASS()
 class HALLUCINATIONS_API UHAbilityStatics : public UObject
@@ -17,13 +20,15 @@ class HALLUCINATIONS_API UHAbilityStatics : public UObject
 
 public:
 
-	static void SingleTargetDamage(AActor* TargetActor, float Damage, AActor* SourceActor, AController* Instigator,
+	static void DealSingleTargetDamage(AActor* TargetActor, float Damage, AActor* SourceActor, AController* Instigator,
 								   TSubclassOf<UDamageType> DamageClass, const FHitResult& HitResult);
 
-	static void AreaOfEffectDamage(const FVector& Origin, float Damage, float Radius, AActor* SourceActor,
+	static void DealAreaOfEffectDamage(const FVector& Origin, float Damage, float Radius, AActor* SourceActor,
 								   AController* Instigator, TSubclassOf<UDamageType> DamageClass);
 
-	static void AreaOfEffectDamageWithFalloff(const FVector& Origin, float Damage, float MinDamage, float InnerRadius, float OuterRadius,
+	static void DealAreaOfEffectDamageWithFalloff(const FVector& Origin, float Damage, float MinDamage, float InnerRadius, float OuterRadius,
 											  AActor* SourceActor, AController* Instigator, TSubclassOf<UDamageType> DamageClass);
+
+	static UHConditionEffect* CreateConditionEffect(EStatusCondition Condition, UObject* Outer);
 	
 };

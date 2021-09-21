@@ -2,10 +2,12 @@
 
 
 #include "Abilities/HHeadBlowActor.h"
+
+#include "Abilities/HAbilityStatics.h"
 #include "Abilities/HHeadBlow.h"
 #include "StatusEffects/HStatusEffectComponent.h"
 #include "Core/HLogCategories.h"
-#include "StatusEffects/HStunEffect.h"
+#include "StatusEffects/HConditionEffect.h"
 
 void AHHeadBlowActor::Initialize(UHAbility* AbilityDesc, AActor* SourceActor, AActor* TargetActor)
 {
@@ -17,7 +19,8 @@ void AHHeadBlowActor::Initialize(UHAbility* AbilityDesc, AActor* SourceActor, AA
 		return;
 	}
 
-	Component->ApplyEffect(UHStunEffect::StaticClass(), SourceActor, Ability->Duration);
+	UHConditionEffect* StunEffect = UHAbilityStatics::CreateConditionEffect(EStatusCondition::Stunned, Component);
+	Component->ApplyEffect(StunEffect, SourceActor, Ability->Duration);
 	Destroy();
 }
 

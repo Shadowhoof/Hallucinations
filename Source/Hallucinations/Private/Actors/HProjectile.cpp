@@ -33,16 +33,21 @@ void AHProjectile::BeginPlay()
 	StaticMesh->OnComponentHit.AddDynamic(this, &AHProjectile::OnHit);
 }
 
-void AHProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AHProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& HitResult)
 {
 	if (OtherActor != GetOwner() && OtherActor != GetInstigator())
 	{
-		UGameplayStatics::ApplyPointDamage(OtherActor, Data.Damage, -Hit.ImpactNormal, Hit, GetInstigatorController(), this, Data.DamageType);
+		OnSuccessfulHit(OtherActor, HitResult);
 		GetWorld()->DestroyActor(this);
 
 		const FString OtherActorName = OtherActor ? OtherActor->GetName() : TEXT("Unknown");
 		UE_LOG(LogCollision, Verbose, TEXT("Projectile %s hit %s"), *GetName(), *OtherActorName);
 	}
+}
+
+void AHProjectile::OnSuccessfulHit(AActor* HitActor, const FHitResult& HitResult)
+{
+	UGameplayStatics::ApplyPointDamage(HitActor, Data.Damage, -HitResult.ImpactNormal, HitResult, GetInstigatorController(), this, Data.DamageType);
 }
 
 void AHProjectile::IgnoreActor(AActor* Actor)

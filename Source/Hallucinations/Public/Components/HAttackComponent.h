@@ -63,9 +63,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	AHWeapon* Weapon;
 
-	// Time between attack initiation and attack actually happening, depends on attack animation
-	float AttackDelay;
-
+	// Time in seconds that must pass between two different attacks. Timing begins when attack starts rather than when it lands.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
+	float BaseAttackSpeed = 1.f;
+	
+	// Base time between attack initiation and attack actually happening before any modifiers are applied, depends on attack animation
+	float BaseAttackDelay;
+	
 	// Actor to attack
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	AActor* TargetActor;
@@ -172,5 +176,13 @@ public:
 	bool IsAttacking() const;
 
 	AHCharacter* GetCharacter() const;
+
+private:
+	
+	float CalculateAttackDelay() const;
+	float CalculateAttackSpeed() const;
+
+	// constants
+	static const float ChilledAttackSpeedMultiplier;
 	
 };

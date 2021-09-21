@@ -13,6 +13,8 @@ enum class EStatusCondition : uint8
 {
 	None = 0 UMETA(Hidden),
 	Stunned = 1,
+	Chilled = 2,
+	Frozen = 3,
 };
 ENUM_CLASS_FLAGS(EStatusCondition)
 
@@ -42,8 +44,11 @@ protected:
 
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "Conditions")
-	void ApplyEffect(TSubclassOf<UHStatusEffect> EffectClass, AActor* SourceActor, float Duration);
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+	void ApplyEffectFromClass(TSubclassOf<UHStatusEffect> EffectClass, AActor* SourceActor, float Duration);
+
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+	void ApplyEffect(UHStatusEffect* Effect, AActor* SourceActor, float Duration);
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

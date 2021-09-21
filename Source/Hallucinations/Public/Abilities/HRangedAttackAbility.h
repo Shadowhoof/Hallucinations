@@ -26,7 +26,6 @@ protected:
 
 	virtual void FinishLocationAttack(const FVector& TargetLocation, const FVector& SpawnOrWeaponLocation) override;
 
-	AHProjectile* CreateProjectile(const FVector& TargetLocation, const FVector& SpawnLocation, bool MatchSocketHeight);
+	IHAbilityActorInterface* CreateProjectile(const FVector& TargetLocation, const FVector& SpawnLocation, bool MatchSocketHeight);
 
-	virtual FProjectileData GetProjectileData() const;
 };

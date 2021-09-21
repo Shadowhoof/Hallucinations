@@ -23,6 +23,9 @@
 namespace CharacterConstants
 {
 	const float BoxExtraExtent = 50.f;
+
+	// FIXME - this should probably be in movement component
+	const float ChilledMoveSpeedMultiplier = 0.5f;
 }
 
 
@@ -104,21 +107,34 @@ void AHCharacter::OnAttackEnd(const FAttackResult& AttackResult)
 
 void AHCharacter::OnConditionApplied(EStatusCondition Condition)
 {
-	if (Condition == EStatusCondition::Stunned)
+	switch (Condition)
 	{
+	case EStatusCondition::Stunned:
 		AttackComponent->StopAttacking(true);
 		FollowComponent->Interrupt();
 		AbilityComponent->Interrupt();
 		GetCharacterMovement()->DisableMovement();
+		break;
+	case EStatusCondition::Chilled:
+		GetCharacterMovement()->MaxWalkSpeed *= CharacterConstants::ChilledMoveSpeedMultiplier;
+		break;
+	default:
+		break;
 	}
 }
 
 void AHCharacter::OnConditionRemoved(EStatusCondition Condition)
 {
-	if (Condition == EStatusCondition::Stunned)
+	switch (Condition)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Setting default movement mode"));
+	case EStatusCondition::Stunned:
 		GetCharacterMovement()->SetDefaultMovementMode();
+		break;
+	case EStatusCondition::Chilled:
+		GetCharacterMovement()->MaxWalkSpeed *= 1.f / CharacterConstants::ChilledMoveSpeedMultiplier;
+		break; 
+	default:
+		break;
 	}
 }
 
@@ -136,11 +152,6 @@ FVector AHCharacter::GetTargetLocation(AActor* RequestedBy) const
 float AHCharacter::GetCurrentDamage() const
 {
 	return FMath::RandRange(MinDamage, MaxDamage);
-}
-
-float AHCharacter::GetAttackSpeed() const
-{
-	return AttackSpeed;
 }
 
 AActor* AHCharacter::GetTargetActor() const

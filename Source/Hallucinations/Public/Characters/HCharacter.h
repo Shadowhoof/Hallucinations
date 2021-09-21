@@ -74,9 +74,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float MaxDamage = 0.f;
 
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	float AttackSpeed = 1.f;
-
 public:
 	
 	UFUNCTION(BlueprintCallable)
@@ -88,8 +85,6 @@ public:
 	FCharacterDeathEvent DeathEvent;
 
 	virtual float GetCurrentDamage() const;
-
-	virtual float GetAttackSpeed() const;
 
 	virtual AActor* GetTargetActor() const;
 
@@ -109,7 +104,7 @@ public:
 	 * until its current task is finished (i.e. it's in the middle of an attack or in the middle of a spell cast
 	 * or it's stunned and is unable to act altogether) */
 	bool IsBusy() const;
-
-	void IgnoreActorWhenMoving(AActor* Actor);
 	
+	void IgnoreActorWhenMoving(AActor* Actor);
+
 };

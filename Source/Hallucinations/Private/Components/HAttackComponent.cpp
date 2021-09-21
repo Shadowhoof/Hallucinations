@@ -9,15 +9,18 @@
 #include "Utils/HUtils.h"
 #include "HConstants.h"
 #include "Engine/World.h"
+#include "Utils/HLogUtils.h"
 
 DEFINE_LOG_CATEGORY(LogAttack);
+
+const float UHAttackComponent::ChilledAttackSpeedMultiplier = 2.0;
 
 // Sets default values for this component's properties
 UHAttackComponent::UHAttackComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	AttackDelay = 1.f;
+	BaseAttackDelay = 1.f;
 
 	TargetActor = nullptr;
 	TargetLocation = FHConstants::NullVector;
@@ -64,7 +67,7 @@ void UHAttackComponent::BeginPlay()
 
 			UAnimMontage* AttackAnimation = Weapon->GetAttackAnimation();
 			if (AttackAnimation) {
-				AttackDelay = AttackAnimation->GetSectionLength(0);
+				BaseAttackDelay = AttackAnimation->GetSectionLength(0);
 			}
 		} else {
 			UE_LOG(LogAttack, Warning, TEXT("Actor %s with attack component has no weapon"), *GetOwner()->GetName());
@@ -282,6 +285,18 @@ AHCharacter* UHAttackComponent::GetCharacter() const
 	return Cast<AHCharacter>(GetOwner());
 }
 
+float UHAttackComponent::CalculateAttackDelay() const
+{
+	bool IsChilled = GetCharacter()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
+	return IsChilled ? BaseAttackDelay * ChilledAttackSpeedMultiplier : BaseAttackDelay;
+}
+
+float UHAttackComponent::CalculateAttackSpeed() const
+{
+	bool IsChilled = GetCharacter()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
+	return IsChilled ? BaseAttackSpeed * ChilledAttackSpeedMultiplier : BaseAttackSpeed;
+}
+
 void UHAttackComponent::StartAttack()
 {
 	if (!CanStartAttack())
@@ -289,9 +304,14 @@ void UHAttackComponent::StartAttack()
 		return;
 	}
 
+	float AttackDelay = CalculateAttackDelay();
 	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &UHAttackComponent::PerformAttack, AttackDelay);
 	bIsAttacking = true;
 
+	float AttackSpeed = CalculateAttackSpeed();
+	GetWorld()->GetTimerManager().SetTimer(AttackCooldownTimerHandle, this, &UHAttackComponent::OnAttackCooldownOver, AttackSpeed);
+	bIsAttackOnCooldown = true;
+	
 	// Disable movement until contact frame
 	GetCharacter()->GetFollowComponent()->LockMovement();
 
@@ -299,7 +319,8 @@ void UHAttackComponent::StartAttack()
 	UAnimMontage* AttackAnimation = Weapon->GetAttackAnimation();
 	if (AttackAnimation)
 	{
-		GetCharacter()->PlayAnimMontage(AttackAnimation);
+		float AnimationPlayRate = BaseAttackSpeed / AttackSpeed;
+		GetCharacter()->PlayAnimMontage(AttackAnimation, AnimationPlayRate);
 	}
 	
 	AttackStartedEvent.Broadcast();
@@ -329,14 +350,6 @@ void UHAttackComponent::PerformAttack()
 		break;
 	case EAttackMode::None:
 		break;
-	}
-
-	const float AttackCooldown = GetCharacter()->GetAttackSpeed() - AttackDelay;
-	if (AttackCooldown > 0.0)
-	{
-		GetWorld()->GetTimerManager().SetTimer(AttackCooldownTimerHandle, this,
-		                                       &UHAttackComponent::OnAttackCooldownOver, AttackCooldown);
-		bIsAttackOnCooldown = true;
 	}
 
 	if (bIsAttackCancelPending)

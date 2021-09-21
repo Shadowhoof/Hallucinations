@@ -25,7 +25,7 @@ void AHFlamestrikeActor::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	
-	UHAbilityStatics::AreaOfEffectDamage(GetActorLocation(), Damage, Radius, this, GetInstigatorController(),
+	UHAbilityStatics::DealAreaOfEffectDamage(GetActorLocation(), Damage, Radius, this, GetInstigatorController(),
 										 UDamageType::StaticClass());
 
 	UParticleSystemComponent* ParticleSystem = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionFX, GetActorLocation());

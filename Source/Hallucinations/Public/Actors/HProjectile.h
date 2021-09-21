@@ -36,11 +36,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& HitResult);
 
+	virtual void OnSuccessfulHit(AActor* HitActor, const FHitResult& HitResult);
+	
 public:	
 	
 	FProjectileData Data;
 
 	virtual void IgnoreActor(AActor* Actor) override;
+
 };

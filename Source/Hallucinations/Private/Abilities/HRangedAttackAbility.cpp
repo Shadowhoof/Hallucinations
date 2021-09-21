@@ -16,7 +16,7 @@ void UHRangedAttackAbility::FinishLocationAttack(const FVector& TargetLocation, 
 	CreateProjectile(TargetLocation, SpawnOrWeaponLocation, true);
 }
 
-AHProjectile* UHRangedAttackAbility::CreateProjectile(const FVector& TargetLocation, const FVector& SpawnLocation, bool MatchSocketHeight)
+IHAbilityActorInterface* UHRangedAttackAbility::CreateProjectile(const FVector& TargetLocation, const FVector& SpawnLocation, bool MatchSocketHeight)
 {
 	FRotator Rotation = (TargetLocation - SpawnLocation).Rotation();
 	if (MatchSocketHeight)
@@ -29,21 +29,13 @@ AHProjectile* UHRangedAttackAbility::CreateProjectile(const FVector& TargetLocat
 	SpawnParams.Instigator = Caster;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Owner = Caster;
-	AHProjectile* Projectile = Cast<AHProjectile>(GetWorld()->SpawnActor(ProjectileClass, &SpawnLocation, &Rotation, SpawnParams));
+	IHAbilityActorInterface* Projectile = Cast<IHAbilityActorInterface>(GetWorld()->SpawnActor(ProjectileClass, &SpawnLocation, &Rotation, SpawnParams));
 	if (!Projectile)
 	{
 		UE_LOG(LogAbility, Log, TEXT("Failed to create projectile of class %s for ability %s"), *ProjectileClass->GetName(), *GetSkillNameAsString())
 		return nullptr;
 	}
 
-	Projectile->Data = GetProjectileData();
+	Projectile->Initialize(this, Caster);
 	return Projectile;
-}
-
-FProjectileData UHRangedAttackAbility::GetProjectileData() const
-{
-	FProjectileData Data;
-	Data.Damage = AbilityComponent->GetCaster()->GetCurrentDamage();
-	Data.DamageType = UDamageType::StaticClass();
-	return Data;
 }

@@ -4,21 +4,31 @@
 
 #include "CoreMinimal.h"
 #include "StatusEffects/HStatusEffect.h"
-#include "HStunEffect.generated.h"
+#include "HConditionEffect.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HALLUCINATIONS_API UHStunEffect : public UHStatusEffect
+class HALLUCINATIONS_API UHConditionEffect : public UHStatusEffect
 {
 	GENERATED_BODY()
 
 public:
+
+	UHConditionEffect();
 	
+	void Initialize(EStatusCondition StatusCondition);
+	
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Status")
+	EStatusCondition Condition;
+
 	virtual void Begin(AActor* Affected, AActor* Source, float Duration) override;
 
 	virtual void End() override;
 
 	virtual uint8 GetActiveConditions() const override;
+	
 };

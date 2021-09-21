@@ -14,15 +14,22 @@ UHStatusEffectComponent::UHStatusEffectComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UHStatusEffectComponent::ApplyEffect(TSubclassOf<UHStatusEffect> EffectClass, AActor* SourceActor, float Duration)
+void UHStatusEffectComponent::ApplyEffectFromClass(TSubclassOf<UHStatusEffect> EffectClass, AActor* SourceActor,
+	float Duration)
 {
 	UHStatusEffect* Effect = NewObject<UHStatusEffect>(this, EffectClass);
+	ApplyEffect(Effect, SourceActor, Duration);
+}
+
+void UHStatusEffectComponent::ApplyEffect(UHStatusEffect* Effect, AActor* SourceActor, float Duration)
+{
+	ensure(Effect && !Effect->IsActive());
 	Effect->Begin(GetOwner(), SourceActor, Duration);
 	ActiveEffects.Add(Effect);
 }
 
 void UHStatusEffectComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	for (UHStatusEffect* Effect : ActiveEffects)
 	{

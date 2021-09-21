@@ -43,7 +43,7 @@ bool UHFollowComponent::CanIssueMoveOrder() const
 
 bool UHFollowComponent::CanRotate() const
 {
-	return !GetCharacter()->IsBusy();
+	return !GetCharacter()->IsStunned();
 }
 
 void UHFollowComponent::MoveToActor(AActor* Actor)

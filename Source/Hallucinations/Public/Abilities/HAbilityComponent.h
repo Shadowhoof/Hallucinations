@@ -80,8 +80,8 @@ protected:
 
 private:
 
-	void UseSpellAbility(UHAbility* Ability);
-	void UseAttackAbility(UHAbility* Ability);
+	void UseSpellAbility(UHAbility* BaseAbility);
+	void UseAttackAbility(UHAbility* UncastAbility);
 
 	FAbilityTargetParameters CurrentTargetParams;
 
@@ -90,6 +90,13 @@ private:
 
 	UFUNCTION()
 	void OnAttackEnded(const FAttackResult& AttackResult);
+
+	float GetCastTime(UHSpellAbility* Ability) const;
+
+	UAnimMontage* GetCastAnimation(UHSpellAbility* Ability) const;
+
+	// constants
+	static const float ChilledCastTimeMultiplier;
 	
 };
 
