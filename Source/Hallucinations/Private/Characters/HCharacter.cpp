@@ -16,6 +16,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Components/BoxComponent.h"
+#include "Core/HInteractable.h"
 #include "Utils/HLogUtils.h"
 #include "Weapons/HWeapon.h"
 
@@ -208,4 +209,19 @@ void AHCharacter::IgnoreActorWhenMoving(AActor* Actor)
 {
 	GetCapsuleComponent()->IgnoreActorWhenMoving(Actor, true);
 	GetMesh()->IgnoreActorWhenMoving(Actor, true);
+}
+
+void AHCharacter::InteractWith(AHCharacter* Interactor)
+{
+	// do nothing for now, this should be an attack command
+}
+
+float AHCharacter::GetInteractionRange() const
+{
+	return InteractableConstants::DefaultInteractionRange;
+}
+
+FVector AHCharacter::GetInteractableLocation() const
+{
+	return GetActorLocation();
 }

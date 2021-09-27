@@ -2,11 +2,13 @@
 
 
 #include "Components/HFollowComponent.h"
-#include "Components/HHealthComponent.h"
 #include "HConstants.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Characters/HCharacter.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Core/HInteractable.h"
+#include "Characters/HPlayerCharacter.h"
+#include "Utils/HLogUtils.h"
 
 // Sets default values for this component's properties
 UHFollowComponent::UHFollowComponent()
@@ -54,6 +56,7 @@ void UHFollowComponent::MoveToActor(AActor* Actor)
 	}
 	
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(GetCharacter()->Controller, Actor);
+	FollowedActor = Actor;
 	ResetRotationFields();
 }
 
@@ -65,12 +68,14 @@ void UHFollowComponent::MoveToLocation(const FVector& Location)
 	}
 	
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetCharacter()->Controller, Location);
+	FollowedActor = nullptr;
 	ResetRotationFields();
 }
 
 void UHFollowComponent::StopMovement()
 {
 	GetCharacter()->GetMovementComponent()->StopActiveMovement();
+	FollowedActor = nullptr;
 }
 
 void UHFollowComponent::LockMovement()
@@ -127,11 +132,21 @@ void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 			GetOwner()->SetActorRotation(FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 20.0));
 		}
 	}
+
+	if (FollowedActor)
+	{
+		IHInteractable* InteractableActor = Cast<IHInteractable>(FollowedActor);
+		if (InteractableActor && InteractableActor->IsInRange(GetCharacter()->GetActorLocation()))
+		{
+			InteractableActor->InteractWith(GetCharacter());
+			FollowedActor = nullptr;
+		}
+	}
 }
 
 bool UHFollowComponent::CanBeFollowed(AActor* Target)
 {
-	return Target && Target->GetComponentByClass(UHHealthComponent::StaticClass());
+	return Target && Target->Implements<UHInteractable>();
 }
 
 AHCharacter* UHFollowComponent::GetCharacter() const

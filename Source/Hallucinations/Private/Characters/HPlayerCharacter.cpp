@@ -20,6 +20,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Core/HGameMode.h"
+#include "Core/HInteractable.h"
 #include "Core/HSaveGame.h"
 #include "Core/Subsystems/HSaveLoadSubsystem.h"
 #include "Utils/HLogUtils.h"
@@ -206,6 +207,11 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
 			{
 				FollowComponent->MoveToLocation(MouseoverData.ImpactPoint);
 			}
+		}
+
+		if (IHInteractable* Interactable = Cast<IHInteractable>(MouseoverActor); Interactable)
+		{
+			
 		}
 	}
 }

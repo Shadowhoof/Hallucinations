@@ -7,6 +7,7 @@
 #include "HFollowComponent.generated.h"
 
 
+class IHInteractable;
 class AHCharacter;
 
 
@@ -30,6 +31,9 @@ protected:
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	FVector RotationLocation;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	AActor* FollowedActor;
 
 	UFUNCTION()
 	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);

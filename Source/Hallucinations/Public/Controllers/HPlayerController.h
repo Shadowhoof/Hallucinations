@@ -23,15 +23,6 @@ class HALLUCINATIONS_API AHPlayerController : public APlayerController
 public:
 
 	AHPlayerController();
-	
-protected:
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnPawnDeath(AHCharacter* Killer, AActor* Victim);
-
-	AHPlayerCharacter* GetPlayerCharacter() const;
-	
-public:
 
 	virtual void PlayerTick(float DeltaSeconds) override;
 
@@ -39,9 +30,24 @@ public:
 	FHitResult MouseoverData;
 
 	virtual void OnPossess(APawn* InPawn) override;
-	
+
 	virtual void OnUnPossess() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPlayerRestart();
+	
+protected:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPawnDeath(AHCharacter* Killer, AActor* Victim);
+
+	AHPlayerCharacter* GetPlayerCharacter() const;
+
+private:
+	
+	UPROPERTY()
+	AActor* HoveredActor;
+
+	void HandleHoveredActor(AActor* Actor);
+	
 };

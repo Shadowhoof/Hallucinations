@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "StatusEffects/HStatusEffectComponent.h"
 #include "Components/HAttackComponent.h"
+#include "Core/HInteractable.h"
+
 #include "HCharacter.generated.h"
 
 class UBoxComponent;
@@ -22,7 +24,7 @@ class AHCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterDeathEvent, AHCharacter*, Victim, AActor*, Killer);
 
 UCLASS()
-class HALLUCINATIONS_API AHCharacter : public ACharacter
+class HALLUCINATIONS_API AHCharacter : public ACharacter, public IHInteractable
 {
 	GENERATED_BODY()
 
@@ -107,4 +109,10 @@ public:
 	
 	void IgnoreActorWhenMoving(AActor* Actor);
 
+	virtual void InteractWith(AHCharacter* Interactor) override;
+
+	virtual float GetInteractionRange() const override;
+
+	virtual FVector GetInteractableLocation() const override;
+	
 };

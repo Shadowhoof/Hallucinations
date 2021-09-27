@@ -6,7 +6,7 @@
 #include "Characters/HPlayerCharacter.h"
 
 #include "Navigation/PathFollowingComponent.h"
-#include "GameFramework/PawnMovementComponent.h"
+#include "Utils/HLogUtils.h"
 
 AHPlayerController::AHPlayerController()
 {
@@ -16,6 +16,32 @@ AHPlayerController::AHPlayerController()
 AHPlayerCharacter* AHPlayerController::GetPlayerCharacter() const
 {
 	return Cast<AHPlayerCharacter>(GetCharacter());
+}
+
+void AHPlayerController::HandleHoveredActor(AActor* Actor)
+{
+	if (HoveredActor == Actor)
+	{
+		return;
+	}
+
+	if (HoveredActor)
+	{
+		if (IHInteractable* InteractableActor = Cast<IHInteractable>(HoveredActor); InteractableActor)
+		{
+			InteractableActor->Execute_OnHoverEnd(HoveredActor);
+		}
+	}
+
+	if (Actor)
+	{
+		if (IHInteractable* InteractableActor = Cast<IHInteractable>(Actor); InteractableActor)
+		{
+			InteractableActor->Execute_OnHoverBegin(Actor);
+		}
+	}
+
+	HoveredActor = Actor;
 }
 
 void AHPlayerController::PlayerTick(float DeltaSeconds)
@@ -28,6 +54,7 @@ void AHPlayerController::PlayerTick(float DeltaSeconds)
 	GetHitResultAtScreenPosition(FVector2D(ScreenSpaceX, ScreenSpaceY), CurrentClickTraceChannel, QueryParams, HitResult);
 
 	MouseoverData = HitResult;
+	HandleHoveredActor(MouseoverData.GetActor());
 
 	Super::PlayerTick(DeltaSeconds);
 }
