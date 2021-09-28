@@ -39,6 +39,7 @@ FVector AHLootableItem::GetInteractableLocation() const
 void AHLootableItem::Initialize(const FInventoryItem ProvidedData)
 {
 	ItemData = ProvidedData;
+	StaticMeshComponent->SetStaticMesh(ItemData.Mesh);
 }
 
 AHLootableItem* AHLootableItem::SpawnItem(const UObject* WorldContextObject, TSubclassOf<AHLootableItem> ItemClass, const FInventoryItem& Data, const FTransform& Transform)
@@ -53,6 +54,4 @@ AHLootableItem* AHLootableItem::SpawnItem(const UObject* WorldContextObject, TSu
 void AHLootableItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	StaticMeshComponent->SetStaticMesh(ItemData.Mesh);
 }

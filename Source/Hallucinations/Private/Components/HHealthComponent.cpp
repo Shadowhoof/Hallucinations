@@ -3,6 +3,7 @@
 
 #include "Components/HHealthComponent.h"
 #include "Characters/HCharacter.h"
+#include "Core/HGameMode.h"
 
 DEFINE_LOG_CATEGORY(LogRagdoll);
 
@@ -53,6 +54,12 @@ void UHHealthComponent::ApplyHealthChange(float Delta, const UDamageType* Damage
 	UE_LOG(LogTemp, Log, TEXT("Actor %s health changed, delta: %.2f, remaining health: %.2f"), *GetOwner()->GetName(), Delta, CurrentHealth);
 	if (CurrentHealth <= 0.f)
 	{
+		AHGameMode* GameMode = Cast<AHGameMode>(GetWorld()->GetAuthGameMode());
+		if (GameMode)
+		{
+			GameMode->OnActorDeath(GetOwner(), Source);
+		}
+		
 		OnActorDeath.Broadcast(GetOwner(), Source);
 		UE_LOG(LogTemp, Log, TEXT("Actor %s died, killer is %s"), *GetOwner()->GetName(), *Source->GetName())
 	}

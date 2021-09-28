@@ -6,7 +6,16 @@
 #include "GameFramework/GameModeBase.h"
 #include "HGameMode.generated.h"
 
+class AHLootableItem;
+class UDataTable;
 class UHSaveGame;
+class AHCharacter;
+
+namespace LootConstants
+{
+	const float DropRadius = 100.f;
+}
+
 /**
  * 
  */
@@ -19,8 +28,20 @@ public:
 
 	AHGameMode();
 
+	void OnActorDeath(AActor* Victim, AActor* Killer);
+	
 protected:
 	
 	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Loot")
+	UDataTable* LootTable;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Loot")
+	TSubclassOf<AHLootableItem> LootClass;
+
+private:
+
+	void DropLoot(AHCharacter* Victim);
+	
 };
