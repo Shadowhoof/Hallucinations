@@ -25,6 +25,11 @@ void AHGameMode::OnActorDeath(AActor* Victim, AActor* Killer)
 	}
 }
 
+TSubclassOf<AHLootableItem> AHGameMode::GetLootClass() const
+{
+	return LootClass;
+}
+
 void AHGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
 {
 	Super::FinishRestartPlayer(NewPlayer, StartRotation);
@@ -39,7 +44,7 @@ void AHGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& Sta
 	}
 }
 
-void AHGameMode::DropLoot(AHCharacter* Victim)
+void AHGameMode::SpawnRandomItem(const FVector& Location)
 {
 	if (!LootTable || !LootClass)
 	{
@@ -51,16 +56,21 @@ void AHGameMode::DropLoot(AHCharacter* Victim)
 	{
 		return;
 	}
-	
+
 	TArray<FName> KeyArray;
 	RowMap.GetKeys(KeyArray);
-	uint32 RandomIndex = FMath::RandRange(0, KeyArray.Num());
+	uint32 RandomIndex = FMath::RandRange(0, KeyArray.Num() - 1);
 	FInventoryItem* ItemData = reinterpret_cast<FInventoryItem*>(RowMap[KeyArray[RandomIndex]]);
 	if (ItemData)
 	{
 		UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 		FNavLocation RandomNavLocation;
-		NavSystem->GetRandomPointInNavigableRadius(Victim->GetActorLocation(), LootConstants::DropRadius, RandomNavLocation);
-		AHLootableItem::SpawnItem(this, LootClass, *ItemData, FTransform(RandomNavLocation.Location));
+		NavSystem->GetRandomPointInNavigableRadius(Location, LootConstants::DropRadius, RandomNavLocation);
+		AHLootableItem::SpawnItemFromData(this, LootClass, *ItemData, FTransform(RandomNavLocation.Location));
 	}
+}
+
+void AHGameMode::DropLoot(AHCharacter* Victim)
+{
+	SpawnRandomItem(Victim->GetActorLocation());
 }

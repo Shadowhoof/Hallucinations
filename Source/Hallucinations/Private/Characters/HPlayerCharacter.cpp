@@ -19,9 +19,8 @@
 #include "Components/HHealthComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Core/HGameMode.h"
+#include "Inventory/HInventoryComponent.h"
 #include "Core/HInteractable.h"
-#include "Core/HSaveGame.h"
 #include "Core/Subsystems/HSaveLoadSubsystem.h"
 #include "Utils/HLogUtils.h"
 
@@ -41,6 +40,7 @@ AHPlayerCharacter::AHPlayerCharacter()
 
 	AttributeComponent = CreateDefaultSubobject<UHAttributeComponent>(TEXT("AttributeComponent"));
 	ActionBarComponent = CreateDefaultSubobject<UHActionBarComponent>(TEXT("ActionBarComponent"));
+	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
@@ -96,6 +96,7 @@ void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction<FUseAbilityDelegate>("Ability9", IE_Pressed, this, &AHPlayerCharacter::UseAbility, 8);
 
 	PlayerInputComponent->BindAction("SkillBook", IE_Pressed, this, &AHPlayerCharacter::ToggleSkillBook);
+	PlayerInputComponent->BindAction("Inventory", IE_Pressed, this, &AHPlayerCharacter::ToggleInventory);
 }
 
 AActor* AHPlayerCharacter::GetTargetActor() const

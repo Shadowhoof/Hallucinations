@@ -7,8 +7,8 @@
 #include "Characters/HPlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HEnumTools.h"
-
-DEFINE_LOG_CATEGORY(LogInventory);
+#include "Inventory/HInventoryItem.h"
+#include "Core/HLogCategories.h"
 
 AHLootableItem::AHLootableItem()
 {
@@ -21,9 +21,18 @@ AHLootableItem::AHLootableItem()
 
 void AHLootableItem::InteractWith(AHCharacter* Interactor)
 {
-	UE_LOG(LogInventory, Log, TEXT("Item %s of quality %s was picked up by actor %s"), *ItemData.Name.ToString(), *EnumToString(ItemData.Quality), *Interactor->GetName());
+	UHInventoryComponent* InventoryComponent = Cast<UHInventoryComponent>(Interactor->GetComponentByClass(UHInventoryComponent::StaticClass()));
+	if (!InventoryComponent)
+	{
+		return;
+	}
+
+	bool bIsPickedUp = InventoryComponent->InsertItem(ItemData);
 	Execute_OnHoverEnd(this);
-	Destroy();
+	if (bIsPickedUp)
+	{
+		Destroy();
+	}
 }
 
 float AHLootableItem::GetInteractionRange() const
@@ -36,19 +45,26 @@ FVector AHLootableItem::GetInteractableLocation() const
 	return GetActorLocation();
 }
 
-void AHLootableItem::Initialize(const FInventoryItem ProvidedData)
+void AHLootableItem::Initialize(UHInventoryItem* ProvidedData)
 {
 	ItemData = ProvidedData;
-	StaticMeshComponent->SetStaticMesh(ItemData.Mesh);
+	StaticMeshComponent->SetStaticMesh(ItemData->GetData().Mesh);
 }
 
-AHLootableItem* AHLootableItem::SpawnItem(const UObject* WorldContextObject, TSubclassOf<AHLootableItem> ItemClass, const FInventoryItem& Data, const FTransform& Transform)
+AHLootableItem* AHLootableItem::SpawnItemFromData(const UObject* WorldContextObject, TSubclassOf<AHLootableItem> ItemClass, const FInventoryItem& Data, const FTransform& Transform)
+{
+	UHInventoryItem* Item = UHInventoryItem::CreateItem(Data);
+	return SpawnItemFromObject(WorldContextObject, ItemClass, Item, Transform);
+}
+
+AHLootableItem* AHLootableItem::SpawnItemFromObject(const UObject* WorldContextObject,
+	TSubclassOf<AHLootableItem> ItemClass, UHInventoryItem* Item, const FTransform& Transform)
 {
 	AActor* Actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(WorldContextObject, ItemClass, Transform, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
-	AHLootableItem* Item = Cast<AHLootableItem>(Actor);
-	Item->Initialize(Data);
-	UGameplayStatics::FinishSpawningActor(Item, Transform);
-	return Item;
+	AHLootableItem* LootableItem = Cast<AHLootableItem>(Actor);
+	LootableItem->Initialize(Item);
+	UGameplayStatics::FinishSpawningActor(LootableItem, Transform);
+	return LootableItem;
 }
 
 void AHLootableItem::BeginPlay()

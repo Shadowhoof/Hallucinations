@@ -6,6 +6,7 @@
 #include "Characters/HCharacter.h"
 #include "HPlayerCharacter.generated.h"
 
+class UHInventoryComponent;
 class UHSaveGame;
 class UCameraComponent;
 class USpringArmComponent;
@@ -41,6 +42,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHActionBarComponent* ActionBarComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHInventoryComponent* InventoryComponent;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MinCameraDistance;
 
@@ -63,6 +67,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void ToggleSkillBook();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void ToggleInventory();
 
 public:
 	virtual void Tick(float DeltaTime) override;

@@ -29,6 +29,8 @@ public:
 	AHGameMode();
 
 	void OnActorDeath(AActor* Victim, AActor* Killer);
+
+	TSubclassOf<AHLootableItem> GetLootClass() const;
 	
 protected:
 	
@@ -37,9 +39,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Loot")
 	UDataTable* LootTable;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Loot")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loot")
 	TSubclassOf<AHLootableItem> LootClass;
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnRandomItem(const FVector& Location);
+	
 private:
 
 	void DropLoot(AHCharacter* Victim);

@@ -82,11 +82,11 @@ void AHCharacter::BeginPlay()
 void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
 {
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	BoxComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetAllBodiesSimulatePhysics(true);
-
+	
 	StatusEffectComponent->OnDeath();
 	
 	DetachFromControllerPendingDestroy();
