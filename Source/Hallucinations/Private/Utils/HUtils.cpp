@@ -4,6 +4,7 @@
 #include "Utils/HUtils.h"
 
 #include "HConstants.h"
+#include "NavigationSystem.h"
 #include "Components/HHealthComponent.h"
 
 bool UHUtils::CanBeTargeted(AActor* TargetActor)
@@ -30,5 +31,13 @@ bool UHUtils::AreEnemies(AActor* First, AActor* Second)
 bool UHUtils::IsVectorValid(const FVector& Vector)
 {
 	return Vector != FHConstants::NullVector;
+}
+
+void UHUtils::GetRandomPointInNavigableRadius(UObject* WorldContextObject, const FVector& Origin, float Radius, FVector& OutLocation)
+{
+	UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(WorldContextObject->GetWorld());
+	FNavLocation RandomNavLocation;
+	NavSystem->GetRandomPointInNavigableRadius(Origin, Radius, RandomNavLocation);
+	OutLocation = RandomNavLocation.Location;
 }
 

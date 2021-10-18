@@ -6,6 +6,7 @@
 #include "Characters/HCharacter.h"
 #include "HPlayerCharacter.generated.h"
 
+class UHEquipmentComponent;
 class UHInventoryComponent;
 class UHSaveGame;
 class UCameraComponent;
@@ -44,6 +45,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHInventoryComponent* InventoryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHEquipmentComponent* EquipmentComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MinCameraDistance;

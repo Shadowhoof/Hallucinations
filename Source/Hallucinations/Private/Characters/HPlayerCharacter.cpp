@@ -20,6 +20,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Inventory/HInventoryComponent.h"
+#include "Inventory/HEquipmentComponent.h"
 #include "Core/HInteractable.h"
 #include "Core/Subsystems/HSaveLoadSubsystem.h"
 #include "Utils/HLogUtils.h"
@@ -41,6 +42,7 @@ AHPlayerCharacter::AHPlayerCharacter()
 	AttributeComponent = CreateDefaultSubobject<UHAttributeComponent>(TEXT("AttributeComponent"));
 	ActionBarComponent = CreateDefaultSubobject<UHActionBarComponent>(TEXT("ActionBarComponent"));
 	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
+	EquipmentComponent = CreateDefaultSubobject<UHEquipmentComponent>(TEXT("EquipmentComponent"));
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 

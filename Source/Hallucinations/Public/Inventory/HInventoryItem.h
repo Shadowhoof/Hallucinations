@@ -2,6 +2,7 @@
 
 #include "Engine/DataTable.h"
 #include "Inventory/HInventoryComponent.h"
+#include "HEquipmentType.h"
 #include "HInventoryItem.generated.h"
 
 class UTexture2D;
@@ -35,6 +36,9 @@ struct FInventoryItem : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture2D* Icon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EEquipmentType EquipmentType;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FInventoryDimensions Dimensions;
 	

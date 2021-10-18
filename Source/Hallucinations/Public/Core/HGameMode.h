@@ -11,11 +11,6 @@ class UDataTable;
 class UHSaveGame;
 class AHCharacter;
 
-namespace LootConstants
-{
-	const float DropRadius = 100.f;
-}
-
 /**
  * 
  */

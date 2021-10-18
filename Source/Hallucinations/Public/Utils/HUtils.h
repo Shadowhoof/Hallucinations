@@ -26,4 +26,6 @@ public:
 	static bool AreEnemies(AActor* First, AActor* Second);
 
 	static bool IsVectorValid(const FVector& Vector);
+
+	static void GetRandomPointInNavigableRadius(UObject* WorldContextObject, const FVector& Origin, float Radius, FVector& OutLocation);
 };

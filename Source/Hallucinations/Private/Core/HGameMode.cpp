@@ -9,6 +9,12 @@
 #include "Controllers/HPlayerController.h"
 #include "Engine/DataTable.h"
 #include "Inventory/HLootableItem.h"
+#include "Utils/HUtils.h"
+
+namespace LootConstants
+{
+	const float DropRadius = 100.f;
+}
 
 AHGameMode::AHGameMode()
 {
@@ -63,10 +69,9 @@ void AHGameMode::SpawnRandomItem(const FVector& Location)
 	FInventoryItem* ItemData = reinterpret_cast<FInventoryItem*>(RowMap[KeyArray[RandomIndex]]);
 	if (ItemData)
 	{
-		UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-		FNavLocation RandomNavLocation;
-		NavSystem->GetRandomPointInNavigableRadius(Location, LootConstants::DropRadius, RandomNavLocation);
-		AHLootableItem::SpawnItemFromData(this, LootClass, *ItemData, FTransform(RandomNavLocation.Location));
+		FVector DropLocation;
+		UHUtils::GetRandomPointInNavigableRadius(this, Location, LootConstants::DropRadius, DropLocation);
+		AHLootableItem::SpawnItemFromData(this, LootClass, *ItemData, FTransform(DropLocation));
 	}
 }
 
