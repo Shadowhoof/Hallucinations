@@ -11,6 +11,10 @@
 class UHInventoryItem;
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemEquippedDelegate, UHInventoryItem*, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemUnequippedDelegate, UHInventoryItem*, Item);
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HALLUCINATIONS_API UHEquipmentComponent : public UActorComponent
 {
@@ -34,11 +38,21 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Utility")
 	bool CanEquipItemInSlot(UHInventoryItem* Item, EEquipmentSlot Slot) const;
+
+	UPROPERTY()
+	FItemEquippedDelegate OnItemEquipped;
+
+	UPROPERTY()
+	FItemUnequippedDelegate OnItemUnequipped;
+
+	const TArray<const UHInventoryItem*>& GetEquippedItems() const;
 	
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Equipment")
-	TMap<EEquipmentSlot, UHInventoryItem*> Items;
+	TMap<EEquipmentSlot, UHInventoryItem*> ItemMap;
+
+	TArray<const UHInventoryItem*> ItemArray;
 
 	virtual void BeginPlay() override;
 

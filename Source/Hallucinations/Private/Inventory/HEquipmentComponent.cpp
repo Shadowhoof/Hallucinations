@@ -37,8 +37,20 @@ UHInventoryItem* UHEquipmentComponent::EquipItem(UHInventoryItem* Item, EEquipme
 		return nullptr;
 	}
 	
-	UHInventoryItem* UnequippedItem = Items[Slot];
-	Items[Slot] = Item;
+	UHInventoryItem* UnequippedItem = ItemMap[Slot];
+	if (UnequippedItem)
+	{
+		ItemArray.Remove(UnequippedItem);
+		OnItemUnequipped.Broadcast(UnequippedItem);
+	}
+
+	ItemMap[Slot] = Item;
+	if (Item)
+	{
+		ItemArray.Add(Item);
+		OnItemEquipped.Broadcast(Item);
+	}
+
 	return UnequippedItem;
 }
 
@@ -96,13 +108,18 @@ bool UHEquipmentComponent::CanEquipItemInSlot(UHInventoryItem* Item, EEquipmentS
 	return SlotArray.Contains(Slot);
 }
 
+const TArray<const UHInventoryItem*>& UHEquipmentComponent::GetEquippedItems() const
+{
+	return ItemArray;
+}
+
 void UHEquipmentComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	for (EEquipmentSlot Slot : TEnumRange<EEquipmentSlot>())
 	{
-		Items.Add(Slot, nullptr);
+		ItemMap.Add(Slot, nullptr);
 	}
 }
 

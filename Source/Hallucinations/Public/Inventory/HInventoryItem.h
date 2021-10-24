@@ -3,6 +3,7 @@
 #include "Engine/DataTable.h"
 #include "Inventory/HInventoryComponent.h"
 #include "HEquipmentType.h"
+#include "Leveling/HAttributeType.h"
 #include "HInventoryItem.generated.h"
 
 class UTexture2D;
@@ -41,6 +42,9 @@ struct FInventoryItem : public FTableRowBase
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FInventoryDimensions Dimensions;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<EAttributeType, float> Stats;
 	
 };
 
