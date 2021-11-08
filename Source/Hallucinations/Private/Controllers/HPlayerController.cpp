@@ -4,6 +4,7 @@
 #include "Controllers/HPlayerController.h"
 #include "HConstants.h"
 #include "Characters/HPlayerCharacter.h"
+#include "Components/HHealthComponent.h"
 
 #include "Navigation/PathFollowingComponent.h"
 #include "Utils/HLogUtils.h"
@@ -61,9 +62,11 @@ void AHPlayerController::PlayerTick(float DeltaSeconds)
 
 void AHPlayerController::OnPossess(APawn* InPawn)
 {
-	if (AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(InPawn); PlayerCharacter)
+	AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(InPawn);
+	if (PlayerCharacter)
 	{
 		PlayerCharacter->DeathEvent.AddDynamic(this, &AHPlayerController::OnPawnDeath);
+		GenericTeamId = FGenericTeamId((uint8) PlayerCharacter->GetHealthComponent()->GetTeam());
 	}
 
 	Super::OnPossess(InPawn);
@@ -84,6 +87,11 @@ void AHPlayerController::OnUnPossess()
 	}
 	
 	Super::OnUnPossess();
+}
+
+FGenericTeamId AHPlayerController::GetGenericTeamId() const
+{
+	return GenericTeamId;
 }
 
 

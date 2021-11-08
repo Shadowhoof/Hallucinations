@@ -3,7 +3,8 @@
 
 #include "Components/HHealthComponent.h"
 #include "Characters/HCharacter.h"
-#include "Core/HGameMode.h"
+#include "Core/GameModes/HGameMode.h"
+#include "Perception/AISense_Damage.h"
 
 DEFINE_LOG_CATEGORY(LogRagdoll);
 
@@ -50,8 +51,21 @@ void UHHealthComponent::ApplyHealthChange(float Delta, const UDamageType* Damage
 	}
 	
 	CurrentHealth += Delta;
-	OnHealthChanged.Broadcast(GetOwner(), Source, Delta);
+	OnHealthChanged.Broadcast(GetOwner(), Instigator, Source, Delta);
 	UE_LOG(LogTemp, Log, TEXT("Actor %s health changed, delta: %.2f, remaining health: %.2f"), *GetOwner()->GetName(), Delta, CurrentHealth);
+
+	if (Delta < 0.f)
+	{
+		// damage has been dealt
+		float Damage = -Delta;
+		AActor* Victim = GetOwner();
+		AActor* InstigatorActor = Instigator ? Instigator->GetPawn() : Source;
+		if (InstigatorActor)
+		{
+			UAISense_Damage::ReportDamageEvent(this, Victim, InstigatorActor, Damage, InstigatorActor->GetActorLocation(), Victim->GetActorLocation());
+		}
+	}
+	
 	if (CurrentHealth <= 0.f)
 	{
 		AHGameMode* GameMode = Cast<AHGameMode>(GetWorld()->GetAuthGameMode());

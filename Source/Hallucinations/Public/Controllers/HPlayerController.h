@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 
+#include "GenericTeamAgentInterface.h"
 #include "GameFramework/PlayerController.h"
 #include "HPlayerController.generated.h"
 
@@ -16,7 +17,7 @@ class AHCharacter;
  * 
  */
 UCLASS()
-class HALLUCINATIONS_API AHPlayerController : public APlayerController
+class HALLUCINATIONS_API AHPlayerController : public APlayerController, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -35,6 +36,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPlayerRestart();
+
+	virtual FGenericTeamId GetGenericTeamId() const override;
 	
 protected:
 
@@ -49,5 +52,7 @@ private:
 	AActor* HoveredActor;
 
 	void HandleHoveredActor(AActor* Actor);
+
+	FGenericTeamId GenericTeamId;
 	
 };

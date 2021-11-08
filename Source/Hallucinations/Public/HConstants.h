@@ -7,6 +7,14 @@
 #define ECC_Click ECC_GameTraceChannel1
 #define ECC_Projectile ECC_GameTraceChannel2
 
+namespace HallucinationsConstants
+{
+	// invalid values
+	
+	const FVector InvalidVector(FLT_MAX, FLT_MAX, FLT_MAX);
+
+}
+
 struct FHConstants
 {
 	

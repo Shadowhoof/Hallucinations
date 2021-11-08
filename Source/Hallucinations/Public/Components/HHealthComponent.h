@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "HHealthComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHealthChanged, AActor*, Target, AActor*, Source, float, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, TargetActor, AController*, Instigator, AActor*, SourceActor, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActorDeath, AActor*, Victim, AActor*, Killer);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogRagdoll, Log, All);
