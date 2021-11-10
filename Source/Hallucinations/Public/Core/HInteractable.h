@@ -29,7 +29,7 @@ public:
 
 	virtual void InteractWith(AHCharacter* Interactor) = 0;
 
-	virtual float GetInteractionRange() const = 0;
+	virtual float GetInteractionRange() const;
 
 	virtual FVector GetInteractableLocation() const = 0;
 

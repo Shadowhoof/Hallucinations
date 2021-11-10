@@ -32,6 +32,7 @@ AHPlayerCharacter::AHPlayerCharacter()
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 1500.f;
 	SpringArmComponent->bDoCollisionTest = false;
+	SpringArmComponent->SetUsingAbsoluteRotation(true);
 
 	MinCameraDistance = 300.f;
 	MaxCameraDistance = 2000.f;
@@ -53,8 +54,6 @@ AHPlayerCharacter::AHPlayerCharacter()
 void AHPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SpringArmComponent->SetUsingAbsoluteRotation(true);
 
 	// disable all click collision for local player
 	if (IsLocallyControlled())

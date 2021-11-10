@@ -3,7 +3,7 @@
 
 #include "Inventory/HEquipmentComponent.h"
 
-#include "Core/HGameMode.h"
+#include "Core/GameModes/HGameMode.h"
 #include "Inventory/HInventoryItem.h"
 #include "Inventory/HLootableItem.h"
 #include "Utils/HUtils.h"

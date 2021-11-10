@@ -216,12 +216,12 @@ void AHCharacter::InteractWith(AHCharacter* Interactor)
 	// do nothing for now, this should be an attack command
 }
 
-float AHCharacter::GetInteractionRange() const
-{
-	return InteractableConstants::DefaultInteractionRange;
-}
-
 FVector AHCharacter::GetInteractableLocation() const
 {
 	return GetActorLocation();
+}
+
+const FText& AHCharacter::GetCharacterName() const
+{
+	return Name;
 }

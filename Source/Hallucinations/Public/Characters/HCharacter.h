@@ -29,9 +29,47 @@ class HALLUCINATIONS_API AHCharacter : public ACharacter, public IHInteractable
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
+
 	AHCharacter();
 
+	UFUNCTION(BlueprintCallable)
+	bool IsDead() const;
+
+	virtual FVector GetTargetLocation(AActor* RequestedBy) const override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Death")
+	FCharacterDeathEvent DeathEvent;
+
+	virtual float GetCurrentDamage() const;
+
+	virtual AActor* GetTargetActor() const;
+
+	virtual FVector GetTargetLocation() const;
+
+	// component getters
+	UHHealthComponent* GetHealthComponent() const;
+	UHAttackComponent* GetAttackComponent() const;
+	UHFollowComponent* GetFollowComponent() const;
+	UHStatusEffectComponent* GetStatusEffectComponent() const;
+	UHAbilityComponent* GetAbilityComponent() const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsStunned() const;
+
+	/** Determines whether character is currently busy and is unable to be interrupted by any other commands
+	 * until its current task is finished (i.e. it's in the middle of an attack or in the middle of a spell cast
+	 * or it's stunned and is unable to act altogether) */
+	bool IsBusy() const;
+
+	void IgnoreActorWhenMoving(AActor* Actor);
+
+	virtual void InteractWith(AHCharacter* Interactor) override;
+
+	virtual FVector GetInteractableLocation() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "Name")
+	const FText& GetCharacterName() const;
+	
 protected:
 
 	/** Used for mouse targeting raycast */
@@ -76,43 +114,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float MaxDamage = 0.f;
 
-public:
-	
-	UFUNCTION(BlueprintCallable)
-	bool IsDead() const;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Name")
+	FText Name;
 
-	virtual FVector GetTargetLocation(AActor* RequestedBy) const override;
-
-	UPROPERTY(BlueprintAssignable, Category = "Death")
-	FCharacterDeathEvent DeathEvent;
-
-	virtual float GetCurrentDamage() const;
-
-	virtual AActor* GetTargetActor() const;
-
-	virtual FVector GetTargetLocation() const;
-
-	// component getters
-	UHHealthComponent* GetHealthComponent() const;
-	UHAttackComponent* GetAttackComponent() const;
-	UHFollowComponent* GetFollowComponent() const;
-	UHStatusEffectComponent* GetStatusEffectComponent() const;
-	UHAbilityComponent* GetAbilityComponent() const;
-	
-	UFUNCTION(BlueprintCallable)
-	bool IsStunned() const;
-
-	/** Determines whether character is currently busy and is unable to be interrupted by any other commands
-	 * until its current task is finished (i.e. it's in the middle of an attack or in the middle of a spell cast
-	 * or it's stunned and is unable to act altogether) */
-	bool IsBusy() const;
-	
-	void IgnoreActorWhenMoving(AActor* Actor);
-
-	virtual void InteractWith(AHCharacter* Interactor) override;
-
-	virtual float GetInteractionRange() const override;
-
-	virtual FVector GetInteractableLocation() const override;
-	
 };

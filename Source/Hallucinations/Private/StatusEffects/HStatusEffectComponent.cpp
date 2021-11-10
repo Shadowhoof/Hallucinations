@@ -71,7 +71,7 @@ void UHStatusEffectComponent::ApplyCondition(EStatusCondition Condition)
 		ActiveStunnedVFX = UGameplayStatics::SpawnEmitterAttached(StunnedVFX, Character->GetDefaultAttachComponent(), NAME_None, Offset);
 	}
 
-	UE_LOG(LogStatusEffect, Log, TEXT("Condition %s applied to %s"), *EnumToString(Condition), *GetOwner()->GetName());
+	UE_LOG(LogStatusEffect, Log, TEXT("Condition %s applied to %s"), *EnumAsString(Condition), *GetOwner()->GetName());
 }
 
 void UHStatusEffectComponent::RemoveCondition(EStatusCondition Condition)
@@ -92,7 +92,7 @@ void UHStatusEffectComponent::RemoveCondition(EStatusCondition Condition)
 	UNSET_BIT(Conditions, Condition);
 	ConditionRemovedEvent.Broadcast(Condition);
 	
-	UE_LOG(LogStatusEffect, Log, TEXT("Condition %s removed from %s"), *EnumToString(Condition), *GetOwner()->GetName());
+	UE_LOG(LogStatusEffect, Log, TEXT("Condition %s removed from %s"), *EnumAsString(Condition), *GetOwner()->GetName());
 }
 
 UHStatusEffectComponent::FConditionAppliedEvent& UHStatusEffectComponent::OnConditionApplied()

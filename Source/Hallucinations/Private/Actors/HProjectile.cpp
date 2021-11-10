@@ -38,7 +38,7 @@ void AHProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	if (OtherActor != GetOwner() && OtherActor != GetInstigator())
 	{
 		OnSuccessfulHit(OtherActor, HitResult);
-		GetWorld()->DestroyActor(this);
+		Destroy();
 
 		const FString OtherActorName = OtherActor ? OtherActor->GetName() : TEXT("Unknown");
 		UE_LOG(LogCollision, Verbose, TEXT("Projectile %s hit %s"), *GetName(), *OtherActorName);

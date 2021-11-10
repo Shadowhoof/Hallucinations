@@ -24,8 +24,6 @@ public:
 
 	virtual void InteractWith(AHCharacter* Interactor) override;
 
-	virtual float GetInteractionRange() const override;
-
 	virtual FVector GetInteractableLocation() const override;
 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))

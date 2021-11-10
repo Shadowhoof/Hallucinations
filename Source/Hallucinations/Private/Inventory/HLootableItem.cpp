@@ -35,11 +35,6 @@ void AHLootableItem::InteractWith(AHCharacter* Interactor)
 	}
 }
 
-float AHLootableItem::GetInteractionRange() const
-{
-	return InteractableConstants::DefaultInteractionRange;
-}
-
 FVector AHLootableItem::GetInteractableLocation() const
 {
 	return GetActorLocation();

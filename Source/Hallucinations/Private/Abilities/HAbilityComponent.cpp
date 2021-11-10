@@ -145,7 +145,7 @@ void UHAbilityComponent::UseAbility(UHAbility* Ability)
 			UseAttackAbility(Ability);
 			break;
 		default:
-			UE_LOG(LogAbility, Error, TEXT("Unknown ability type %s of ability %s"), *EnumToString(AbilityType), *Ability->GetSkillNameAsString());
+			UE_LOG(LogAbility, Error, TEXT("Unknown ability type %s of ability %s"), *EnumAsString(AbilityType), *Ability->GetSkillNameAsString());
 			break;
 		}
 	}

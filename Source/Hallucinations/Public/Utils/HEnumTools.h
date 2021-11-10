@@ -12,7 +12,7 @@ uint8 CombineBits(Args... Bits)
 }
 
 template<typename T>
-FString EnumToString(T Value)
+FString EnumAsString(T Value)
 {
 	return StaticEnum<T>()->GetValueAsString(Value);
 }

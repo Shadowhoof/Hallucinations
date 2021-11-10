@@ -13,6 +13,8 @@ namespace HallucinationsConstants
 	
 	const FVector InvalidVector(FLT_MAX, FLT_MAX, FLT_MAX);
 
+	const FString LevelExitTag("ExitTag");
+	const FString DefaultPlayerStartTag("Default");
 }
 
 struct FHConstants

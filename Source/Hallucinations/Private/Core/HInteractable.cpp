@@ -1,6 +1,9 @@
 #include "Core/HInteractable.h"
 
-#include "Utils/HLogUtils.h"
+float IHInteractable::GetInteractionRange() const
+{
+	return InteractableConstants::DefaultInteractionRange;
+}
 
 bool IHInteractable::IsInRange(const FVector& QuerierLocation) const
 {

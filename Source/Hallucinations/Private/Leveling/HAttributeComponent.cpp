@@ -90,7 +90,7 @@ void UHAttributeComponent::OnItemEquipped(UHInventoryItem* Item)
 	const TMap<EAttributeType, float>& Attributes = Item->GetData().Stats;
 	for (const TTuple<EAttributeType, float>& AttributeTuple : Attributes)
 	{
-		UE_LOG(LogAttributes, Log, TEXT("Attribute %s, value: %.2f"), *EnumToString(AttributeTuple.Key), AttributeTuple.Value)
+		UE_LOG(LogAttributes, Log, TEXT("Attribute %s, value: %.2f"), *EnumAsString(AttributeTuple.Key), AttributeTuple.Value)
 	}
 	AttributeSet->Recalculate(EquipmentComponent.Get());
 }
@@ -102,7 +102,7 @@ void UHAttributeComponent::OnItemUnequipped(UHInventoryItem* Item)
 	const TMap<EAttributeType, float>& Attributes = Item->GetData().Stats;
 	for (const TTuple<EAttributeType, float>& AttributeTuple : Attributes)
 	{
-		UE_LOG(LogAttributes, Log, TEXT("Attribute %s, value: %.2f"), *EnumToString(AttributeTuple.Key), AttributeTuple.Value)
+		UE_LOG(LogAttributes, Log, TEXT("Attribute %s, value: %.2f"), *EnumAsString(AttributeTuple.Key), AttributeTuple.Value)
 	}
 	AttributeSet->Recalculate(EquipmentComponent.Get());
 }

@@ -3,7 +3,7 @@
 
 #include "Inventory/HInventoryComponent.h"
 
-#include "Core/HGameMode.h"
+#include "Core/GameModes/HGameMode.h"
 #include "Core/HLogCategories.h"
 #include "Inventory/HInventoryItem.h"
 #include "Inventory/HLootableItem.h"
@@ -35,7 +35,6 @@ bool UHInventoryComponent::InsertItem(UHInventoryItem* Item)
 	}
 	
 	FInventoryDimensions ItemDimensions = Item->GetData().Dimensions;
-	// TODO - Somewhat brute force algorithm but it'll work for now
 	for (int32 Column = 0; Column <= Dimensions.Width - ItemDimensions.Width; Column++)
 	{
 		for (int32 Row = 0; Row <= Dimensions.Height - ItemDimensions.Height; Row++)
