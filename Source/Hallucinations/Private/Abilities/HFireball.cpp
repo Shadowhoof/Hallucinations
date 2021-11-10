@@ -8,6 +8,7 @@
 #include "Characters/HCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HEnumTools.h"
+#include "Core/HLogCategories.h"
 
 UHFireball::UHFireball()
 {
@@ -19,6 +20,11 @@ void UHFireball::FinishActorCast(AActor* TargetActor)
 {
 	Super::FinishActorCast(TargetActor);
 	IHAbilityActorInterface* Projectile = CreateProjectile(TargetActor->GetActorLocation());
+	if (!Projectile)
+	{
+		UE_LOG(LogAbility, Error, TEXT("Failed to spawn fireball projectile actor"));
+		return;
+	}
 	Projectile->Initialize(this, AbilityComponent->GetCaster(), TargetActor);
 }
 
@@ -26,6 +32,11 @@ void UHFireball::FinishLocationCast(FVector TargetLocation)
 {
 	Super::FinishLocationCast(TargetLocation);
 	IHAbilityActorInterface* Projectile = CreateProjectile(TargetLocation);
+	if (!Projectile)
+	{
+		UE_LOG(LogAbility, Error, TEXT("Failed to spawn fireball projectile actor"));
+		return;
+	}
 	Projectile->Initialize(this, AbilityComponent->GetCaster());
 }
 

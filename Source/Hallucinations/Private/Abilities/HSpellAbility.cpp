@@ -3,6 +3,9 @@
 
 #include "Abilities/HSpellAbility.h"
 #include "Core/HLogCategories.h"
+#include "Kismet/GameplayStatics.h"
+#include "Characters/HCharacter.h"
+#include "Utils/HEnumTools.h"
 
 UHSpellAbility::UHSpellAbility()
 {
@@ -57,10 +60,16 @@ IHAbilityActorInterface* UHSpellAbility::CreateActor(UWorld* World, FVector& Loc
 		return nullptr;
 	}
 
-	AActor* Actor = World->SpawnActor(ImplementationClass, &Location, &Rotator, SpawnParams);
+	AHCharacter* Caster = AbilityComponent->GetCaster();
+	FTransform SpawnTransform(Rotator.Quaternion(), Location);
+	AActor* Actor = UGameplayStatics::BeginDeferredActorSpawnFromClass(Caster, ImplementationClass, SpawnTransform, SpawnParams.SpawnCollisionHandlingOverride, Caster);
+	IHAbilityActorInterface* AbilityActor = Cast<IHAbilityActorInterface>(Actor);
+	AbilityActor->Initialize(this, AbilityComponent->GetCaster());
+	UGameplayStatics::FinishSpawningActor(Actor, SpawnTransform);
+
 	if (!Actor)
 	{
-		UE_LOG(LogAbility, Warning, TEXT("Actor for %s has not been spawned, check spawn log for more details"), *GetClass()->GetName());
+		UE_LOG(LogAbility, Warning, TEXT("Actor for %s has not been spawned, check LogSpawn for more details"), *GetClass()->GetName());
 		return nullptr;
 	}
 
