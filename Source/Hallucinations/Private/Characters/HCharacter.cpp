@@ -17,6 +17,7 @@
 #include "Abilities/HAbilityComponent.h"
 #include "Components/BoxComponent.h"
 #include "Core/HInteractable.h"
+#include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"
 #include "Weapons/HWeapon.h"
 
@@ -139,6 +140,26 @@ void AHCharacter::OnConditionRemoved(EStatusCondition Condition)
 	}
 }
 
+void AHCharacter::UpdateVisibility()
+{
+	APlayerController* LocalPlayerController = GetWorld()->GetFirstPlayerController();
+	APawn* LocalPawn = LocalPlayerController->GetPawn();
+	if (!LocalPawn)
+	{
+		return;
+	}
+	
+	bool bIsInvisible = GetWorld()->LineTraceTestByChannel(GetActorLocation(), LocalPawn->GetActorLocation(), ECC_Visibility);
+	if (bIsInvisible != IsHidden())
+	{
+		SetHidden(bIsInvisible);
+		GetMesh()->SetHiddenInGame(bIsInvisible, true);
+
+		ECollisionResponse NewClickCollision = bIsInvisible ? ECR_Ignore : ECR_Block;
+		BoxComponent->SetCollisionResponseToChannel(ECC_Click, NewClickCollision);
+	}
+}
+
 bool AHCharacter::IsDead() const
 {
 	return HealthComponent->IsDead();
@@ -224,4 +245,11 @@ FVector AHCharacter::GetInteractableLocation() const
 const FText& AHCharacter::GetCharacterName() const
 {
 	return Name;
+}
+
+void AHCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	UpdateVisibility();
 }

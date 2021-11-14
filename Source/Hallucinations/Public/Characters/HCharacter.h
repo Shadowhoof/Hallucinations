@@ -69,6 +69,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Name")
 	const FText& GetCharacterName() const;
+
+	virtual void Tick(float DeltaSeconds) override;
 	
 protected:
 
@@ -117,4 +119,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Name")
 	FText Name;
 
+	virtual void UpdateVisibility();
+	
 };
