@@ -5,7 +5,7 @@
 #include "HConstants.h"
 #include "Characters/HPlayerCharacter.h"
 #include "Components/HHealthComponent.h"
-
+#include "Camera/CameraActor.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Utils/HLogUtils.h"
 
@@ -17,6 +17,19 @@ AHPlayerController::AHPlayerController()
 AHPlayerCharacter* AHPlayerController::GetPlayerCharacter() const
 {
 	return Cast<AHPlayerCharacter>(GetCharacter());
+}
+
+void AHPlayerController::ProcessMouseover()
+{
+	FHitResult HitResult;
+	float ScreenSpaceX, ScreenSpaceY;
+	GetMousePosition(ScreenSpaceX, ScreenSpaceY);
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	GetHitResultAtScreenPosition(FVector2D(ScreenSpaceX, ScreenSpaceY), CurrentClickTraceChannel, QueryParams, HitResult);
+
+	MouseoverData = HitResult;
+	HandleHoveredActor(MouseoverData.GetActor());
 }
 
 void AHPlayerController::HandleHoveredActor(AActor* Actor)
@@ -47,15 +60,7 @@ void AHPlayerController::HandleHoveredActor(AActor* Actor)
 
 void AHPlayerController::PlayerTick(float DeltaSeconds)
 {	
-	FHitResult HitResult;
-	float ScreenSpaceX, ScreenSpaceY;
-	GetMousePosition(ScreenSpaceX, ScreenSpaceY);
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	GetHitResultAtScreenPosition(FVector2D(ScreenSpaceX, ScreenSpaceY), CurrentClickTraceChannel, QueryParams, HitResult);
-
-	MouseoverData = HitResult;
-	HandleHoveredActor(MouseoverData.GetActor());
+	ProcessMouseover();
 
 	Super::PlayerTick(DeltaSeconds);
 }
@@ -92,6 +97,11 @@ void AHPlayerController::OnUnPossess()
 FGenericTeamId AHPlayerController::GetGenericTeamId() const
 {
 	return GenericTeamId;
+}
+
+void AHPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 

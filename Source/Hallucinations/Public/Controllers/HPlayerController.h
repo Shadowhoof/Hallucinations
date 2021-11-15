@@ -41,6 +41,8 @@ public:
 	
 protected:
 
+	virtual void BeginPlay() override;
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPawnDeath(AHCharacter* Killer, AActor* Victim);
 
@@ -51,6 +53,7 @@ private:
 	UPROPERTY()
 	AActor* HoveredActor;
 
+	void ProcessMouseover();
 	void HandleHoveredActor(AActor* Actor);
 
 	FGenericTeamId GenericTeamId;

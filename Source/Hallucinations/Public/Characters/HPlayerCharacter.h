@@ -16,6 +16,7 @@ class AHPlayerController;
 class UHAttributeComponent;
 class UHAbilityComponent;
 class UHActionBarComponent;
+class USceneCaptureComponent2D;
 
 /**
  * 
@@ -28,6 +29,18 @@ class HALLUCINATIONS_API AHPlayerCharacter : public AHCharacter
 public:
 
 	AHPlayerCharacter();
+
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual AActor* GetTargetActor() const override;
+
+	virtual FVector GetTargetLocation() const override;
+
+	void UseAbility(int32 Index);
+
+	UHSaveGame* GetSaveData();
 	
 protected:
 
@@ -49,11 +62,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHEquipmentComponent* EquipmentComponent;
 
+	// camera
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MinCameraDistance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MaxCameraDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Minimap")
+	USceneCaptureComponent2D* MinimapCaptureComponent;
 
 	bool bIsHoldingPrimaryAction;
 	
@@ -75,16 +92,4 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void ToggleInventory();
 
-public:
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual AActor* GetTargetActor() const override;
-
-	virtual FVector GetTargetLocation() const override;
-
-	void UseAbility(int32 Index);
-
-	UHSaveGame* GetSaveData();
 };

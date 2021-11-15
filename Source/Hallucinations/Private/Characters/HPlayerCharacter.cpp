@@ -23,9 +23,16 @@
 #include "Leveling/HAttributeComponent.h"
 #include "Core/HInteractable.h"
 #include "Core/Subsystems/HSaveLoadSubsystem.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "Utils/HLogUtils.h"
 
-// Sets default values
+namespace Constants
+{
+	const float MinimapSceneComponentHeight = 500.f;
+	const float MinimapCaptureWidth = 2048.f;
+}
+
+
 AHPlayerCharacter::AHPlayerCharacter()
 {
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
@@ -44,6 +51,14 @@ AHPlayerCharacter::AHPlayerCharacter()
 	ActionBarComponent = CreateDefaultSubobject<UHActionBarComponent>(TEXT("ActionBarComponent"));
 	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
 	EquipmentComponent = CreateDefaultSubobject<UHEquipmentComponent>(TEXT("EquipmentComponent"));
+
+	MinimapCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MinimapCaptureComponent"));
+	MinimapCaptureComponent->SetupAttachment(RootComponent);
+	MinimapCaptureComponent->ProjectionType = ECameraProjectionMode::Orthographic;
+	MinimapCaptureComponent->SetUsingAbsoluteRotation(true);
+	MinimapCaptureComponent->SetWorldRotation(FRotator(-90.f, 0.f, 0.f));
+	// disable skeletal meshes on minimap
+	MinimapCaptureComponent->ShowFlags.SetSkeletalMeshes(false);
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
@@ -54,6 +69,9 @@ AHPlayerCharacter::AHPlayerCharacter()
 void AHPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MinimapCaptureComponent->SetRelativeLocation(FVector(0.f, 0.f, Constants::MinimapSceneComponentHeight));
+	MinimapCaptureComponent->OrthoWidth = Constants::MinimapCaptureWidth;
 
 	// disable all click collision for local player
 	if (IsLocallyControlled())
@@ -70,7 +88,9 @@ void AHPlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	if (bIsHoldingPrimaryAction)
+	{
 		PrimaryAction(true);
+	}
 }
 
 // Called to bind functionality to input
