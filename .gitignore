@@ -4,6 +4,7 @@ Intermediate/
 Saved/
 .vs/
 Content/*
+**/*_BuiltData.uasset
 !Content/Hallucinations/
 Hallucinations.sln
 Hallucinations.uproject
