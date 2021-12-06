@@ -28,7 +28,7 @@
 
 namespace Constants
 {
-	const float MinimapSceneComponentHeight = 500.f;
+	const float MinimapSceneComponentHeight = 10000.f;
 	const float MinimapCaptureWidth = 2048.f;
 }
 
