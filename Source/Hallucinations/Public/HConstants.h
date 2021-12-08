@@ -6,6 +6,7 @@
 
 #define ECC_Click ECC_GameTraceChannel1
 #define ECC_Projectile ECC_GameTraceChannel2
+#define ECC_FadeTrigger ECC_GameTraceChannel3
 
 namespace HallucinationsConstants
 {

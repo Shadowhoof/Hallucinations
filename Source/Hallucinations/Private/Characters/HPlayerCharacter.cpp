@@ -73,12 +73,15 @@ void AHPlayerCharacter::BeginPlay()
 	MinimapCaptureComponent->SetRelativeLocation(FVector(0.f, 0.f, Constants::MinimapSceneComponentHeight));
 	MinimapCaptureComponent->OrthoWidth = Constants::MinimapCaptureWidth;
 
-	// disable all click collision for local player
 	if (IsLocallyControlled())
 	{
+		// disable all click collision for local player
 		BoxComponent->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
 		GetMesh()->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
+
+		// enable terrain fade triggers
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_FadeTrigger, ECR_Overlap);
 	}
 }
 
