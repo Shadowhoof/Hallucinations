@@ -3,7 +3,7 @@
 #include "Engine/DataTable.h"
 #include "Inventory/HInventoryComponent.h"
 #include "HEquipmentType.h"
-#include "Leveling/HAttributeType.h"
+#include "Progression/HAttributeType.h"
 #include "HInventoryItem.generated.h"
 
 class UTexture2D;

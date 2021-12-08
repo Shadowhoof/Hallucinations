@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Leveling/HAttributeComponent.h"
+#include "Progression/HAttributeComponent.h"
 
 #include "Inventory/HEquipmentComponent.h"
 #include "Inventory/HInventoryItem.h"

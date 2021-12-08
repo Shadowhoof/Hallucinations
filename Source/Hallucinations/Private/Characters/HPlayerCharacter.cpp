@@ -20,7 +20,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Inventory/HInventoryComponent.h"
 #include "Inventory/HEquipmentComponent.h"
-#include "Leveling/HAttributeComponent.h"
+#include "Progression/HAttributeComponent.h"
 #include "Core/HInteractable.h"
 #include "Core/Subsystems/HSaveLoadSubsystem.h"
 #include "Components/SceneCaptureComponent2D.h"
