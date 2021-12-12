@@ -92,4 +92,11 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void ToggleInventory();
 
+private:
+
+	void UpdateFadeableObstructions();
+
+	UPROPERTY()
+	AActor* FadeableObstructionActor = nullptr;
+	
 };

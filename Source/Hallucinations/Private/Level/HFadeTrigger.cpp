@@ -3,7 +3,7 @@
 
 #include "Level/HFadeTrigger.h"
 #include "Components/BoxComponent.h"
-#include "Level/HFadeable.h"
+#include "Level/HFadeableComponent.h"
 
 AHFadeTrigger::AHFadeTrigger()
 {
@@ -16,7 +16,12 @@ AHFadeTrigger::AHFadeTrigger()
 void AHFadeTrigger::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	FadeableActors.RemoveAll([](const AActor* Actor)
+	{
+		return !Actor->GetComponentByClass(UHFadeableComponent::StaticClass());
+	});
+	
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AHFadeTrigger::OnBeginOverlap);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AHFadeTrigger::OnEndOverlap);
 }
@@ -24,26 +29,20 @@ void AHFadeTrigger::BeginPlay()
 void AHFadeTrigger::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	for (auto& Object : FadeableObjects)
+	for (auto& Actor : FadeableActors)
 	{
-		IHFadeable* Fadeable = Cast<IHFadeable>(Object);
-		if (Fadeable)
-		{
-			Fadeable->FadeOut();
-		}
+		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(Actor->GetComponentByClass(UHFadeableComponent::StaticClass()));
+		FadeableComponent->FadeOut();
 	}
 }
 
 void AHFadeTrigger::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	for (auto& Object : FadeableObjects)
+	for (auto& Actor : FadeableActors)
 	{
-		IHFadeable* Fadeable = Cast<IHFadeable>(Object);
-		if (Fadeable)
-		{
-			Fadeable->FadeIn();
-		}
+		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(Actor->GetComponentByClass(UHFadeableComponent::StaticClass()));
+		FadeableComponent->FadeIn();
 	}
 }
 

@@ -24,10 +24,12 @@
 #include "Core/HInteractable.h"
 #include "Core/Subsystems/HSaveLoadSubsystem.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "Level/HFadeableComponent.h"
 #include "Utils/HLogUtils.h"
 
 namespace Constants
 {
+	const FRotator CameraRotation{-45.f, 45.f, 0.f};
 	const float MinimapSceneComponentHeight = 10000.f;
 	const float MinimapCaptureWidth = 2048.f;
 }
@@ -40,6 +42,7 @@ AHPlayerCharacter::AHPlayerCharacter()
 	SpringArmComponent->TargetArmLength = 1500.f;
 	SpringArmComponent->bDoCollisionTest = false;
 	SpringArmComponent->SetUsingAbsoluteRotation(true);
+	SpringArmComponent->SetWorldRotation(Constants::CameraRotation);
 
 	MinCameraDistance = 300.f;
 	MaxCameraDistance = 2000.f;
@@ -94,6 +97,8 @@ void AHPlayerCharacter::Tick(float DeltaTime)
 	{
 		PrimaryAction(true);
 	}
+
+	UpdateFadeableObstructions();
 }
 
 // Called to bind functionality to input
@@ -237,6 +242,32 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
 		if (IHInteractable* Interactable = Cast<IHInteractable>(MouseoverActor); Interactable)
 		{
 			
+		}
+	}
+}
+
+void AHPlayerCharacter::UpdateFadeableObstructions()
+{
+	FHitResult TraceResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	GetWorld()->LineTraceSingleByChannel(TraceResult, CameraComponent->GetComponentLocation(), GetActorLocation(), ECC_Visibility, QueryParams);
+
+	if (FadeableObstructionActor)
+	{
+		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(FadeableObstructionActor->GetComponentByClass(UHFadeableComponent::StaticClass()));
+		FadeableComponent->FadeIn();
+		FadeableObstructionActor = nullptr;
+	}
+	
+	if (TraceResult.IsValidBlockingHit())
+	{
+		AActor* HitActor = TraceResult.GetActor();
+		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(HitActor->GetComponentByClass(UHFadeableComponent::StaticClass()));
+		if (FadeableComponent)
+		{
+			FadeableComponent->FadeOut();
+			FadeableObstructionActor = HitActor;
 		}
 	}
 }

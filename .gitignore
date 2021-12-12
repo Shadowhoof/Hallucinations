@@ -6,6 +6,8 @@ Saved/
 Content/*
 **/*_BuiltData.uasset
 !Content/Hallucinations/
+Plugins/
+.idea/
 Hallucinations.sln
 Hallucinations.uproject
 Hallucinations.sln.DotSettings.user

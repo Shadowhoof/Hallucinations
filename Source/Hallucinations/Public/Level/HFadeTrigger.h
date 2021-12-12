@@ -26,7 +26,7 @@ protected:
 	
 	// Objects which will fade when player character is inside this trigger
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Fade")
-	TArray<AActor*> FadeableObjects;
+	TArray<AActor*> FadeableActors;
 
 private:
 
