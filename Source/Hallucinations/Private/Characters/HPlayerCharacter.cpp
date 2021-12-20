@@ -25,6 +25,7 @@
 #include "Core/Subsystems/HSaveLoadSubsystem.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Level/HFadeableComponent.h"
+#include "DrawDebugHelpers.h"
 #include "Utils/HLogUtils.h"
 
 namespace Constants
@@ -32,6 +33,9 @@ namespace Constants
 	const FRotator CameraRotation{-45.f, 45.f, 0.f};
 	const float MinimapSceneComponentHeight = 10000.f;
 	const float MinimapCaptureWidth = 2048.f;
+
+	const float FadeSphereTraceRadius = 200.f;
+	const float FadeInDelay = 0.5f;
 }
 
 
@@ -98,7 +102,7 @@ void AHPlayerCharacter::Tick(float DeltaTime)
 		PrimaryAction(true);
 	}
 
-	UpdateFadeableObstructions();
+	UpdateFadeableObstructions(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -246,28 +250,44 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
 	}
 }
 
-void AHPlayerCharacter::UpdateFadeableObstructions()
+void AHPlayerCharacter::UpdateFadeableObstructions(float DeltaTime)
 {
-	FHitResult TraceResult;
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	GetWorld()->LineTraceSingleByChannel(TraceResult, CameraComponent->GetComponentLocation(), GetActorLocation(), ECC_Visibility, QueryParams);
+	TArray<FHitResult> TraceResult;
+	FCollisionObjectQueryParams ObjectQueryParams{ECC_WorldStatic};
+	GetWorld()->LineTraceMultiByObjectType(TraceResult, CameraComponent->GetComponentLocation(), GetActorLocation(), ObjectQueryParams);
 
-	if (FadeableObstructionActor)
+	for (auto& Entry : FadedActorMap)
 	{
-		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(FadeableObstructionActor->GetComponentByClass(UHFadeableComponent::StaticClass()));
-		FadeableComponent->FadeIn();
-		FadeableObstructionActor = nullptr;
+		Entry.Value -= DeltaTime;
 	}
 	
-	if (TraceResult.IsValidBlockingHit())
+	for (auto& Hit : TraceResult)
 	{
-		AActor* HitActor = TraceResult.GetActor();
+		AActor* HitActor = Hit.GetActor();
 		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(HitActor->GetComponentByClass(UHFadeableComponent::StaticClass()));
-		if (FadeableComponent)
+		if (!FadeableComponent)
 		{
-			FadeableComponent->FadeOut();
-			FadeableObstructionActor = HitActor;
+			continue;
+		}
+
+		if (!FadedActorMap.Contains(HitActor))
+		{
+			FadeableComponent->FadeOut(this);
+			FadedActorMap.Add(HitActor, Constants::FadeInDelay);
+		}
+		else
+		{
+			FadedActorMap[HitActor] = Constants::FadeInDelay;
+		}
+	}
+
+	for (auto It = FadedActorMap.CreateIterator(); It; ++It)
+	{
+		if (It.Value() <= 0.f)
+		{
+			UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(It.Key()->GetComponentByClass(UHFadeableComponent::StaticClass()));
+			FadeableComponent->FadeIn(this);
+			It.RemoveCurrent();
 		}
 	}
 }

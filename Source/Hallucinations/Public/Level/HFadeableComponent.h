@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "HFadeableComponent.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogFade, Log, All);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HALLUCINATIONS_API UHFadeableComponent : public UActorComponent
@@ -17,14 +19,16 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void FadeOut();
-	void FadeIn();
+	void FadeOut(AActor* FadeSource);
+	void FadeIn(AActor* FadeSource);
 	
 protected:
 	virtual void BeginPlay() override;
 
+	// Transparent materials which will replace default materials on an object when it's faded. 
+	// These indices should match the indices of original materials.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Fade")
-	UMaterialInterface* TransparentMaterial;
+	TArray<TObjectPtr<UMaterialInterface>> TransparentMaterials;
 	
 	virtual UMeshComponent* GetFadeableMesh();
 	
@@ -34,11 +38,15 @@ private:
 	
 	TObjectPtr<UMeshComponent> MeshComponent;
 
+	// Actors that triggered fade on this actor. Actor will fade back in only when this array is empty. 
 	UPROPERTY()
-	UMaterialInterface* OpaqueMaterial;
+	TArray<TObjectPtr<AActor>> FadeSources;
+	
+	UPROPERTY()
+	TArray<TObjectPtr<UMaterialInterface>> OpaqueMaterials;
 
 	UPROPERTY()
-	UMaterialInstanceDynamic* DynamicTransparentMaterial;
+	TArray<TObjectPtr<UMaterialInstanceDynamic>> DynamicTransparentMaterials;
 
 	ECollisionResponse DefaultClickResponse;
 	

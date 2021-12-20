@@ -19,7 +19,7 @@ void AHFadeTrigger::BeginPlay()
 	
 	FadeableActors.RemoveAll([](const AActor* Actor)
 	{
-		return !Actor->GetComponentByClass(UHFadeableComponent::StaticClass());
+		return !Actor || !Actor->GetComponentByClass(UHFadeableComponent::StaticClass());
 	});
 	
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AHFadeTrigger::OnBeginOverlap);
@@ -29,20 +29,22 @@ void AHFadeTrigger::BeginPlay()
 void AHFadeTrigger::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Log, TEXT("Fade out"));
 	for (auto& Actor : FadeableActors)
 	{
 		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(Actor->GetComponentByClass(UHFadeableComponent::StaticClass()));
-		FadeableComponent->FadeOut();
+		FadeableComponent->FadeOut(this);
 	}
 }
 
 void AHFadeTrigger::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	UE_LOG(LogTemp, Log, TEXT("Fade in"));
 	for (auto& Actor : FadeableActors)
 	{
 		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(Actor->GetComponentByClass(UHFadeableComponent::StaticClass()));
-		FadeableComponent->FadeIn();
+		FadeableComponent->FadeIn(this);
 	}
 }
 

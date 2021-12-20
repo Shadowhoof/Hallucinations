@@ -94,9 +94,9 @@ protected:
 
 private:
 
-	void UpdateFadeableObstructions();
+	void UpdateFadeableObstructions(float DeltaTime);
 
 	UPROPERTY()
-	AActor* FadeableObstructionActor = nullptr;
+	TMap<AActor*, float> FadedActorMap;
 	
 };
