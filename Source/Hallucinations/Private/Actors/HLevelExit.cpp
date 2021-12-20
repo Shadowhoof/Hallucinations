@@ -3,6 +3,7 @@
 
 #include "Actors/HLevelExit.h"
 
+#include "HConstants.h"
 #include "Kismet/GameplayStatics.h"
 
 AHLevelExit::AHLevelExit()
@@ -23,7 +24,7 @@ void AHLevelExit::InteractWith(AHCharacter* Interactor)
 		return;
 	}
 
-	const FString OptionsString = "ExitTag=" + ExitTag.ToString();
+	const FString OptionsString = HallucinationsConstants::PlayerStartTag + "=" + PlayerStartTag.ToString();
 	UGameplayStatics::OpenLevel(this, LevelName, true, OptionsString);
 }
 

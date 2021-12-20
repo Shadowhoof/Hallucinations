@@ -28,11 +28,9 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Level")
 	FName LevelName;
 
-	/**
-	 * Tag that identifies this specific exit and allows the GameMode to spawn player at a specific PlayerStart based on this tag.
-	 */
+	// Tag of a PlayerStart actor which will be used as a spawn point on the next level
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Level")
-	FName ExitTag;
+	FName PlayerStartTag;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMesh;

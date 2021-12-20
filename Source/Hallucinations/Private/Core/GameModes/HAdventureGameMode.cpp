@@ -48,10 +48,10 @@ void AHAdventureGameMode::StartPlay()
 
 AActor* AHAdventureGameMode::FindPlayerStart_Implementation(AController* Player, const FString& IncomingName)
 {
-	FString PlayerStartTag = UGameplayStatics::ParseOption(OptionsString, HallucinationsConstants::LevelExitTag);
+	FString PlayerStartTag = UGameplayStatics::ParseOption(OptionsString, HallucinationsConstants::PlayerStartTag);
 	if (PlayerStartTag.IsEmpty())
 	{
-		UE_LOG(LogGameMode, Log, TEXT("Options string has no ExitTag, using default value"));
+		UE_LOG(LogGameMode, Log, TEXT("Options string has no PlayerStartTag, using default value"));
 		PlayerStartTag = HallucinationsConstants::DefaultPlayerStartTag;
 	}
 
