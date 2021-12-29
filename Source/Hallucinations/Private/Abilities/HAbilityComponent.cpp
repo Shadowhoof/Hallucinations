@@ -7,7 +7,7 @@
 #include "Abilities/HSpellAbility.h"
 #include "Characters/HCharacter.h"
 #include "Core/HLogCategories.h"
-#include "Core/HSaveGame.h"
+#include "Core/Subsystems/Save/HSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"
 #include "Characters/HPlayerCharacter.h"

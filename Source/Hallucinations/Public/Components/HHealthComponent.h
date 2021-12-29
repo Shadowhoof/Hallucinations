@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "HHealthComponent.generated.h"
 
+struct FPersistentActorState;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, TargetActor, AController*, Instigator, AActor*, SourceActor, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActorDeath, AActor*, Victim, AActor*, Killer);
 
@@ -91,4 +93,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetHealthPercentage() const;
+
+	void RestorePersistentState(const FPersistentActorState& State);
 };

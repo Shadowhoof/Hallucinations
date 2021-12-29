@@ -4,6 +4,7 @@
 #include "Components/HHealthComponent.h"
 #include "Characters/HCharacter.h"
 #include "Core/GameModes/HGameMode.h"
+#include "Core/Subsystems/Save/HLevelSave.h"
 #include "Perception/AISense_Damage.h"
 
 DEFINE_LOG_CATEGORY(LogRagdoll);
@@ -151,6 +152,11 @@ void UHHealthComponent::HandleTakeRadialDamage(AActor* DamagedActor, float Damag
 float UHHealthComponent::GetHealthPercentage() const
 {
 	return FMath::Clamp(CurrentHealth / MaxHealth, 0.f, 1.f);
+}
+
+void UHHealthComponent::RestorePersistentState(const FPersistentActorState& State)
+{
+	CurrentHealth = MaxHealth * FMath::Clamp(State.Health, 0.f, 1.f); 
 }
 
 bool UHHealthComponent::IsDead() const

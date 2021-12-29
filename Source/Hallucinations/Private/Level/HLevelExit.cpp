@@ -1,7 +1,7 @@
 // Created by Dmitrii Korovin
 
 
-#include "Actors/HLevelExit.h"
+#include "Level/HLevelExit.h"
 
 #include "HConstants.h"
 #include "Kismet/GameplayStatics.h"

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Characters/HCharacter.h"
+#include "Core/Subsystems/Save/HStatefulActorInterface.h"
 
 #include "HNonPlayerCharacter.generated.h"
 
@@ -14,7 +15,7 @@
  * instances of this object easier.
  */
 UCLASS()
-class HALLUCINATIONS_API AHNonPlayerCharacter : public AHCharacter
+class HALLUCINATIONS_API AHNonPlayerCharacter : public AHCharacter, public IHStatefulActorInterface
 {
 	GENERATED_BODY()
 
@@ -28,6 +29,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void LeaveCombat();
 
+	virtual bool ShouldBeSaved() const override;
+	virtual FPersistentActorState GetPersistentState() const override;
+	virtual void RestorePersistentState(const FPersistentActorState& State) override;
+	
 protected:
 
 	virtual void BeginPlay() override;

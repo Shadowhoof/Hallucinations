@@ -1,10 +1,13 @@
 #include "Core/GameModes/HAdventureGameMode.h"
+
+#include "EngineUtils.h"
 #include "HConstants.h"
 #include "Characters/HNonPlayerCharacter.h"
-#include "Actors/HEnemySpawnPoint.h"
+#include "Core/Subsystems/Save/HSaveSubsystem.h"
+#include "Engine/PlayerStartPIE.h"
+#include "Level/HEnemySpawnPoint.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Utils/HUtils.h"
 
 DEFINE_LOG_CATEGORY(LogSpawn);
@@ -13,11 +16,55 @@ void AHAdventureGameMode::StartPlay()
 {
 	Super::StartPlay();
 
-	TArray<AActor*> EnemySpawnPoints;
-	UGameplayStatics::GetAllActorsOfClass(this, AHEnemySpawnPoint::StaticClass(), EnemySpawnPoints);
-	for (AActor* Actor : EnemySpawnPoints)
+	if (!LoadLevel())
 	{
-		AHEnemySpawnPoint* SpawnPoint = Cast<AHEnemySpawnPoint>(Actor);
+		CreateLevel();
+	}
+}
+
+AActor* AHAdventureGameMode::ChoosePlayerStart_Implementation(AController* Player)
+{
+	if (AActor* StartPoint = Super::ChoosePlayerStart_Implementation(Player); StartPoint->IsA<APlayerStartPIE>())
+	{
+		return StartPoint;
+	}
+
+	FString PlayerStartTag = UGameplayStatics::ParseOption(OptionsString, HallucinationsConstants::PlayerStartTag);
+	if (PlayerStartTag.IsEmpty())
+	{
+		UE_LOG(LogGameMode, Log, TEXT("Options string has no PlayerStartTag, using default value"));
+		PlayerStartTag = HallucinationsConstants::DefaultPlayerStartTag;
+	}
+
+	for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
+	{
+		if (APlayerStart* PlayerStart = *It; PlayerStart->PlayerStartTag == FName(PlayerStartTag))
+		{
+			UE_LOG(LogGameMode, Log, TEXT("Found PlayerStart with tag %s"), *PlayerStartTag);
+			return PlayerStart;
+		}
+	}
+
+	UE_LOG(LogGameMode, Log, TEXT("Unable to find PlayerStart with tag %s, spawning at random location"), *PlayerStartTag);
+	return Super::ChoosePlayerStart_Implementation(Player);
+}
+
+void AHAdventureGameMode::StartToLeaveMap()
+{
+	Super::StartToLeaveMap();
+
+	SaveLevelState();
+	UE_LOG(LogLevel, Verbose, TEXT("Leaving map %s"), *UGameplayStatics::GetCurrentLevelName(this));
+}
+
+void AHAdventureGameMode::CreateLevel()
+{
+	FString LevelName = UGameplayStatics::GetCurrentLevelName(this);
+	UE_LOG(LogLevel, Log, TEXT("No saved state for level %s found, randomizing..."), *LevelName);
+	
+	for (TActorIterator<AHEnemySpawnPoint> It(GetWorld()); It; ++It)
+	{
+		const AHEnemySpawnPoint* SpawnPoint = *It;
 		int32 EnemyCount = SpawnPoint->GetRandomEnemyCount();
 		if (EnemyCount <= 0)
 		{
@@ -46,27 +93,48 @@ void AHAdventureGameMode::StartPlay()
 	}
 }
 
-AActor* AHAdventureGameMode::FindPlayerStart_Implementation(AController* Player, const FString& IncomingName)
+bool AHAdventureGameMode::LoadLevel()
 {
-	FString PlayerStartTag = UGameplayStatics::ParseOption(OptionsString, HallucinationsConstants::PlayerStartTag);
-	if (PlayerStartTag.IsEmpty())
+	UHSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UHSaveSubsystem>();
+	UHLevelSave* LevelSave = SaveSubsystem->LoadLevel(GetWorld());
+	if (!LevelSave)
 	{
-		UE_LOG(LogGameMode, Log, TEXT("Options string has no PlayerStartTag, using default value"));
-		PlayerStartTag = HallucinationsConstants::DefaultPlayerStartTag;
+		return false;
 	}
-
-	TArray<AActor*> PlayerStartArray;
-	UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), PlayerStartArray);
-	for (AActor* Actor : PlayerStartArray)
+	
+	for (const auto& ActorData : LevelSave->GetActorData())
 	{
-		APlayerStart* PlayerStart = Cast<APlayerStart>(Actor);
-		if (PlayerStart->PlayerStartTag == FName(PlayerStartTag))
+		RestoreSavedActor(ActorData);
+	}
+	return true;
+}
+
+void AHAdventureGameMode::SaveLevelState()
+{
+	UHSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UHSaveSubsystem>();
+	UHLevelSave* LevelSave = SaveSubsystem->CreateLevelSave();
+	
+	TArray<AActor*> Actors;
+	UGameplayStatics::GetAllActorsWithInterface(GetWorld(), UHStatefulActorInterface::StaticClass(), Actors);
+	for (const AActor* Actor : Actors)
+	{
+		const IHStatefulActorInterface* StatefulActor = Cast<IHStatefulActorInterface>(Actor);
+		if (StatefulActor->ShouldBeSaved())
 		{
-			UE_LOG(LogGameMode, Log, TEXT("Found PlayerStart with tag %s"), *PlayerStartTag);
-			return PlayerStart;
+			LevelSave->SaveActorState(StatefulActor->GetPersistentState());
 		}
 	}
 
-	UE_LOG(LogGameMode, Log, TEXT("Unable to find PlayerStart with tag %s, spawning at random location"), *PlayerStartTag);
-	return Super::FindPlayerStart_Implementation(Player, IncomingName);
+	SaveSubsystem->SaveLevel(GetWorld(), LevelSave);
+}
+
+void AHAdventureGameMode::RestoreSavedActor(const FPersistentActorState& State)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	AActor* Actor = GetWorld()->SpawnActor(State.Class, &State.Transform, SpawnParams);
+
+	IHStatefulActorInterface* StatefulActor = Cast<IHStatefulActorInterface>(Actor);
+	StatefulActor->RestorePersistentState(State);
+	UE_LOG(LogTemp, Log, TEXT("Restoring // cls: %s, pos: %s, hp: %.2f"), *State.Class->GetName(), *State.Transform.GetLocation().ToString(), State.Health);
 }

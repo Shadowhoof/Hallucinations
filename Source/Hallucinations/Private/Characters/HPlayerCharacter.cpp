@@ -22,10 +22,9 @@
 #include "Inventory/HEquipmentComponent.h"
 #include "Progression/HAttributeComponent.h"
 #include "Core/HInteractable.h"
-#include "Core/Subsystems/HSaveLoadSubsystem.h"
+#include "Core/Subsystems/Save/HSaveSubsystem.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Level/HFadeableComponent.h"
-#include "DrawDebugHelpers.h"
 #include "Utils/HLogUtils.h"
 
 namespace Constants
@@ -181,8 +180,8 @@ void AHPlayerCharacter::UseAbility(int32 Index)
 UHSaveGame* AHPlayerCharacter::GetSaveData()
 {
 	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
-	UHSaveLoadSubsystem* SaveLoadSubsystem = GameInstance->GetSubsystem<UHSaveLoadSubsystem>();
-	return SaveLoadSubsystem->GetSaveData();
+	UHSaveSubsystem* SaveSubsystem = GameInstance->GetSubsystem<UHSaveSubsystem>();
+	return SaveSubsystem->GetSaveData();
 }
 
 void AHPlayerCharacter::Move(float Value)

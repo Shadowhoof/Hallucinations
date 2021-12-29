@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actors/HEnemySpawnPoint.h"
+#include "Level/HEnemySpawnPoint.h"
 #include "Components/ArrowComponent.h"
 #include "Characters/HNonPlayerCharacter.h"
 #include "Utils/HUtils.h"

@@ -58,8 +58,7 @@ void AHAIController::OnPossess(APawn* InPawn)
 	AHCharacter* AsCharacter = Cast<AHCharacter>(InPawn);
 	if (AsCharacter)
 	{
-		uint8 TeamId = (uint8) AsCharacter->GetHealthComponent()->GetTeam();
-		UE_LOG(LogTemp, Log, TEXT("TeamId: %d"), TeamId);
+		uint8 TeamId = static_cast<uint8>(AsCharacter->GetHealthComponent()->GetTeam());
 		SetGenericTeamId(FGenericTeamId(TeamId));
 	}
 

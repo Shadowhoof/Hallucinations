@@ -3,7 +3,7 @@
 
 #include "Core/GameModes/HWaveGameMode.h"
 #include "Kismet/GameplayStatics.h"
-#include "Actors/HEnemySpawnPoint.h"
+#include "Level/HEnemySpawnPoint.h"
 #include "Characters/HCharacter.h"
 
 void AHWaveGameMode::BeginPlay()
