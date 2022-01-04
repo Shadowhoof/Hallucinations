@@ -8,7 +8,6 @@
 
 class AHLootableItem;
 class UDataTable;
-class UHSaveGame;
 class AHCharacter;
 
 /**

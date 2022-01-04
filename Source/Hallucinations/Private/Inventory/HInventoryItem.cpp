@@ -15,3 +15,8 @@ UHInventoryItem* UHInventoryItem::CreateItem(const FInventoryItem& Data)
 	Item->Data = Data;
 	return Item;
 }
+
+UHInventoryItem* UHInventoryItem::CreateItem(const FInventoryItem* DataPtr)
+{
+	return DataPtr ? CreateItem(*DataPtr) : nullptr;
+}

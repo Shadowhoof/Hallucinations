@@ -7,11 +7,11 @@
 #include "HAbilityComponent.generated.h"
 
 class UHSpellAbility;
-class UHSaveGame;
+class UHPlayerCharacterSave;
 class AHCharacter;
 class UHAbility;
 class UHAttackAbility;
-class UHSaveGame;
+class UHPlayerCharacterSave;
 
 
 USTRUCT()
@@ -51,7 +51,10 @@ public:
 
 	TArray<UHAbility*> GetAbilities() const;
 
-	bool HasAbility(UHAbility* Ability);
+	bool HasAbility(UHAbility* Ability) const;
+
+	void GetPersistentState(TMap<FString, float>& OutCooldownData);
+	void RestorePersistentState(const TMap<FString, float>& CooldownData);
 
 protected:
 
@@ -113,6 +116,18 @@ public:
 
 	UHActionBarComponent();
 
+	UFUNCTION(BlueprintCallable)
+	void UseAbilityByIndex(int32 Index);
+
+	/**
+	 * Assigns provided ability to an action bar slot. Can be nullptr to remove ability from action bar.
+	 * @return whether operation was successful
+	 */
+	UFUNCTION(BlueprintCallable, Category = "ActionBar")
+	bool SetActionBarAbility(UHAbility* Ability, int32 Index);
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	
 protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "ActionBar")
@@ -130,24 +145,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	/** Populates action bar with some abilities if save file wasn't found */
-	void SetDefaultActionBar(const TArray<UHAbility*>& AllAbilities);
+private:
 
+	/** Saves action bar to a save file */
+	void SaveActionBar();
+
+	/** Populates action bar with some abilities if save file was not found */
+	void SetDefaultActionBar(const TArray<UHAbility*>& AllAbilities);
+	
 	/** Loads action bar from a save file */
 	void LoadActionBar(TArray<UHAbility*>& AllAbilities, const TArray<FString>& SavedAbilities);
-
-public:
 	
-	UFUNCTION(BlueprintCallable)
-	void UseAbilityByIndex(int32 Index);
-
-	/**
-	 * Assigns provided ability to an action bar slot. Can be nullptr to remove ability from action bar.
-	 * @return whether operation was successful
-	 */
-	UFUNCTION(BlueprintCallable, Category = "ActionBar")
-	bool SetActionBarAbility(UHAbility* Ability, int32 Index);
-
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
 };

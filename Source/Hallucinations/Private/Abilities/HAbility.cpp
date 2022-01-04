@@ -20,7 +20,13 @@ float UHAbility::GetRemainingCooldown() const
 
 float UHAbility::GetRemainingCooldownPercentage() const
 {
-	return GetRemainingCooldown() / Cooldown;
+	return (Cooldown > 0.f) ? (GetRemainingCooldown() / Cooldown) : 0.f;
+}
+
+void UHAbility::RestoreCooldownPercentage(float CooldownPercentage)
+{
+	const float CooldownInSeconds = Cooldown * FMath::Clamp(CooldownPercentage, 0.f, 1.f);
+	GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, CooldownInSeconds, false);
 }
 
 FText UHAbility::GetSkillName() const

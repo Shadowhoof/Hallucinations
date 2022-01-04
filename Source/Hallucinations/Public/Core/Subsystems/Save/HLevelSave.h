@@ -3,27 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HStatefulActorInterface.h"
 #include "GameFramework/SaveGame.h"
 #include "HLevelSave.generated.h"
 
-
-class AHNonPlayerCharacter;
-
-
-USTRUCT()
-struct FPersistentActorState
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TSubclassOf<AHNonPlayerCharacter> Class;
-
-	UPROPERTY()
-	FTransform Transform;
-
-	UPROPERTY()
-	float Health;
-};
 
 /**
  * Persistent level state. This state will be loaded and restored when player enters a previously visited level.   

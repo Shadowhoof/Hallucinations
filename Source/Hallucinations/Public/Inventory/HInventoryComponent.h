@@ -8,9 +8,9 @@
 
 #include "HInventoryComponent.generated.h"
 
+class UHPlayerCharacterSave;
 class UHInventoryItem;
 class UHInventoryComponent;
-
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChangedDelegate, UHInventoryComponent*, InventoryComponent);
 
@@ -78,6 +78,7 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Layout")
 	FInventoryDimensions Dimensions;
@@ -92,5 +93,9 @@ private:
 	bool ValidateCell(const FInventoryCell& Cell) const;
 
 	bool ValidateDimensionsAt(const FInventoryDimensions& ItemDimensions, const FInventoryCell& TopLeftCell) const;
+
+	UHPlayerCharacterSave* GetCharacterSave() const;
+	void SavePersistentData();
+	void LoadPersistentData();
 	
 };

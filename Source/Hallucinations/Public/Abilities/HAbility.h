@@ -65,6 +65,16 @@ public:
 	EAbilityTarget GetTargetType(const FAbilityTargetParameters& TargetParams) const;
 
 	void SetAbilityComponent(UHAbilityComponent* Component);
+
+	/* Gets remaining cooldown for current ability in seconds */
+	UFUNCTION(BlueprintPure, Category = "Cooldown")
+	float GetRemainingCooldown() const;
+
+	/* Gets remaining cooldown percentage for current ability (in 0..1 range) */
+	UFUNCTION(BlueprintPure, Category = "Cooldown")
+	float GetRemainingCooldownPercentage() const;
+
+	void RestoreCooldownPercentage(float CooldownPercentage);
 	
 protected:
 
@@ -92,14 +102,6 @@ protected:
 	FText Name = FText::GetEmpty();
 
 	FTimerHandle CooldownTimerHandle;
-
-	/* Gets remaining cooldown for current ability in seconds */
-	UFUNCTION(BlueprintPure, Category = "Cooldown")
-	float GetRemainingCooldown() const;
-
-	/* Gets remaining cooldown percentage for current ability (in 0..1 range) */
-	UFUNCTION(BlueprintPure, Category = "Cooldown")
-	float GetRemainingCooldownPercentage() const;
 
 	virtual bool IsTargetTypeValid(const FAbilityTargetParameters& TargetParams) const;
 

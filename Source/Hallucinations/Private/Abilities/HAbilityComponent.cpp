@@ -7,7 +7,7 @@
 #include "Abilities/HSpellAbility.h"
 #include "Characters/HCharacter.h"
 #include "Core/HLogCategories.h"
-#include "Core/Subsystems/Save/HSaveGame.h"
+#include "Core/Subsystems/Save/HCharacterSave.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"
 #include "Characters/HPlayerCharacter.h"
@@ -15,6 +15,15 @@
 #include "Utils/HEnumTools.h"
 
 DEFINE_LOG_CATEGORY(LogAbility);
+
+
+const FString EmptyAbilityName = "Ability_NONE";
+
+FString GetAbilityClassName(UHAbility* Ability)
+{
+	return Ability ? Ability->GetClass()->GetName() : EmptyAbilityName;
+}
+
 
 // Ability component
 
@@ -176,9 +185,28 @@ TArray<UHAbility*> UHAbilityComponent::GetAbilities() const
 	return Abilities;
 }
 
-bool UHAbilityComponent::HasAbility(UHAbility* Ability)
+bool UHAbilityComponent::HasAbility(UHAbility* Ability) const
 {
 	return Ability && Abilities.Contains(Ability);
+}
+
+void UHAbilityComponent::GetPersistentState(TMap<FString, float>& OutCooldownData)
+{
+	for (const auto& Ability : Abilities)
+	{
+		OutCooldownData.Add(GetAbilityClassName(Ability), Ability->GetRemainingCooldownPercentage());
+	}
+}
+
+void UHAbilityComponent::RestorePersistentState(const TMap<FString, float>& CooldownData)
+{
+	for (const auto& Ability : Abilities)
+	{
+		if (FString Name = GetAbilityClassName(Ability); CooldownData.Contains(Name))
+		{
+			Ability->RestoreCooldownPercentage(CooldownData[Name]);
+		}
+	}
 }
 
 void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
@@ -209,8 +237,6 @@ UAnimMontage* UHAbilityComponent::GetCastAnimation(UHSpellAbility* Ability) cons
 
 
 // Action bar component
-
-const FName EmptyAbilityName = "Ability_NONE";
 
 UHActionBarComponent::UHActionBarComponent()
 {
@@ -256,15 +282,7 @@ void UHActionBarComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	AHPlayerCharacter* Character = Cast<AHPlayerCharacter>(GetOwner());
-	UHSaveGame* SaveData = Character->GetSaveData();
-	// clear old ability array and fill it with up-to-date data
-	SaveData->EquippedAbilities.Empty(MaxAbilities);
-	for (UHAbility* Ability : EquippedAbilities)
-	{
-		FString AbilityName = Ability ? Ability->GetClass()->GetName() : EmptyAbilityName.ToString();
-		SaveData->EquippedAbilities.Add(AbilityName);
-	}
+	SaveActionBar();
 }
 
 void UHActionBarComponent::SetDefaultActionBar(const TArray<UHAbility*>& AllAbilities)
@@ -287,6 +305,18 @@ void UHActionBarComponent::LoadActionBar(TArray<UHAbility*>& AllAbilities, const
 																	   return Ability->GetClass()->GetName() == AbilityName;
 																   });
 		EquippedAbilities[i] = FoundAbilityPtr ? *FoundAbilityPtr : nullptr;
+	}
+}
+
+void UHActionBarComponent::SaveActionBar()
+{
+	AHPlayerCharacter* Character = Cast<AHPlayerCharacter>(GetOwner());
+	UHPlayerCharacterSave* SaveData = Character->GetSaveData();
+	// clear old ability array and fill it with up-to-date data
+	SaveData->EquippedAbilities.Empty(MaxAbilities);
+	for (UHAbility* Ability : EquippedAbilities)
+	{
+		SaveData->EquippedAbilities.Add(GetAbilityClassName(Ability));
 	}
 }
 

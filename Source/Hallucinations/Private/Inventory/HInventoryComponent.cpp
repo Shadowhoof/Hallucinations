@@ -3,8 +3,12 @@
 
 #include "Inventory/HInventoryComponent.h"
 
+#include "Core/HGameInstance.h"
 #include "Core/GameModes/HGameMode.h"
 #include "Core/HLogCategories.h"
+#include "Core/Subsystems/Save/HCharacterSave.h"
+#include "Core/Subsystems/Save/HPersistentItem.h"
+#include "Core/Subsystems/Save/HSaveSubsystem.h"
 #include "Inventory/HInventoryItem.h"
 #include "Inventory/HLootableItem.h"
 #include "Utils/HLogUtils.h"
@@ -53,6 +57,11 @@ bool UHInventoryComponent::InsertItem(UHInventoryItem* Item)
 
 bool UHInventoryComponent::InsertItemAt(UHInventoryItem* Item, const FInventoryCell& TopLeftCell)
 {
+	if (!Item)
+	{
+		return false;
+	}
+	
 	FInventoryDimensions ItemDimensions = Item->GetData().Dimensions;
 	if (!CanInsertItemAt(ItemDimensions, TopLeftCell))
 	{
@@ -129,6 +138,15 @@ void UHInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	Grid.Init(nullptr, Dimensions.Width * Dimensions.Height);
+	
+	LoadPersistentData();
+}
+
+void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	SavePersistentData();
 }
 
 bool UHInventoryComponent::ValidateCell(const FInventoryCell& Cell) const
@@ -142,4 +160,31 @@ bool UHInventoryComponent::ValidateDimensionsAt(const FInventoryDimensions& Item
 	const int32 RightColumn = TopLeftCell.Column + ItemDimensions.Width - 1;
 	FInventoryCell BottomRightCell{ BottomRow, RightColumn };
 	return ValidateCell(TopLeftCell) && ValidateCell(BottomRightCell);
+}
+
+UHPlayerCharacterSave* UHInventoryComponent::GetCharacterSave() const
+{
+	const UHGameInstance* GameInstance = Cast<UHGameInstance>(GetWorld()->GetGameInstance());
+	const UHSaveSubsystem* SaveSubsystem = GameInstance->GetSubsystem<UHSaveSubsystem>();
+	return SaveSubsystem->GetCharacterSaveData(); 
+}
+
+void UHInventoryComponent::SavePersistentData()
+{
+	UHPlayerCharacterSave* Save = GetCharacterSave();
+	Save->InventoryItems.Empty(ItemMap.Num());
+	for (const auto& Entry : ItemMap)
+	{
+		Save->InventoryItems.Add(FPersistentInventoryItem(Entry.Value, Entry.Key->GetData()));
+	}
+}
+
+void UHInventoryComponent::LoadPersistentData()
+{
+	UHPlayerCharacterSave* Save = GetCharacterSave();
+	UHGameInstance* GameInstance = Cast<UHGameInstance>(GetWorld()->GetGameInstance());
+	for (const FPersistentInventoryItem& Item : Save->InventoryItems)
+	{
+		InsertItemAt(GameInstance->CreateItemById(Item.ItemId), Item.Position);
+	}
 }

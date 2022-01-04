@@ -3,7 +3,10 @@
 #include "EngineUtils.h"
 #include "HConstants.h"
 #include "Characters/HNonPlayerCharacter.h"
+#include "Characters/HPlayerCharacter.h"
+#include "Core/Subsystems/Save/HCharacterSave.h"
 #include "Core/Subsystems/Save/HSaveSubsystem.h"
+#include "Core/Subsystems/Save/HLevelSave.h"
 #include "Engine/PlayerStartPIE.h"
 #include "Level/HEnemySpawnPoint.h"
 #include "GameFramework/PlayerStart.h"
@@ -16,6 +19,11 @@ void AHAdventureGameMode::StartPlay()
 {
 	Super::StartPlay();
 
+	SaveSubsystem = GetGameInstance()->GetSubsystem<UHSaveSubsystem>();
+	ensure(SaveSubsystem);
+
+	RestorePlayerCharacter();
+	
 	if (!LoadLevel())
 	{
 		CreateLevel();
@@ -54,6 +62,7 @@ void AHAdventureGameMode::StartToLeaveMap()
 	Super::StartToLeaveMap();
 
 	SaveLevelState();
+	SavePlayerCharacter();
 	UE_LOG(LogLevel, Verbose, TEXT("Leaving map %s"), *UGameplayStatics::GetCurrentLevelName(this));
 }
 
@@ -95,7 +104,6 @@ void AHAdventureGameMode::CreateLevel()
 
 bool AHAdventureGameMode::LoadLevel()
 {
-	UHSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UHSaveSubsystem>();
 	UHLevelSave* LevelSave = SaveSubsystem->LoadLevel(GetWorld());
 	if (!LevelSave)
 	{
@@ -111,7 +119,6 @@ bool AHAdventureGameMode::LoadLevel()
 
 void AHAdventureGameMode::SaveLevelState()
 {
-	UHSaveSubsystem* SaveSubsystem = GetGameInstance()->GetSubsystem<UHSaveSubsystem>();
 	UHLevelSave* LevelSave = SaveSubsystem->CreateLevelSave();
 	
 	TArray<AActor*> Actors;
@@ -128,6 +135,12 @@ void AHAdventureGameMode::SaveLevelState()
 	SaveSubsystem->SaveLevel(GetWorld(), LevelSave);
 }
 
+void AHAdventureGameMode::SavePlayerCharacter()
+{
+	AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	SaveSubsystem->SavePCSessionState(PlayerCharacter->GetSessionState());
+}
+
 void AHAdventureGameMode::RestoreSavedActor(const FPersistentActorState& State)
 {
 	FActorSpawnParameters SpawnParams;
@@ -135,6 +148,18 @@ void AHAdventureGameMode::RestoreSavedActor(const FPersistentActorState& State)
 	AActor* Actor = GetWorld()->SpawnActor(State.Class, &State.Transform, SpawnParams);
 
 	IHStatefulActorInterface* StatefulActor = Cast<IHStatefulActorInterface>(Actor);
-	StatefulActor->RestorePersistentState(State);
-	UE_LOG(LogTemp, Log, TEXT("Restoring // cls: %s, pos: %s, hp: %.2f"), *State.Class->GetName(), *State.Transform.GetLocation().ToString(), State.Health);
+	if (StatefulActor)
+	{
+		StatefulActor->RestorePersistentState(State);
+	}
+}
+
+void AHAdventureGameMode::RestorePlayerCharacter()
+{
+	const UHPlayerCharacterSessionSave* SessionSave = SaveSubsystem->LoadPCSessionState();
+	if (SessionSave)
+	{
+		AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+		PlayerCharacter->RestoreSessionState(SessionSave->State);
+	}
 }

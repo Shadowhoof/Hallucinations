@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Kismet/GameplayStatics.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "HSaveSubsystem.generated.h"
 
+struct FPlayerCharacterSessionState;
 class USaveGame;
-class UHSaveGame;
+class UHPlayerCharacterSave;
+class UHPlayerCharacterSessionSave;
 class UHLevelSave;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSave, Log, All);
@@ -26,7 +27,7 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	UHSaveGame* GetSaveData() const;
+	UHPlayerCharacterSave* GetCharacterSaveData() const;
 
 	/** Creates a level save for provided world */
 	UHLevelSave* CreateLevelSave();
@@ -37,26 +38,29 @@ public:
 	/** Loads level state of provided world */
 	UHLevelSave* LoadLevel(const UWorld* World);
 
-	/** Deletes all level saves which were saved during this playthrough */
-	void DeleteLevelSaves();
-	
+	/** Saves player character's session state */
+	void SavePCSessionState(const FPlayerCharacterSessionState& PCState);
+
+	/** Loads player character's session state */
+	const UHPlayerCharacterSessionSave* LoadPCSessionState();
+
 private:
 
-	void SaveGame();
-	void LoadGame();
+	void SaveCharacter();
+	void LoadCharacter();
 
 	static USaveGame* CreateSave(TSubclassOf<USaveGame> SaveClass);
 	static void Save(USaveGame* SaveGameObject, const FString& SlotName, int32 UserIndex);
 	static USaveGame* Load(const FString& SlotName, int32 UserIndex);
 	static USaveGame* LoadOrCreate(TSubclassOf<USaveGame> SaveClass, const FString& SlotName, int32 UserIndex);
-
+	static void Delete(const FString& SlotName, int UserIndex);
+	
 	static FString GetLevelSlotName(const UWorld* World);
+	static FString GetCharacterSlotName(const uint8 CharacterId);
 	
 	UPROPERTY()
-	UHSaveGame* SaveData;
+	UHPlayerCharacterSave* CharacterSave;
 	
-	static const FString DefaultSlotName;
-
 	TSet<FString> VisitedLevelsSlotNames;
 	
 };

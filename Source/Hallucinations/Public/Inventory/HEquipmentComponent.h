@@ -8,7 +8,9 @@
 #include "HEquipmentComponent.generated.h"
 
 
+class UHPlayerCharacterSave;
 class UHInventoryItem;
+struct FPersistentEquippedItem;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemEquippedDelegate, UHInventoryItem*, Item);
@@ -39,6 +41,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Utility")
 	bool CanEquipItemInSlot(UHInventoryItem* Item, EEquipmentSlot Slot) const;
 
+	UFUNCTION(BlueprintPure, Category = "Utility")
+	UHInventoryItem* GetItemInSlot(EEquipmentSlot Slot) const;
+	
 	UPROPERTY()
 	FItemEquippedDelegate OnItemEquipped;
 
@@ -55,9 +60,14 @@ protected:
 	TArray<const UHInventoryItem*> ItemArray;
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 
 	static const TMap<EEquipmentType, const TArray<EEquipmentSlot>> TypeToSlotMap;
+
+	UHPlayerCharacterSave* GetCharacterSave();
+	void SavePersistentData();
+	void LoadPersistentData();
 	
 };

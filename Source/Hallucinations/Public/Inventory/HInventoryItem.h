@@ -26,6 +26,9 @@ struct FInventoryItem : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 ItemId;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -61,6 +64,7 @@ public:
 	const FInventoryItem& GetData() const;
 
 	static UHInventoryItem* CreateItem(const FInventoryItem& Data);
+	static UHInventoryItem* CreateItem(const FInventoryItem* DataPtr);
 
 protected:
 

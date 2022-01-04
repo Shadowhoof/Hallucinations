@@ -3,7 +3,11 @@
 
 #include "Inventory/HEquipmentComponent.h"
 
+#include "Core/HGameInstance.h"
 #include "Core/GameModes/HGameMode.h"
+#include "Core/Subsystems/Save/HCharacterSave.h"
+#include "Core/Subsystems/Save/HPersistentItem.h"
+#include "Core/Subsystems/Save/HSaveSubsystem.h"
 #include "Inventory/HInventoryItem.h"
 #include "Inventory/HLootableItem.h"
 #include "Utils/HUtils.h"
@@ -28,6 +32,10 @@ const TMap<EEquipmentType, const TArray<EEquipmentSlot>> UHEquipmentComponent::T
 
 UHEquipmentComponent::UHEquipmentComponent()
 {
+	for (EEquipmentSlot Slot : TEnumRange<EEquipmentSlot>())
+	{
+		ItemMap.Add(Slot, nullptr);
+	}
 }
 
 UHInventoryItem* UHEquipmentComponent::EquipItem(UHInventoryItem* Item, EEquipmentSlot Slot)
@@ -113,6 +121,11 @@ const TArray<const UHInventoryItem*>& UHEquipmentComponent::GetEquippedItems() c
 	return ItemArray;
 }
 
+UHInventoryItem* UHEquipmentComponent::GetItemInSlot(EEquipmentSlot Slot) const
+{
+	return ItemMap[Slot];
+}
+
 void UHEquipmentComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -120,6 +133,45 @@ void UHEquipmentComponent::BeginPlay()
 	for (EEquipmentSlot Slot : TEnumRange<EEquipmentSlot>())
 	{
 		ItemMap.Add(Slot, nullptr);
+	}
+
+	LoadPersistentData();
+}
+
+void UHEquipmentComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	SavePersistentData();
+}
+
+UHPlayerCharacterSave* UHEquipmentComponent::GetCharacterSave()
+{
+	UHGameInstance* GameInstance = Cast<UHGameInstance>(GetWorld()->GetGameInstance());
+	UHSaveSubsystem* SaveSubsystem = GameInstance->GetSubsystem<UHSaveSubsystem>();
+	return SaveSubsystem->GetCharacterSaveData(); 
+}
+
+void UHEquipmentComponent::SavePersistentData()
+{
+	UHPlayerCharacterSave* Save = GetCharacterSave();
+	Save->EquippedItems.Empty();
+	for (const auto& Entry : ItemMap)
+	{
+		if (const UHInventoryItem* Item = Entry.Value)
+		{
+			Save->EquippedItems.Add(FPersistentEquippedItem(Entry.Key, Item->GetData()));
+		}
+	}
+}
+
+void UHEquipmentComponent::LoadPersistentData()
+{
+	UHGameInstance* GameInstance = Cast<UHGameInstance>(GetWorld()->GetGameInstance());
+	UHPlayerCharacterSave* Save = GetCharacterSave();
+	for (const auto& Item : Save->EquippedItems)
+	{
+		EquipItem(GameInstance->CreateItemById(Item.ItemId), Item.Slot);
 	}
 }
 

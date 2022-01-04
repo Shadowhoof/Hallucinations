@@ -177,11 +177,25 @@ void AHPlayerCharacter::UseAbility(int32 Index)
 	}
 }
 
-UHSaveGame* AHPlayerCharacter::GetSaveData()
+UHPlayerCharacterSave* AHPlayerCharacter::GetSaveData()
 {
 	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
 	UHSaveSubsystem* SaveSubsystem = GameInstance->GetSubsystem<UHSaveSubsystem>();
-	return SaveSubsystem->GetSaveData();
+	return SaveSubsystem->GetCharacterSaveData();
+}
+
+FPlayerCharacterSessionState AHPlayerCharacter::GetSessionState()
+{
+	FPlayerCharacterSessionState State;
+	State.Health = HealthComponent->GetHealthPercentage();
+	AbilityComponent->GetPersistentState(State.AbilityCooldowns);
+	return State;
+}
+
+void AHPlayerCharacter::RestoreSessionState(const FPlayerCharacterSessionState& State)
+{
+	HealthComponent->RestorePersistentState(State.Health);
+	AbilityComponent->RestorePersistentState(State.AbilityCooldowns);
 }
 
 void AHPlayerCharacter::Move(float Value)

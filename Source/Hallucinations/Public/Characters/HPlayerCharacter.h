@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Characters/HCharacter.h"
+#include "Core/Subsystems/Save/HCharacterSave.h"
 #include "HPlayerCharacter.generated.h"
 
 class UHEquipmentComponent;
 class UHInventoryComponent;
-class UHSaveGame;
+class UHPlayerCharacterSave;
 class UCameraComponent;
 class USpringArmComponent;
 class AHProjectile;
@@ -40,7 +41,10 @@ public:
 
 	void UseAbility(int32 Index);
 
-	UHSaveGame* GetSaveData();
+	UHPlayerCharacterSave* GetSaveData();
+
+	FPlayerCharacterSessionState GetSessionState();
+	void RestoreSessionState(const FPlayerCharacterSessionState& State);
 	
 protected:
 

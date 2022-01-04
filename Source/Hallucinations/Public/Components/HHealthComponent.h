@@ -94,5 +94,5 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetHealthPercentage() const;
 
-	void RestorePersistentState(const FPersistentActorState& State);
+	void RestorePersistentState(float HealthPercentage);
 };

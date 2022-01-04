@@ -3,6 +3,7 @@
 
 #include "Characters/HNonPlayerCharacter.h"
 
+#include "Abilities/HAbilityComponent.h"
 #include "Components/HHealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -37,12 +38,14 @@ FPersistentActorState AHNonPlayerCharacter::GetPersistentState() const
 	State.Class = GetClass();
 	State.Transform = GetTransform();
 	State.Health = GetHealthComponent()->GetHealthPercentage();
+	AbilityComponent->GetPersistentState(State.AbilityCooldowns);
 	return State;
 }
 
 void AHNonPlayerCharacter::RestorePersistentState(const FPersistentActorState& State)
 {
-	HealthComponent->RestorePersistentState(State);
+	HealthComponent->RestorePersistentState(State.Health);
+	AbilityComponent->RestorePersistentState(State.AbilityCooldowns);
 }
 
 void AHNonPlayerCharacter::BeginPlay()

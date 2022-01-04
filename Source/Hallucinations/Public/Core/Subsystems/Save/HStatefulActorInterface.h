@@ -3,9 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HLevelSave.h"
 #include "UObject/Interface.h"
 #include "HStatefulActorInterface.generated.h"
+
+
+USTRUCT()
+struct FPersistentActorState
+{
+	GENERATED_BODY()
+
+	/** Class which will be used to recreate an actor */ 
+	UPROPERTY()
+	TSubclassOf<AActor> Class;
+
+	/** Actor's transform */
+	UPROPERTY()
+	FTransform Transform;
+
+	/** Actor's health */
+	UPROPERTY()
+	float Health;
+
+	/** Ability cooldowns of an actor at the moment of save */
+	UPROPERTY()
+	TMap<FString, float> AbilityCooldowns;
+	
+};
 
 
 UINTERFACE()

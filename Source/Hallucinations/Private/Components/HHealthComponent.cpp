@@ -154,9 +154,9 @@ float UHHealthComponent::GetHealthPercentage() const
 	return FMath::Clamp(CurrentHealth / MaxHealth, 0.f, 1.f);
 }
 
-void UHHealthComponent::RestorePersistentState(const FPersistentActorState& State)
+void UHHealthComponent::RestorePersistentState(float HealthPercentage)
 {
-	CurrentHealth = MaxHealth * FMath::Clamp(State.Health, 0.f, 1.f); 
+	CurrentHealth = MaxHealth * FMath::Clamp(HealthPercentage, 0.f, 1.f); 
 }
 
 bool UHHealthComponent::IsDead() const

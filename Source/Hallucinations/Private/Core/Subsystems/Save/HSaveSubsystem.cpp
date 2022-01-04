@@ -3,8 +3,8 @@
 
 #include "Core/Subsystems/Save/HSaveSubsystem.h"
 
-#include "Core/Subsystems/Save/HSaveGame.h"
-#include "Core/Subsystems/Save/HStatefulActorInterface.h"
+#include "Core/Subsystems/Save/HCharacterSave.h"
+#include "Core/Subsystems/Save/HLevelSave.h"
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogSave);
@@ -12,31 +12,37 @@ DEFINE_LOG_CATEGORY(LogSave);
 namespace SaveConstants
 {
 	const FString LevelPrefix = "Level:";
+	const FString PCSessionSlotName = "CharacterSession";
+	const FString CharacterPrefix = "Character:";
 }
 
-
-const FString UHSaveSubsystem::DefaultSlotName = "DefaultSlot";
 
 void UHSaveSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	LoadGame();
+	LoadCharacter();
 }
 
 void UHSaveSubsystem::Deinitialize()
 {
-	SaveGame();
+	SaveCharacter();
 
 	// level data should not be saved between sessions
-	DeleteLevelSaves();
+	for (const auto& SlotName : VisitedLevelsSlotNames)
+	{
+		Delete(SlotName, 0);
+	}
+
+	// neither should player character session data
+	Delete(SaveConstants::PCSessionSlotName, 0);
 	
 	Super::Deinitialize();
 }
 
-UHSaveGame* UHSaveSubsystem::GetSaveData() const
+UHPlayerCharacterSave* UHSaveSubsystem::GetCharacterSaveData() const
 {
-	return SaveData;
+	return CharacterSave;
 }
 
 UHLevelSave* UHSaveSubsystem::CreateLevelSave()
@@ -56,26 +62,28 @@ UHLevelSave* UHSaveSubsystem::LoadLevel(const UWorld* World)
 	return Cast<UHLevelSave>(Load(GetLevelSlotName(World), 0));
 }
 
-void UHSaveSubsystem::DeleteLevelSaves()
+void UHSaveSubsystem::SavePCSessionState(const FPlayerCharacterSessionState& PCState)
 {
-	for (const auto& SlotName : VisitedLevelsSlotNames)
-	{
-		if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
-		{
-			UE_LOG(LogSave, VeryVerbose, TEXT("Deleting level save %s"), *SlotName);
-			UGameplayStatics::DeleteGameInSlot(SlotName, 0);
-		}
-	}
+	UHPlayerCharacterSessionSave* SessionSave = Cast<UHPlayerCharacterSessionSave>(CreateSave(UHPlayerCharacterSessionSave::StaticClass()));
+	SessionSave->State = PCState;
+	Save(SessionSave, SaveConstants::PCSessionSlotName, 0);
 }
 
-void UHSaveSubsystem::SaveGame()
+const UHPlayerCharacterSessionSave* UHSaveSubsystem::LoadPCSessionState()
 {
-	Save(SaveData, DefaultSlotName, 0);
+	return Cast<UHPlayerCharacterSessionSave>(Load(SaveConstants::PCSessionSlotName, 0));
 }
 
-void UHSaveSubsystem::LoadGame()
+void UHSaveSubsystem::SaveCharacter()
 {
-	SaveData = Cast<UHSaveGame>(LoadOrCreate(UHSaveGame::StaticClass(), DefaultSlotName, 0));
+	const FString SlotName = GetCharacterSlotName(0);
+	Save(CharacterSave, SlotName, 0);
+}
+
+void UHSaveSubsystem::LoadCharacter()
+{
+	const FString SlotName = GetCharacterSlotName(0);
+	CharacterSave = Cast<UHPlayerCharacterSave>(LoadOrCreate(UHPlayerCharacterSave::StaticClass(), SlotName, 0));
 }
 
 USaveGame* UHSaveSubsystem::CreateSave(TSubclassOf<USaveGame> SaveClass)
@@ -132,7 +140,21 @@ USaveGame* UHSaveSubsystem::LoadOrCreate(TSubclassOf<USaveGame> SaveClass, const
 	return SaveGameObject;
 }
 
+void UHSaveSubsystem::Delete(const FString& SlotName, int UserIndex)
+{
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, UserIndex))
+	{
+		UE_LOG(LogSave, VeryVerbose, TEXT("Deleting save %s"), *SlotName);
+		UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex);
+	}
+}
+
 FString UHSaveSubsystem::GetLevelSlotName(const UWorld* World)
 {
 	return SaveConstants::LevelPrefix + UGameplayStatics::GetCurrentLevelName(World);
+}
+
+FString UHSaveSubsystem::GetCharacterSlotName(const uint8 CharacterId)
+{
+	return SaveConstants::CharacterPrefix + FString::FromInt(CharacterId);
 }

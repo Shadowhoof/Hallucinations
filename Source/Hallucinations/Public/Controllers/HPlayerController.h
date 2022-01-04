@@ -9,7 +9,7 @@
 #include "HPlayerController.generated.h"
 
 class AHPlayerCharacter;
-class UHSaveGame;
+class UHPlayerCharacterSave;
 class UCameraComponent;
 class AHCharacter;
 

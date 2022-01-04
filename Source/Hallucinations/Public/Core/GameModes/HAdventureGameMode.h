@@ -5,6 +5,7 @@
 #include "HAdventureGameMode.generated.h"
 
 struct FPersistentActorState;
+class UHSaveSubsystem;
 
 /**
  *  Game mode which is used in Adventure Mode (regular gameplay)
@@ -24,9 +25,15 @@ public:
 	
 private:
 
+	UPROPERTY()
+	UHSaveSubsystem* SaveSubsystem = nullptr;
+	
 	void CreateLevel();
 	bool LoadLevel();
 
 	void SaveLevelState();
+	void SavePlayerCharacter();
+	
 	void RestoreSavedActor(const FPersistentActorState& State);
+	void RestorePlayerCharacter();
 };
