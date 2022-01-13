@@ -3,7 +3,7 @@
 
 #include "Level/HFadeableComponent.h"
 
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 
 DEFINE_LOG_CATEGORY(LogFade);
 

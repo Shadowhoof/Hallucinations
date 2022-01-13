@@ -3,7 +3,6 @@
 
 #include "Characters/HCharacter.h"
 
-#include "HConstants.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -16,10 +15,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Components/BoxComponent.h"
-#include "Core/HInteractable.h"
+#include "Constants/HConstants.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"
-#include "Weapons/HWeapon.h"
 
 
 namespace CharacterConstants
@@ -76,8 +74,8 @@ void AHCharacter::BeginPlay()
 	
 	HealthComponent->OnActorDeath.AddDynamic(this, &AHCharacter::OnDeath);
 
-	AttackComponent->AttackStartedEvent.AddDynamic(this, &AHCharacter::OnAttackStart);
-	AttackComponent->AttackEndedEvent.AddDynamic(this, &AHCharacter::OnAttackEnd);
+	AttackComponent->OnAttackStarted.AddDynamic(this, &AHCharacter::OnAttackStart);
+	AttackComponent->OnAttackEnded.AddDynamic(this, &AHCharacter::OnAttackEnd);
 }
 
 void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
@@ -183,7 +181,7 @@ AActor* AHCharacter::GetTargetActor() const
 
 FVector AHCharacter::GetTargetLocation() const
 {
-	return FHConstants::NullVector;
+	return HallucinationsConstants::InvalidVector;
 }
 
 UHHealthComponent* AHCharacter::GetHealthComponent() const

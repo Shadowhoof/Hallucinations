@@ -3,8 +3,10 @@
 
 #include "Characters/HNonPlayerCharacter.h"
 
+#include "AIController.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Components/HHealthComponent.h"
+#include "Controllers/HAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AHNonPlayerCharacter::AHNonPlayerCharacter()
@@ -46,6 +48,17 @@ void AHNonPlayerCharacter::RestorePersistentState(const FPersistentActorState& S
 {
 	HealthComponent->RestorePersistentState(State.Health);
 	AbilityComponent->RestorePersistentState(State.AbilityCooldowns);
+}
+
+AActor* AHNonPlayerCharacter::GetTargetActor() const
+{
+	AHAIController* AIController = Cast<AHAIController>(GetController());
+	if (!AIController)
+	{
+		return nullptr;
+	}
+
+	return AIController->GetTargetActor();
 }
 
 void AHNonPlayerCharacter::BeginPlay()

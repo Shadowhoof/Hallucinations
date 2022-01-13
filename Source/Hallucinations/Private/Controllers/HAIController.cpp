@@ -3,17 +3,22 @@
 
 #include "Controllers/HAIController.h"
 
-#include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BTNode.h"
 #include "Characters/HCharacter.h"
 #include "Components/HHealthComponent.h"
 #include "Core/HLogCategories.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig.h"
 #include "Perception/AISense_Sight.h"
 #include "Utils/HLogUtils.h"
 
 DEFINE_LOG_CATEGORY(LogAI);
+
+
+namespace AIConstants
+{
+	const FName TargetActorKeyName("TargetActor");
+}
 
 
 AHAIController::AHAIController()
@@ -34,6 +39,9 @@ void AHAIController::GetKnownSightPerceivedActors(TArray<AActor*>& OutActors)
 void AHAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+	TargetActor = Cast<AActor>(BlackboardComponent->GetValueAsObject(AIConstants::TargetActorKeyName));
 }
 
 ETeamAttitude::Type AHAIController::GetTeamAttitudeTowards(const AActor& Other) const
@@ -44,6 +52,11 @@ ETeamAttitude::Type AHAIController::GetTeamAttitudeTowards(const AActor& Other) 
 		Agent = Cast<IGenericTeamAgentInterface>(Other.GetInstigatorController());
 	}
 	return Agent ? FGenericTeamId::GetAttitude(GetGenericTeamId(), Agent->GetGenericTeamId()) : ETeamAttitude::Neutral;
+}
+
+AActor* AHAIController::GetTargetActor() const
+{
+	return TargetActor;
 }
 
 void AHAIController::BeginPlay()

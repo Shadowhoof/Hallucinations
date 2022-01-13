@@ -6,10 +6,9 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "Core/HLogCategories.h"
 #include "Perception/AISense_Damage.h"
 #include "Perception/AISense_Sight.h"
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Utils/HLogUtils.h"
 #include "VisualLogger/VisualLogger.h"
 

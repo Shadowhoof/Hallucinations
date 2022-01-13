@@ -126,14 +126,20 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(BlueprintAssignable, Category = "Attack")
-	FAttackStartedEvent AttackStartedEvent;
+	FAttackStartedEvent OnAttackStarted;
 
 	UPROPERTY(BlueprintAssignable, Category = "Attack")
-	FAttackEndedEvent AttackEndedEvent;
+	FAttackEndedEvent OnAttackEnded;
+
+	DECLARE_EVENT(UHAttackComponent, FAttackInterruptedEvent);
+	FAttackInterruptedEvent OnAttackInterrupted;
+
+	DECLARE_EVENT(UHAttackComponent, FAttackCancelledEvent);
+	FAttackCancelledEvent OnAttackCancelled;
 
 	/** Locks on target that will be attacked if it's an enemy. Returns whether target is in range of the weapon */
 	UFUNCTION(BlueprintCallable)
-	void AttackActor(AActor* Actor);
+	bool AttackActor(AActor* Actor);
 
 	/**
 	 *	Regular actor attack logic except an ability will handle the logic that executes when attack finishes.

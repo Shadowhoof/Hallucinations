@@ -9,6 +9,7 @@ UHHeadBlow::UHHeadBlow()
 {
 	TargetType = BIT_AS_INT(EAbilityTarget::Actor);
 	Name = FText::FromString("Head Blow");
+	AffectedTargets = BIT_AS_INT(EThreatStatus::Enemy);
 }
 
 void UHHeadBlow::FinishActorCast(AActor* TargetActor)

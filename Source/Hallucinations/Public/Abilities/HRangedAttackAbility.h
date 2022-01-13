@@ -17,6 +17,10 @@ class HALLUCINATIONS_API UHRangedAttackAbility : public UHAttackAbility
 {
 	GENERATED_BODY()
 
+public:
+	
+	UHRangedAttackAbility();
+	
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")

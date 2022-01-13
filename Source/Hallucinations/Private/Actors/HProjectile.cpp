@@ -3,7 +3,7 @@
 
 #include "Actors/HProjectile.h"
 
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Characters/HCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"

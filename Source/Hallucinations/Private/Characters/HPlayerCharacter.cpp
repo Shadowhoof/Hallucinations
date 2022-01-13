@@ -3,7 +3,7 @@
 
 #include "Characters/HPlayerCharacter.h"
 
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "NavigationSystem.h"

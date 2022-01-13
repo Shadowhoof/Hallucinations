@@ -37,7 +37,7 @@ public:
 	UHAbilityComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void UseAbility(UHAbility* Ability);
+	bool UseAbility(UHAbility* Ability);
 
 	AActor* GetTargetActor() const;
 
@@ -53,6 +53,12 @@ public:
 
 	bool HasAbility(UHAbility* Ability) const;
 
+	DECLARE_EVENT_OneParam(UHAbilityComponent, FAbilityUseFinishedEvent, const UHAbility*)
+	FAbilityUseFinishedEvent OnAbilityUseFinished; 
+
+	DECLARE_EVENT_OneParam(UHAbilityComponent, FAbilityUseCancelledEvent, const UHAbility*)
+	FAbilityUseCancelledEvent OnAbilityUseCancelled;
+	
 	void GetPersistentState(TMap<FString, float>& OutCooldownData);
 	void RestorePersistentState(const TMap<FString, float>& CooldownData);
 
@@ -82,12 +88,14 @@ protected:
 	void FinishCast(UHSpellAbility* Ability);
 
 private:
-
-	void UseSpellAbility(UHAbility* BaseAbility);
-	void UseAttackAbility(UHAbility* UncastAbility);
+	bool UseSpellAbility(UHAbility* BaseAbility);
+	bool UseAttackAbility(UHAbility* UncastAbility);
 
 	FAbilityTargetParameters CurrentTargetParams;
 
+	UPROPERTY()
+	UHSpellAbility* QueuedSpellAbility;
+	
 	UPROPERTY()
 	UHAttackAbility* QueuedAttackAbility;
 

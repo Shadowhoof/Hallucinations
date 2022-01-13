@@ -3,7 +3,7 @@
 
 #include "Level/HLevelExit.h"
 
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Kismet/GameplayStatics.h"
 
 AHLevelExit::AHLevelExit()

@@ -2,7 +2,7 @@
 
 
 #include "Actors/HSphereProjectile.h"
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Components/SphereComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 

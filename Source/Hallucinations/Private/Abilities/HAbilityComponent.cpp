@@ -39,14 +39,14 @@ bool UHAbilityComponent::CanUseAbility(UHAbility* Ability, const FAbilityTargetP
 	return !GetCaster()->IsBusy() && Ability->CanBeUsed(TargetParams);
 }
 
-void UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
+bool UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
 {
 	ensure(BaseAbility);
 	UHSpellAbility* Ability = Cast<UHSpellAbility>(BaseAbility);
 	if (!Ability)
 	{
 		UE_LOG(LogAbility, Error, TEXT("Ability %s does not inherit UHSpellAbility"), *BaseAbility->GetSkillNameAsString());
-		return;
+		return false;
 	}
 
 	UHFollowComponent* FollowComponent = GetCaster()->GetFollowComponent();
@@ -67,16 +67,21 @@ void UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
 	GetCaster()->PlayAnimMontage(CastAnimation);
 	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCast, Ability);
 	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, GetCastTime(Ability), false);
+
+	QueuedSpellAbility = Ability;
+	bIsCasting = true;
+
+	return true;
 }
 
-void UHAbilityComponent::UseAttackAbility(UHAbility* UncastAbility)
+bool UHAbilityComponent::UseAttackAbility(UHAbility* UncastAbility)
 {
 	ensure(UncastAbility);
 	UHAttackAbility* Ability = Cast<UHAttackAbility>(UncastAbility);
 	if (!Ability)
 	{
 		UE_LOG(LogAbility, Error, TEXT("Ability %s is not of Spell type"), *UncastAbility->GetSkillNameAsString());
-		return;
+		return false;
 	}
 
 	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
@@ -98,6 +103,7 @@ void UHAbilityComponent::UseAttackAbility(UHAbility* UncastAbility)
 	{
 		QueuedAttackAbility = Ability;
 	}
+	return bIsAttackQueued;
 }
 
 AActor* UHAbilityComponent::GetTargetActor() const
@@ -133,37 +139,43 @@ void UHAbilityComponent::BeginPlay()
 	}
 
 	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
-	AttackComponent->AttackEndedEvent.AddDynamic(this, &UHAbilityComponent::OnAttackEnded);
+	AttackComponent->OnAttackEnded.AddDynamic(this, &UHAbilityComponent::OnAttackEnded);
 }
 
-void UHAbilityComponent::UseAbility(UHAbility* Ability)
+bool UHAbilityComponent::UseAbility(UHAbility* Ability)
 {
 	FAbilityTargetParameters TargetParams;
 	TargetParams.Actor = GetTargetActor();
 	TargetParams.Location = GetTargetLocation();
-	if (CanUseAbility(Ability, TargetParams))
+	if (!CanUseAbility(Ability, TargetParams))
 	{
-		CurrentTargetParams = TargetParams;
-		EAbilityType AbilityType = Ability->GetType();
-		switch (AbilityType)
-		{
-		case EAbilityType::Spell:
-			UseSpellAbility(Ability);
-			break;
-		case EAbilityType::Attack:
-			UseAttackAbility(Ability);
-			break;
-		default:
-			UE_LOG(LogAbility, Error, TEXT("Unknown ability type %s of ability %s"), *EnumAsString(AbilityType), *Ability->GetSkillNameAsString());
-			break;
-		}
+		return false;
 	}
+	
+	CurrentTargetParams = TargetParams;
+	EAbilityType AbilityType = Ability->GetType();
+	bool bIsCastingOrQueued = false;
+	switch (AbilityType)
+	{
+	case EAbilityType::Spell:
+		bIsCastingOrQueued = UseSpellAbility(Ability);
+		break;
+	case EAbilityType::Attack:
+		bIsCastingOrQueued = UseAttackAbility(Ability);
+		break;
+	default:
+		UE_LOG(LogAbility, Error, TEXT("Unknown ability type %s of ability %s"), *EnumAsString(AbilityType), *Ability->GetSkillNameAsString());
+		break;
+	}
+	return bIsCastingOrQueued;
 }
 
 void UHAbilityComponent::FinishCast(UHSpellAbility* Ability)
 {
 	Ability->OnCastFinished(CurrentTargetParams);
+	QueuedSpellAbility = nullptr;
 	bIsCasting = false;
+	OnAbilityUseFinished.Broadcast(Ability);
 }
 
 bool UHAbilityComponent::IsCasting() const
@@ -176,7 +188,11 @@ void UHAbilityComponent::Interrupt()
 	if (bIsCasting)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(CastTimerHandle);
+		const UHSpellAbility* InterruptedSpell = QueuedSpellAbility;
+		
 		bIsCasting = false;
+		QueuedSpellAbility = nullptr;
+		OnAbilityUseCancelled.Broadcast(InterruptedSpell);
 	}
 }
 
@@ -217,8 +233,10 @@ void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
 	}
 
 	QueuedAttackAbility->OnAttackFinished(AttackResult);
-	QueuedAttackAbility = nullptr;
 	GetCaster()->GetAttackComponent()->StopAttacking();
+
+	OnAbilityUseFinished.Broadcast(QueuedAttackAbility);
+	QueuedAttackAbility = nullptr;
 }
 
 float UHAbilityComponent::GetCastTime(UHSpellAbility* Ability) const

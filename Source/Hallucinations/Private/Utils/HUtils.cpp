@@ -3,7 +3,7 @@
 
 #include "Utils/HUtils.h"
 
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "NavigationSystem.h"
 #include "Components/HHealthComponent.h"
 

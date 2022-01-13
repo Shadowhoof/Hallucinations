@@ -30,6 +30,8 @@ public:
 
 	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
 
+	AActor* GetTargetActor() const;
+	
 protected:
 
 	virtual void BeginPlay() override;
@@ -38,5 +40,8 @@ protected:
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category = "Combat")
 	bool bInCombat = false;
+
+	UPROPERTY()
+	AActor* TargetActor;
 
 };

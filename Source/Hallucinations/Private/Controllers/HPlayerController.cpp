@@ -2,7 +2,7 @@
 
 
 #include "Controllers/HPlayerController.h"
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Characters/HPlayerCharacter.h"
 #include "Components/HHealthComponent.h"
 #include "Camera/CameraActor.h"

@@ -29,6 +29,11 @@ void UHAbility::RestoreCooldownPercentage(float CooldownPercentage)
 	GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, CooldownInSeconds, false);
 }
 
+bool UHAbility::IsOffensive() const
+{
+	return static_cast<bool>(static_cast<EThreatStatus>(AffectedTargets) & EThreatStatus::Enemy);
+}
+
 FText UHAbility::GetSkillName() const
 {
 	return Name.IsEmpty() ? FText::FromString(GetClass()->GetName()) : Name;

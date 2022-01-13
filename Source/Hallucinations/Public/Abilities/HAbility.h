@@ -6,6 +6,7 @@
 
 #include "HAbilityActorInterface.h"
 #include "HAbilityComponent.h"
+#include "Constants/HTeamConstants.h"
 #include "UObject/NoExportTypes.h"
 #include "HAbility.generated.h"
 
@@ -75,6 +76,8 @@ public:
 	float GetRemainingCooldownPercentage() const;
 
 	void RestoreCooldownPercentage(float CooldownPercentage);
+
+	bool IsOffensive() const;
 	
 protected:
 
@@ -89,6 +92,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Ability")
 	EAbilityType Type = EAbilityType::Spell;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (Bitmask, BitmaskEnum = "EThreatStatus"))
+	uint8 AffectedTargets;
+	
 	/** Amount of time before ability can be used again */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
 	float Cooldown = 0.f;

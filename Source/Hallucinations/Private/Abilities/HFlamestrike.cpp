@@ -9,6 +9,7 @@ UHFlamestrike::UHFlamestrike()
 {
 	TargetType = BIT_AS_INT(EAbilityTarget::Point);
 	Name = FText::FromString("Flamestrike");
+	AffectedTargets = BIT_AS_INT(EThreatStatus::Enemy);
 }
 
 void UHFlamestrike::FinishLocationCast(FVector TargetLocation)

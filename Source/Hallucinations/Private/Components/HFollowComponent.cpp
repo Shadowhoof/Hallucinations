@@ -2,7 +2,7 @@
 
 
 #include "Components/HFollowComponent.h"
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Characters/HCharacter.h"
 #include "GameFramework/PawnMovementComponent.h"

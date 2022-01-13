@@ -32,6 +32,8 @@ public:
 	virtual bool ShouldBeSaved() const override;
 	virtual FPersistentActorState GetPersistentState() const override;
 	virtual void RestorePersistentState(const FPersistentActorState& State) override;
+
+	virtual AActor* GetTargetActor() const override;
 	
 protected:
 

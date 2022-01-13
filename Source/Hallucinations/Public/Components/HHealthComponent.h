@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Constants/HTeamConstants.h"
 #include "HHealthComponent.generated.h"
 
 struct FPersistentActorState;
@@ -12,21 +13,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, TargetA
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActorDeath, AActor*, Victim, AActor*, Killer);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogRagdoll, Log, All);
-
-UENUM()
-enum class ETeam
-{
-	GoodGuys,
-	BadGuys,
-};
-
-UENUM()
-enum class EThreatStatus
-{
-	Ally,
-	Enemy,
-	Neutral,
-};
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

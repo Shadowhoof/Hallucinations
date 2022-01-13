@@ -5,6 +5,12 @@
 #include "Characters/HCharacter.h"
 #include "Actors/HProjectile.h"
 #include "Core/HLogCategories.h"
+#include "Utils/HEnumTools.h"
+
+UHRangedAttackAbility::UHRangedAttackAbility()
+{
+	AffectedTargets = BIT_AS_INT(EThreatStatus::Enemy);
+}
 
 void UHRangedAttackAbility::FinishActorAttack(AActor* TargetActor, const FVector& SpawnOrWeaponLocation)
 {

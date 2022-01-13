@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Weapons/HRangedWeapon.h"
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Actors/HProjectile.h"
 #include "Characters/HCharacter.h"
 #include "Components/HAttackComponent.h"

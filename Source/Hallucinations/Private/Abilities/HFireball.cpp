@@ -3,9 +3,9 @@
 
 #include "Abilities/HFireball.h"
 
-#include "HConstants.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Characters/HCharacter.h"
+#include "Constants/HConstants.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HEnumTools.h"
 #include "Core/HLogCategories.h"
@@ -14,6 +14,7 @@ UHFireball::UHFireball()
 {
 	TargetType = CombineBits(EAbilityTarget::Actor, EAbilityTarget::Point);
 	Name = FText::FromString("Fireball");
+	AffectedTargets = BIT_AS_INT(EThreatStatus::Enemy);
 }
 
 void UHFireball::FinishActorCast(AActor* TargetActor)

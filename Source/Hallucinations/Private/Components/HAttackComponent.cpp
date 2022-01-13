@@ -7,7 +7,7 @@
 #include "Weapons/HWeapon.h"
 #include "Characters/HCharacter.h"
 #include "Utils/HUtils.h"
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Engine/World.h"
 #include "Utils/HLogUtils.h"
 
@@ -114,11 +114,11 @@ bool UHAttackComponent::CanStartAttack() const
 	return Weapon && !bIsAttacking && !bIsAttackOnCooldown && !GetCharacter()->IsBusy();
 }
 
-void UHAttackComponent::AttackActor(AActor* Actor)
+bool UHAttackComponent::AttackActor(AActor* Actor)
 {
 	if (!CanIssueAttackOrder(Actor))
 	{
-		return;
+		return false;
 	}
 
 	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName());
@@ -133,6 +133,7 @@ void UHAttackComponent::AttackActor(AActor* Actor)
 	{
 		StartAttack();
 	}
+	return true;
 }
 
 bool UHAttackComponent::AttackActorWithAbility(AActor* Actor)
@@ -143,8 +144,7 @@ bool UHAttackComponent::AttackActorWithAbility(AActor* Actor)
 	}
 	
 	bIsAbilityAttack = true;
-	AttackActor(Actor);
-	return true;
+	return AttackActor(Actor);
 }
 
 void UHAttackComponent::AttackLocation(const FVector& Location)
@@ -192,10 +192,12 @@ void UHAttackComponent::StopAttacking(bool bInterruptAttack)
 			bIsAttackCancelPending = true;
 			return;
 		}
-		
+
+		// attack was interrupted in the middle
 		GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 		GetCharacter()->StopAnimMontage(Weapon->GetAttackAnimation());
 		bIsAttacking = false;
+		OnAttackInterrupted.Broadcast();
 	}
 	
 	UE_LOG(LogAttack, Verbose, TEXT("%s stopped attacking"), *GetOwner()->GetName())
@@ -205,8 +207,9 @@ void UHAttackComponent::StopAttacking(bool bInterruptAttack)
 	bIsAbilityAttack = false;
 	bHasAttackedWhileLocked = false;
 	bIsAttackCancelPending = false;
-
 	GetCharacter()->GetFollowComponent()->StopMovement();
+
+	OnAttackCancelled.Broadcast();
 }
 
 void UHAttackComponent::EnableAttack()
@@ -323,7 +326,7 @@ void UHAttackComponent::StartAttack()
 		GetCharacter()->PlayAnimMontage(AttackAnimation, AnimationPlayRate);
 	}
 	
-	AttackStartedEvent.Broadcast();
+	OnAttackStarted.Broadcast();
 }
 
 void UHAttackComponent::PerformAttack()
@@ -357,7 +360,7 @@ void UHAttackComponent::PerformAttack()
 		StopAttacking();
 	}
 
-	AttackEndedEvent.Broadcast(ResultParams);
+	OnAttackEnded.Broadcast(ResultParams);
 }
 
 void UHAttackComponent::OnAttackCooldownOver()

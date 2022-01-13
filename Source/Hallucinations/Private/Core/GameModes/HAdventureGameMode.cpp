@@ -1,7 +1,7 @@
 #include "Core/GameModes/HAdventureGameMode.h"
 
 #include "EngineUtils.h"
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Characters/HNonPlayerCharacter.h"
 #include "Characters/HPlayerCharacter.h"
 #include "Core/Subsystems/Save/HCharacterSave.h"

@@ -3,12 +3,10 @@
 
 #include "Inventory/HLootableItem.h"
 
-#include "HConstants.h"
+#include "Constants/HConstants.h"
 #include "Characters/HPlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "Utils/HEnumTools.h"
 #include "Inventory/HInventoryItem.h"
-#include "Core/HLogCategories.h"
 
 AHLootableItem::AHLootableItem()
 {
