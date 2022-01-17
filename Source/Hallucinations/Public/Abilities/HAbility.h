@@ -6,7 +6,6 @@
 
 #include "HAbilityActorInterface.h"
 #include "HAbilityComponent.h"
-#include "Constants/HTeamConstants.h"
 #include "UObject/NoExportTypes.h"
 #include "HAbility.generated.h"
 

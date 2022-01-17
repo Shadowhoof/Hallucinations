@@ -17,6 +17,12 @@
 DEFINE_LOG_CATEGORY(LogAbility);
 
 
+namespace AbilityConstants
+{
+	const float MinCastPoint = 0.001f;
+}
+
+
 const FString EmptyAbilityName = "Ability_NONE";
 
 FString GetAbilityClassName(UHAbility* Ability)
@@ -63,10 +69,10 @@ bool UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
 		break;
 	}
 
-	UAnimMontage* CastAnimation = GetCastAnimation(Ability);
-	GetCaster()->PlayAnimMontage(CastAnimation);
-	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCast, Ability);
-	GetWorld()->GetTimerManager().SetTimer(CastTimerHandle, Delegate, GetCastTime(Ability), false);
+	const float CastPoint = FMath::Max(GetCastPoint(Ability), AbilityConstants::MinCastPoint);
+	PlaySpellCastAnimation(GetCastAnimation(Ability), CastPoint);
+	FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &UHAbilityComponent::FinishCastPoint, Ability);
+	GetWorld()->GetTimerManager().SetTimer(CastPointHandle, Delegate, CastPoint, false);
 
 	QueuedSpellAbility = Ability;
 	bIsCasting = true;
@@ -170,12 +176,34 @@ bool UHAbilityComponent::UseAbility(UHAbility* Ability)
 	return bIsCastingOrQueued;
 }
 
-void UHAbilityComponent::FinishCast(UHSpellAbility* Ability)
+void UHAbilityComponent::FinishCastPoint(UHSpellAbility* Ability)
 {
 	Ability->OnCastFinished(CurrentTargetParams);
 	QueuedSpellAbility = nullptr;
 	bIsCasting = false;
-	OnAbilityUseFinished.Broadcast(Ability);
+	OnCastPointFinished.Broadcast(Ability);
+
+	float CastBackswing = Ability->GetCastBackswing();
+	if (CastBackswing > 0.f)
+	{
+		GetWorld()->GetTimerManager().SetTimer(CastPointHandle, this, &UHAbilityComponent::FinishCastBackswing, CastBackswing, false);
+	}
+	else
+	{
+		FinishCastBackswing();
+	}
+}
+
+void UHAbilityComponent::FinishCastBackswing()
+{
+	OnCastBackswingFinished.Broadcast();
+}
+
+void UHAbilityComponent::PlaySpellCastAnimation(UAnimMontage* AnimMontage, float CastPoint)
+{
+	float CastAnimationLength = AnimMontage->GetSectionLength(0);
+	float PlayRate = CastAnimationLength / CastPoint;
+	GetCaster()->PlayAnimMontage(AnimMontage, PlayRate);
 }
 
 bool UHAbilityComponent::IsCasting() const
@@ -187,12 +215,12 @@ void UHAbilityComponent::Interrupt()
 {
 	if (bIsCasting)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(CastTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(CastPointHandle);
 		const UHSpellAbility* InterruptedSpell = QueuedSpellAbility;
 		
 		bIsCasting = false;
 		QueuedSpellAbility = nullptr;
-		OnAbilityUseCancelled.Broadcast(InterruptedSpell);
+		OnAbilityCancelled.Broadcast(InterruptedSpell);
 	}
 }
 
@@ -235,16 +263,15 @@ void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
 	QueuedAttackAbility->OnAttackFinished(AttackResult);
 	GetCaster()->GetAttackComponent()->StopAttacking();
 
-	OnAbilityUseFinished.Broadcast(QueuedAttackAbility);
+	OnCastPointFinished.Broadcast(QueuedAttackAbility);
 	QueuedAttackAbility = nullptr;
 }
 
-float UHAbilityComponent::GetCastTime(UHSpellAbility* Ability) const
+float UHAbilityComponent::GetCastPoint(UHSpellAbility* Ability) const
 {
-	UAnimMontage* CastAnimation = GetCastAnimation(Ability);
-	float BaseCastTime = CastAnimation->GetSectionLength(0);
+	float CastPoint = Ability->GetCastPoint();
 	bool bIsChilled = GetCaster()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
-	return bIsChilled ? BaseCastTime * ChilledCastTimeMultiplier : BaseCastTime;
+	return bIsChilled ? CastPoint * ChilledCastTimeMultiplier : CastPoint;
 }
 
 UAnimMontage* UHAbilityComponent::GetCastAnimation(UHSpellAbility* Ability) const

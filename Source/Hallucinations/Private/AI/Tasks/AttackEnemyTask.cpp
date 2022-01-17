@@ -22,8 +22,8 @@ EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	{
 		APawn* Pawn = Controller->GetPawn();
 		AttackComponent = Cast<UHAttackComponent>(Pawn->GetComponentByClass(UHAttackComponent::StaticClass()));
-		AttackComponent->OnAttackEnded.AddDynamic(this, &UAttackEnemyTask::OnAttackEnded);
 		AttackComponent->OnAttackInterrupted.AddUObject(this, &UAttackEnemyTask::OnAttackCancelled);
+		AttackComponent->OnAttackBackswingFinished.AddUObject(this, &UAttackEnemyTask::OnAttackEnded);
 		AttackComponent->OnAttackCancelled.AddUObject(this, &UAttackEnemyTask::OnAttackCancelled);
 	}
 
@@ -36,7 +36,7 @@ EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	return EBTNodeResult::Failed;
 }
 
-void UAttackEnemyTask::OnAttackEnded(const FAttackResult& AttackResult)
+void UAttackEnemyTask::OnAttackEnded()
 {
 	if (TreeComponent->GetTaskStatus(this) == EBTTaskStatus::Active)
 	{

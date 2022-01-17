@@ -20,8 +20,6 @@ UHAttackComponent::UHAttackComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	BaseAttackDelay = 1.f;
-
 	TargetActor = nullptr;
 	TargetLocation = FHConstants::NullVector;
 }
@@ -65,17 +63,14 @@ void UHAttackComponent::BeginPlay()
 					Weapon->GetAttachmentSocketName());
 			}
 
-			UAnimMontage* AttackAnimation = Weapon->GetAttackAnimation();
-			if (AttackAnimation) {
-				BaseAttackDelay = AttackAnimation->GetSectionLength(0);
-			}
+			WeaponParams = Weapon->GetAttackParameters();
 		} else {
 			UE_LOG(LogAttack, Warning, TEXT("Actor %s with attack component has no weapon"), *GetOwner()->GetName());
 		}
 	}
 	else
 	{
-		UE_LOG(LogAttack, Log, TEXT("Actor %s with attack component has no weapon class specified"), *GetOwner()->GetName());
+		UE_LOG(LogAttack, Warning, TEXT("Actor %s with attack component has no weapon class specified"), *GetOwner()->GetName());
 	}
 }
 
@@ -194,8 +189,8 @@ void UHAttackComponent::StopAttacking(bool bInterruptAttack)
 		}
 
 		// attack was interrupted in the middle
-		GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-		GetCharacter()->StopAnimMontage(Weapon->GetAttackAnimation());
+		GetWorld()->GetTimerManager().ClearTimer(AttackPointHandle);
+		GetCharacter()->StopAnimMontage(WeaponParams.Animation);
 		bIsAttacking = false;
 		OnAttackInterrupted.Broadcast();
 	}
@@ -288,16 +283,22 @@ AHCharacter* UHAttackComponent::GetCharacter() const
 	return Cast<AHCharacter>(GetOwner());
 }
 
-float UHAttackComponent::CalculateAttackDelay() const
+float UHAttackComponent::CalculateAttackPoint() const
 {
 	bool IsChilled = GetCharacter()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
-	return IsChilled ? BaseAttackDelay * ChilledAttackSpeedMultiplier : BaseAttackDelay;
+	return IsChilled ? WeaponParams.AttackPoint * ChilledAttackSpeedMultiplier : WeaponParams.AttackPoint;
+}
+
+float UHAttackComponent::CalculateAttackBackswing() const
+{
+	bool IsChilled = GetCharacter()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
+	return IsChilled ? WeaponParams.AttackBackswing * ChilledAttackSpeedMultiplier : WeaponParams.AttackBackswing;
 }
 
 float UHAttackComponent::CalculateAttackSpeed() const
 {
 	bool IsChilled = GetCharacter()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
-	return IsChilled ? BaseAttackSpeed * ChilledAttackSpeedMultiplier : BaseAttackSpeed;
+	return IsChilled ? WeaponParams.AttackSpeed * ChilledAttackSpeedMultiplier : WeaponParams.AttackSpeed;
 }
 
 void UHAttackComponent::StartAttack()
@@ -307,23 +308,22 @@ void UHAttackComponent::StartAttack()
 		return;
 	}
 
-	float AttackDelay = CalculateAttackDelay();
-	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &UHAttackComponent::PerformAttack, AttackDelay);
+	float AttackDelay = CalculateAttackPoint();
+	GetWorld()->GetTimerManager().SetTimer(AttackPointHandle, this, &UHAttackComponent::PerformAttack, AttackDelay);
 	bIsAttacking = true;
 
 	float AttackSpeed = CalculateAttackSpeed();
-	GetWorld()->GetTimerManager().SetTimer(AttackCooldownTimerHandle, this, &UHAttackComponent::OnAttackCooldownOver, AttackSpeed);
+	GetWorld()->GetTimerManager().SetTimer(AttackCooldownHandle, this, &UHAttackComponent::OnAttackCooldownOver, AttackSpeed);
 	bIsAttackOnCooldown = true;
 	
 	// Disable movement until contact frame
 	GetCharacter()->GetFollowComponent()->LockMovement();
 
 	// Start attack animation
-	UAnimMontage* AttackAnimation = Weapon->GetAttackAnimation();
-	if (AttackAnimation)
+	if (WeaponParams.Animation)
 	{
-		float AnimationPlayRate = BaseAttackSpeed / AttackSpeed;
-		GetCharacter()->PlayAnimMontage(AttackAnimation, AnimationPlayRate);
+		float AnimationPlayRate = WeaponParams.AttackSpeed / AttackSpeed;
+		GetCharacter()->PlayAnimMontage(WeaponParams.Animation, AnimationPlayRate);
 	}
 	
 	OnAttackStarted.Broadcast();
@@ -360,12 +360,26 @@ void UHAttackComponent::PerformAttack()
 		StopAttacking();
 	}
 
+	float AttackBackswing = CalculateAttackBackswing();
+	GetWorld()->GetTimerManager().SetTimer(AttackBackswingHandle, this, &UHAttackComponent::FinishAttackBackswing, AttackBackswing);
+
 	OnAttackEnded.Broadcast(ResultParams);
+}
+
+void UHAttackComponent::FinishAttackBackswing()
+{
+	OnAttackBackswingFinished.Broadcast();
 }
 
 void UHAttackComponent::OnAttackCooldownOver()
 {
 	bIsAttackOnCooldown = false;
+
+	if (FTimerManager& TimerManager = GetWorld()->GetTimerManager(); TimerManager.IsTimerActive(AttackBackswingHandle))
+	{
+		FinishAttackBackswing();
+		TimerManager.ClearTimer(AttackBackswingHandle);
+	}
 }
 
 // Called every frame

@@ -15,8 +15,6 @@ AHWeapon::AHWeapon()
 	RootComponent = StaticMesh;
 
 	AttachmentSocketName = TEXT("DefaultWeaponSocket");
-
-	WeaponRange = 50.f;
 }
 
 // Called when the game starts or when spawned
@@ -38,10 +36,10 @@ bool AHWeapon::IsInRange(AActor* OwnerActor, AActor* TargetActor) const
 		return false;
 	}
 	
-	return FVector::Dist(OwnerActor->GetActorLocation(), TargetActor->GetActorLocation()) <= WeaponRange;
+	return FVector::Dist(OwnerActor->GetActorLocation(), TargetActor->GetActorLocation()) <= AttackParameters.AttackRange;
 }
 
-UAnimMontage* AHWeapon::GetAttackAnimation() const
+const FWeaponAttackParameters& AHWeapon::GetAttackParameters()
 {
-	return AttackAnimation;
+	return AttackParameters;
 }

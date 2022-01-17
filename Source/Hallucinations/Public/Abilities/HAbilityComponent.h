@@ -53,11 +53,17 @@ public:
 
 	bool HasAbility(UHAbility* Ability) const;
 
-	DECLARE_EVENT_OneParam(UHAbilityComponent, FAbilityUseFinishedEvent, const UHAbility*)
-	FAbilityUseFinishedEvent OnAbilityUseFinished; 
+	/** Event that is fired whenever cast point has finished */
+	DECLARE_EVENT_OneParam(UHAbilityComponent, FAbilityCastPointEvent, const UHAbility*)
+	FAbilityCastPointEvent OnCastPointFinished; 
 
-	DECLARE_EVENT_OneParam(UHAbilityComponent, FAbilityUseCancelledEvent, const UHAbility*)
-	FAbilityUseCancelledEvent OnAbilityUseCancelled;
+	/** Event that is fired whenever cast backswing has finished */
+	DECLARE_EVENT(UHAbilityComponent, FAbilityCastBackswingEvent)
+	FAbilityCastBackswingEvent OnCastBackswingFinished;
+
+	/** Event that is fired whenever queued or currently being cast ability is cancelled */
+	DECLARE_EVENT_OneParam(UHAbilityComponent, FAbilityCancelledEvent, const UHAbility*)
+	FAbilityCancelledEvent OnAbilityCancelled;
 	
 	void GetPersistentState(TMap<FString, float>& OutCooldownData);
 	void RestorePersistentState(const TMap<FString, float>& CooldownData);
@@ -73,7 +79,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* DefaultCastAnimation;
 	
-	FTimerHandle CastTimerHandle;
+	FTimerHandle CastPointHandle;
+	FTimerHandle CastBackswingHandle;
 
 	bool bIsCasting = false;
 
@@ -85,7 +92,7 @@ protected:
 	 */
 	bool CanUseAbility(UHAbility* Ability, const FAbilityTargetParameters& TargetParams) const;
 
-	void FinishCast(UHSpellAbility* Ability);
+	void FinishCastPoint(UHSpellAbility* Ability);
 
 private:
 	bool UseSpellAbility(UHAbility* BaseAbility);
@@ -102,10 +109,14 @@ private:
 	UFUNCTION()
 	void OnAttackEnded(const FAttackResult& AttackResult);
 
-	float GetCastTime(UHSpellAbility* Ability) const;
+	float GetCastPoint(UHSpellAbility* Ability) const;
 
 	UAnimMontage* GetCastAnimation(UHSpellAbility* Ability) const;
 
+	void FinishCastBackswing();
+
+	void PlaySpellCastAnimation(UAnimMontage* AnimMontage, float CastPoint);
+	
 	// constants
 	static const float ChilledCastTimeMultiplier;
 	

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Weapons/HWeapon.h"
 #include "HAttackComponent.generated.h"
 
 class UHAbility;
@@ -52,76 +53,9 @@ class HALLUCINATIONS_API UHAttackComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
+	
 	UHAttackComponent();
-
-protected:
-
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AHWeapon> WeaponClass;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
-	AHWeapon* Weapon;
-
-	// Time in seconds that must pass between two different attacks. Timing begins when attack starts rather than when it lands.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
-	float BaseAttackSpeed = 1.f;
 	
-	// Base time between attack initiation and attack actually happening before any modifiers are applied, depends on attack animation
-	float BaseAttackDelay;
-	
-	// Actor to attack
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	AActor* TargetActor;
-
-	// Location to attack
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	FVector TargetLocation;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	bool bIsAttacking = false;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	bool bIsAttackOnCooldown = false;
-
-	bool bIsAttackEnabled = true;
-
-	// Is current attack requested by an ability
-	bool bIsAbilityAttack;
-	
-	// Begins attack animation
-	void StartAttack();
-
-	void PerformAttack();
-
-	// When attack cooldown expires
-	void OnAttackCooldownOver();
-	
-	// Timer handle for attack animation
-	FTimerHandle AttackTimerHandle;
-
-	// Timer handle for attack cooldown
-	FTimerHandle AttackCooldownTimerHandle;
-
-	EAttackMode AttackMode;
-
-	bool bHasAttackedWhileLocked = false;
-	bool bIsAttackCancelPending = false;
-
-	void FollowTargetActor();
-
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);
-
-	bool CanIssueAttackOrder(AActor* Actor) const;
-	bool CanIssueAttackOrder(const FVector& Location) const;
-	bool CanStartAttack() const;
-
-public:
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -137,6 +71,9 @@ public:
 	DECLARE_EVENT(UHAttackComponent, FAttackCancelledEvent);
 	FAttackCancelledEvent OnAttackCancelled;
 
+	DECLARE_EVENT(UHAttackComponent, FAttackBackswingFinished);
+	FAttackBackswingFinished OnAttackBackswingFinished;
+	
 	/** Locks on target that will be attacked if it's an enemy. Returns whether target is in range of the weapon */
 	UFUNCTION(BlueprintCallable)
 	bool AttackActor(AActor* Actor);
@@ -183,11 +120,71 @@ public:
 
 	AHCharacter* GetCharacter() const;
 
+protected:
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<AHWeapon> WeaponClass;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	AHWeapon* Weapon;
+
+	// Actor to attack
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	AActor* TargetActor;
+
+	// Location to attack
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	FVector TargetLocation;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	bool bIsAttacking = false;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	bool bIsAttackOnCooldown = false;
+
+	bool bIsAttackEnabled = true;
+
+	/** Is current attack requested by an ability */
+	bool bIsAbilityAttack;
+	
+	/** Begins attack animation */
+	void StartAttack();
+
+	void PerformAttack();
+
+	void FinishAttackBackswing();
+	
+	/** When attack cooldown expires */
+	void OnAttackCooldownOver();
+	
+	EAttackMode AttackMode;
+
+	bool bHasAttackedWhileLocked = false;
+	bool bIsAttackCancelPending = false;
+
+	void FollowTargetActor();
+
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnOwnerDeath(AHCharacter* Victim, AActor* Killer);
+
+	bool CanIssueAttackOrder(AActor* Actor) const;
+	bool CanIssueAttackOrder(const FVector& Location) const;
+	bool CanStartAttack() const;
+	
 private:
 	
-	float CalculateAttackDelay() const;
+	float CalculateAttackPoint() const;
+	float CalculateAttackBackswing() const;
 	float CalculateAttackSpeed() const;
 
+	FWeaponAttackParameters WeaponParams;
+
+	FTimerHandle AttackPointHandle;
+	FTimerHandle AttackBackswingHandle;
+	FTimerHandle AttackCooldownHandle;
+	
 	// constants
 	static const float ChilledAttackSpeedMultiplier;
 	

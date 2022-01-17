@@ -9,6 +9,7 @@
 #include "Utils/HEnumTools.h"
 #include "Core/HLogCategories.h"
 #include "TimerManager.h"
+#include "Constants/HTeamConstants.h"
 #include "Utils/HUtils.h"
 
 

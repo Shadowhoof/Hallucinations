@@ -23,8 +23,7 @@ public:
 
 private:
 	
-	UFUNCTION()
-	void OnAttackEnded(const FAttackResult& AttackResult);
+	void OnAttackEnded();
 	
 	void OnAttackCancelled();
 

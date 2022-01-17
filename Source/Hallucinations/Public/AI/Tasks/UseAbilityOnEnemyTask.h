@@ -23,7 +23,7 @@ public:
 
 private:
 
-	void OnAbilityFinished(const UHAbility* Ability);
+	void OnAbilityFinished();
 	void OnAbilityCancelled(const UHAbility* Ability);
 
 	TObjectPtr<UBehaviorTreeComponent> TreeComponent;

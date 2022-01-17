@@ -23,8 +23,8 @@ EBTNodeResult::Type UUseAbilityOnEnemyTask::ExecuteTask(UBehaviorTreeComponent& 
 	{
 		APawn* Pawn = Controller->GetPawn();
 		AbilityComponent = Cast<UHAbilityComponent>(Pawn->GetComponentByClass(UHAbilityComponent::StaticClass()));
-		AbilityComponent->OnAbilityUseFinished.AddUObject(this, &UUseAbilityOnEnemyTask::OnAbilityFinished);
-		AbilityComponent->OnAbilityUseCancelled.AddUObject(this, &UUseAbilityOnEnemyTask::OnAbilityCancelled);
+		AbilityComponent->OnCastBackswingFinished.AddUObject(this, &UUseAbilityOnEnemyTask::OnAbilityFinished);
+		AbilityComponent->OnAbilityCancelled.AddUObject(this, &UUseAbilityOnEnemyTask::OnAbilityCancelled);
 	}
 	
 	FAbilityTargetParameters TargetParams{TargetActor, HallucinationsConstants::InvalidVector};
@@ -45,7 +45,7 @@ EBTNodeResult::Type UUseAbilityOnEnemyTask::ExecuteTask(UBehaviorTreeComponent& 
 	return EBTNodeResult::Failed;
 }
 
-void UUseAbilityOnEnemyTask::OnAbilityFinished(const UHAbility* Ability)
+void UUseAbilityOnEnemyTask::OnAbilityFinished()
 {
 	if (TreeComponent->GetTaskStatus(this) == EBTTaskStatus::Active)
 	{

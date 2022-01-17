@@ -6,6 +6,7 @@
 #include "Abilities/HAbilityComponent.h"
 #include "Characters/HCharacter.h"
 #include "Constants/HConstants.h"
+#include "Constants/HTeamConstants.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HEnumTools.h"
 #include "Core/HLogCategories.h"

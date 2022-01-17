@@ -10,14 +10,14 @@ const float AHMeleeWeapon::RangeLeewayMultiplier = 1.5f;
 
 AHMeleeWeapon::AHMeleeWeapon()
 {
-	WeaponRange = 200.f;
+	AttackParameters.AttackRange = 200.f;
 }
 
 void AHMeleeWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	RangeWithLeeway = WeaponRange * RangeLeewayMultiplier;
+	RangeWithLeeway = AttackParameters.AttackRange * RangeLeewayMultiplier;
 }
 
 void AHMeleeWeapon::AttackActor(AActor* TargetActor, bool bIsAbilityAttack, FAttackResult& OutResult)

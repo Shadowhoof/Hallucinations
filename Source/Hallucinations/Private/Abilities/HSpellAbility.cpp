@@ -5,7 +5,6 @@
 #include "Core/HLogCategories.h"
 #include "Kismet/GameplayStatics.h"
 #include "Characters/HCharacter.h"
-#include "Utils/HEnumTools.h"
 
 UHSpellAbility::UHSpellAbility()
 {
@@ -37,6 +36,16 @@ void UHSpellAbility::OnCastFinished(const FAbilityTargetParameters& TargetParams
 	}
 
 	StartCooldown();
+}
+
+float UHSpellAbility::GetCastPoint() const
+{
+	return CastPoint;
+}
+
+float UHSpellAbility::GetCastBackswing() const
+{
+	return CastBackswing;
 }
 
 void UHSpellAbility::FinishActorCast(AActor* TargetActor)
