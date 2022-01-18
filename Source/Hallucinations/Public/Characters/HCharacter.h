@@ -96,7 +96,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void OnDeath(AActor* Victim, AActor* Killer);
+	virtual void OnDeath(AActor* Victim, AActor* Killer);
 
 	UFUNCTION()
 	void OnAttackStart();

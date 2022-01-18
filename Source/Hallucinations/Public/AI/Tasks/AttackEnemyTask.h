@@ -31,4 +31,6 @@ private:
 	
 	TWeakObjectPtr<UHAttackComponent> AttackComponent;
 
+	bool bIsAttacking = false;
+
 };

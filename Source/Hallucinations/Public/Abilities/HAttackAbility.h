@@ -18,7 +18,7 @@ public:
 
 	UHAttackAbility();
 
-	void OnAttackFinished(const FAttackResult& AttackResult);
+	void OnAttackPointReached(const FAttackResult& AttackResult);
 
 protected:
 

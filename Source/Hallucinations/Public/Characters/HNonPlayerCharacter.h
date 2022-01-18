@@ -38,6 +38,8 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+
+	virtual void OnDeath(AActor* Victim, AActor* Killer) override;
 	
 	UPROPERTY(Transient)
 	bool bInCombat = false;

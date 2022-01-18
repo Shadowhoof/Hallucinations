@@ -67,3 +67,11 @@ void AHNonPlayerCharacter::BeginPlay()
 	
 	GetCharacterMovement()->MaxWalkSpeed = NonCombatMovementSpeed;
 }
+
+void AHNonPlayerCharacter::OnDeath(AActor* Victim, AActor* Killer)
+{
+	Super::OnDeath(Victim, Killer);
+
+	DetachFromControllerPendingDestroy();
+	SetLifeSpan(10.f);
+}

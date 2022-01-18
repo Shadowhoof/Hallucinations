@@ -75,7 +75,7 @@ void AHCharacter::BeginPlay()
 	HealthComponent->OnActorDeath.AddDynamic(this, &AHCharacter::OnDeath);
 
 	AttackComponent->OnAttackStarted.AddDynamic(this, &AHCharacter::OnAttackStart);
-	AttackComponent->OnAttackEnded.AddDynamic(this, &AHCharacter::OnAttackEnd);
+	AttackComponent->OnAttackPointReached.AddDynamic(this, &AHCharacter::OnAttackEnd);
 }
 
 void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
@@ -87,9 +87,6 @@ void AHCharacter::OnDeath(AActor* Victim, AActor* Killer)
 	GetMesh()->SetAllBodiesSimulatePhysics(true);
 	
 	StatusEffectComponent->OnDeath();
-	
-	DetachFromControllerPendingDestroy();
-	SetLifeSpan(10.f);
 
 	UE_LOG(LogDamage, Log, TEXT("%s has died"), *GetName());
 	DeathEvent.Broadcast(this, Killer);
@@ -110,7 +107,7 @@ void AHCharacter::OnConditionApplied(EStatusCondition Condition)
 	switch (Condition)
 	{
 	case EStatusCondition::Stunned:
-		AttackComponent->StopAttacking(true);
+		AttackComponent->StopAttacking(EStopAttackReason::Interrupt);
 		FollowComponent->Interrupt();
 		AbilityComponent->Interrupt();
 		GetCharacterMovement()->DisableMovement();

@@ -107,13 +107,14 @@ private:
 	UHAttackAbility* QueuedAttackAbility;
 
 	UFUNCTION()
-	void OnAttackEnded(const FAttackResult& AttackResult);
+	void OnAttackPointReached(const FAttackResult& AttackResult);
 
 	float GetCastPoint(UHSpellAbility* Ability) const;
 
 	UAnimMontage* GetCastAnimation(UHSpellAbility* Ability) const;
 
 	void FinishCastBackswing();
+	void FinishAttackBackswing();
 
 	void PlaySpellCastAnimation(UAnimMontage* AnimMontage, float CastPoint);
 	

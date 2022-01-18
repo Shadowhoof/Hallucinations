@@ -27,9 +27,10 @@ EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		AttackComponent->OnAttackCancelled.AddUObject(this, &UAttackEnemyTask::OnAttackCancelled);
 	}
 
-	if (AttackComponent->AttackActor(TargetActor))
+	if (AttackComponent->AttackActor(TargetActor, true))
 	{
 		UE_LOG(LogBehaviorTree, Verbose, TEXT("AI | UAttackEnemyTask | Actor %s is attacking %s"), *AttackComponent->GetOwner()->GetName(), *TargetActor->GetName())
+		bIsAttacking = true;
 		return EBTNodeResult::InProgress;
 	}
 
@@ -38,20 +39,20 @@ EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 void UAttackEnemyTask::OnAttackEnded()
 {
-	if (TreeComponent->GetTaskStatus(this) == EBTTaskStatus::Active)
+	if (bIsAttacking)
 	{
 		UE_LOG(LogBehaviorTree, Verbose, TEXT("AI | UAttackEnemyTask has finished with success"));
 		FinishLatentTask(*TreeComponent, EBTNodeResult::Succeeded);
-		AttackComponent->StopAttacking();
+		bIsAttacking = false;
 	}
 }
 
 void UAttackEnemyTask::OnAttackCancelled()
 {
-	if (TreeComponent->GetTaskStatus(this) == EBTTaskStatus::Active)
+	if (bIsAttacking)
 	{
 		UE_LOG(LogBehaviorTree, Verbose, TEXT("AI | UAttackEnemyTask has finished with failure"));
 		FinishLatentTask(*TreeComponent, EBTNodeResult::Failed);
-		AttackComponent->StopAttacking();
+		bIsAttacking = false;
 	}
 }

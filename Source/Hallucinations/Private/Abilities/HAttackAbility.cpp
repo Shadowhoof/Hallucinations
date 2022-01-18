@@ -14,7 +14,7 @@ UHAttackAbility::UHAttackAbility()
 	Type = EAbilityType::Attack;
 }
 
-void UHAttackAbility::OnAttackFinished(const FAttackResult& AttackResult)
+void UHAttackAbility::OnAttackPointReached(const FAttackResult& AttackResult)
 {
 	if (TEST_BIT(TargetType, EAbilityTarget::Actor) && AttackResult.Actor.IsValid())
 	{

@@ -145,7 +145,8 @@ void UHAbilityComponent::BeginPlay()
 	}
 
 	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
-	AttackComponent->OnAttackEnded.AddDynamic(this, &UHAbilityComponent::OnAttackEnded);
+	AttackComponent->OnAttackPointReached.AddDynamic(this, &UHAbilityComponent::OnAttackPointReached);
+	AttackComponent->OnAttackBackswingFinished.AddUObject(this, &UHAbilityComponent::FinishAttackBackswing);
 }
 
 bool UHAbilityComponent::UseAbility(UHAbility* Ability)
@@ -197,6 +198,17 @@ void UHAbilityComponent::FinishCastPoint(UHSpellAbility* Ability)
 void UHAbilityComponent::FinishCastBackswing()
 {
 	OnCastBackswingFinished.Broadcast();
+}
+
+void UHAbilityComponent::FinishAttackBackswing()
+{
+	if (!QueuedAttackAbility)
+	{
+		return;
+	}
+
+	OnCastBackswingFinished.Broadcast();
+	QueuedAttackAbility = nullptr;
 }
 
 void UHAbilityComponent::PlaySpellCastAnimation(UAnimMontage* AnimMontage, float CastPoint)
@@ -253,18 +265,15 @@ void UHAbilityComponent::RestorePersistentState(const TMap<FString, float>& Cool
 	}
 }
 
-void UHAbilityComponent::OnAttackEnded(const FAttackResult& AttackResult)
+void UHAbilityComponent::OnAttackPointReached(const FAttackResult& AttackResult)
 {
 	if (!QueuedAttackAbility)
 	{
 		return;
 	}
 
-	QueuedAttackAbility->OnAttackFinished(AttackResult);
-	GetCaster()->GetAttackComponent()->StopAttacking();
-
+	QueuedAttackAbility->OnAttackPointReached(AttackResult);
 	OnCastPointFinished.Broadcast(QueuedAttackAbility);
-	QueuedAttackAbility = nullptr;
 }
 
 float UHAbilityComponent::GetCastPoint(UHSpellAbility* Ability) const

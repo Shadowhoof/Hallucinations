@@ -24,6 +24,18 @@ enum class EAttackMode : uint8
 };
 
 
+UENUM()
+enum class EStopAttackReason
+{
+	/** Attack was queued but cancelled before it happened */
+	Cancel,
+	/** Attack was successfully performed and the attack mode was not EAttackMode::LockedActor */
+	Success,
+	/** Attack was hard interrupted (i.e. by a stun or owner death) */
+	Interrupt
+};
+
+
 USTRUCT(BlueprintType)
 struct FAttackResult
 {
@@ -44,7 +56,7 @@ struct FAttackResult
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAttackStartedEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttackEndedEvent, const FAttackResult&, AttackResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttackPointReachedEvent, const FAttackResult&, AttackResult);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -63,7 +75,7 @@ public:
 	FAttackStartedEvent OnAttackStarted;
 
 	UPROPERTY(BlueprintAssignable, Category = "Attack")
-	FAttackEndedEvent OnAttackEnded;
+	FAttackPointReachedEvent OnAttackPointReached;
 
 	DECLARE_EVENT(UHAttackComponent, FAttackInterruptedEvent);
 	FAttackInterruptedEvent OnAttackInterrupted;
@@ -76,7 +88,7 @@ public:
 	
 	/** Locks on target that will be attacked if it's an enemy. Returns whether target is in range of the weapon */
 	UFUNCTION(BlueprintCallable)
-	bool AttackActor(AActor* Actor);
+	bool AttackActor(AActor* Actor, bool bAttackOnce);
 
 	/**
 	 *	Regular actor attack logic except an ability will handle the logic that executes when attack finishes.
@@ -100,8 +112,7 @@ public:
 	void CancelActorLock();
 	
 	/** Cancels any issued attack orders */
-	UFUNCTION(BlueprintCallable)
-	void StopAttacking(bool bInterruptAttack = false);
+	void StopAttacking(const EStopAttackReason StopReason);
 
 	void EnableAttack();
 	void DisableAttack();

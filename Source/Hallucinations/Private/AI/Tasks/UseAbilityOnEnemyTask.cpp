@@ -12,7 +12,7 @@ EBTNodeResult::Type UUseAbilityOnEnemyTask::ExecuteTask(UBehaviorTreeComponent& 
 {
 	TreeComponent = &OwnerComp;
 	
-	AHAIController* Controller = Cast<AHAIController>(OwnerComp.GetAIOwner());
+	const AHAIController* Controller = Cast<AHAIController>(OwnerComp.GetAIOwner());
 	AActor* TargetActor = Controller->GetTargetActor();
 	if (!TargetActor)
 	{
@@ -21,13 +21,13 @@ EBTNodeResult::Type UUseAbilityOnEnemyTask::ExecuteTask(UBehaviorTreeComponent& 
 
 	if (!AbilityComponent.IsValid())
 	{
-		APawn* Pawn = Controller->GetPawn();
+		const APawn* Pawn = Controller->GetPawn();
 		AbilityComponent = Cast<UHAbilityComponent>(Pawn->GetComponentByClass(UHAbilityComponent::StaticClass()));
 		AbilityComponent->OnCastBackswingFinished.AddUObject(this, &UUseAbilityOnEnemyTask::OnAbilityFinished);
 		AbilityComponent->OnAbilityCancelled.AddUObject(this, &UUseAbilityOnEnemyTask::OnAbilityCancelled);
 	}
 	
-	FAbilityTargetParameters TargetParams{TargetActor, HallucinationsConstants::InvalidVector};
+	const FAbilityTargetParameters TargetParams{TargetActor, HallucinationsConstants::InvalidVector};
 	for (UHAbility* Ability : AbilityComponent->GetAbilities())
 	{
 		if (Ability->IsOffensive() && Ability->CanBeUsed(TargetParams))

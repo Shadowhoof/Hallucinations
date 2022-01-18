@@ -245,7 +245,7 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
 		}
 		else
 		{
-			AttackComponent->StopAttacking();
+			AttackComponent->StopAttacking(EStopAttackReason::Cancel);
 			if (UHFollowComponent::CanBeFollowed(MouseoverActor))
 			{
 				FollowComponent->MoveToActor(MouseoverActor);

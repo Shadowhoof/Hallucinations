@@ -76,7 +76,7 @@ void UHAttackComponent::BeginPlay()
 
 void UHAttackComponent::OnOwnerDeath(AHCharacter* Victim, AActor* Killer)
 {
-	StopAttacking();
+	StopAttacking(EStopAttackReason::Interrupt);
 }
 
 bool UHAttackComponent::CanIssueAttackOrder(AActor* Actor) const
@@ -109,7 +109,7 @@ bool UHAttackComponent::CanStartAttack() const
 	return Weapon && !bIsAttacking && !bIsAttackOnCooldown && !GetCharacter()->IsBusy();
 }
 
-bool UHAttackComponent::AttackActor(AActor* Actor)
+bool UHAttackComponent::AttackActor(AActor* Actor, const bool bAttackOnce)
 {
 	if (!CanIssueAttackOrder(Actor))
 	{
@@ -119,7 +119,7 @@ bool UHAttackComponent::AttackActor(AActor* Actor)
 	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName());
 	TargetActor = Actor;
 	TargetLocation = FHConstants::NullVector;
-	AttackMode = EAttackMode::LockedActor;
+	AttackMode = bAttackOnce ? EAttackMode::Actor : EAttackMode::LockedActor;
 
 	const bool bIsInRange = Weapon->IsInRange(GetOwner(), TargetActor);
 	FollowTargetActor();
@@ -139,7 +139,7 @@ bool UHAttackComponent::AttackActorWithAbility(AActor* Actor)
 	}
 	
 	bIsAbilityAttack = true;
-	return AttackActor(Actor);
+	return AttackActor(Actor, true);
 }
 
 void UHAttackComponent::AttackLocation(const FVector& Location)
@@ -171,7 +171,7 @@ bool UHAttackComponent::AttackLocationWithAbility(const FVector& Location)
 	return true;
 }
 
-void UHAttackComponent::StopAttacking(bool bInterruptAttack)
+void UHAttackComponent::StopAttacking(const EStopAttackReason StopReason)
 {
 	if (AttackMode == EAttackMode::None)
 	{
@@ -181,7 +181,7 @@ void UHAttackComponent::StopAttacking(bool bInterruptAttack)
 
 	if (bIsAttacking)
 	{
-		if (!bInterruptAttack)
+		if (StopReason != EStopAttackReason::Interrupt)
 		{
 			// we're in the middle of an attack and this is not an interrupt, wait for it to finish, then cancel
 			bIsAttackCancelPending = true;
@@ -204,7 +204,10 @@ void UHAttackComponent::StopAttacking(bool bInterruptAttack)
 	bIsAttackCancelPending = false;
 	GetCharacter()->GetFollowComponent()->StopMovement();
 
-	OnAttackCancelled.Broadcast();
+	if (StopReason == EStopAttackReason::Cancel)
+	{
+		OnAttackCancelled.Broadcast();
+	}
 }
 
 void UHAttackComponent::EnableAttack()
@@ -215,7 +218,7 @@ void UHAttackComponent::EnableAttack()
 void UHAttackComponent::DisableAttack()
 {
 	bIsAttackEnabled = false;
-	StopAttacking(true);
+	StopAttacking(EStopAttackReason::Interrupt);
 }
 
 void UHAttackComponent::CancelActorLock()
@@ -225,7 +228,7 @@ void UHAttackComponent::CancelActorLock()
 		AttackMode = EAttackMode::Actor;
 		if (bHasAttackedWhileLocked)
 		{
-			StopAttacking();
+			StopAttacking(EStopAttackReason::Cancel);
 		}
 	}
 }
@@ -256,7 +259,7 @@ void UHAttackComponent::HandlePlayerAttack(const FHitResult& MouseoverData, bool
 	}
 	else if (!bIsRepeated && bIsAttackable)
 	{
-		AttackActor(MouseoverActor);
+		AttackActor(MouseoverActor, false);
 	}
 }
 
@@ -308,11 +311,11 @@ void UHAttackComponent::StartAttack()
 		return;
 	}
 
-	float AttackDelay = CalculateAttackPoint();
+	const float AttackDelay = CalculateAttackPoint();
 	GetWorld()->GetTimerManager().SetTimer(AttackPointHandle, this, &UHAttackComponent::PerformAttack, AttackDelay);
 	bIsAttacking = true;
 
-	float AttackSpeed = CalculateAttackSpeed();
+	const float AttackSpeed = CalculateAttackSpeed();
 	GetWorld()->GetTimerManager().SetTimer(AttackCooldownHandle, this, &UHAttackComponent::OnAttackCooldownOver, AttackSpeed);
 	bIsAttackOnCooldown = true;
 	
@@ -322,7 +325,7 @@ void UHAttackComponent::StartAttack()
 	// Start attack animation
 	if (WeaponParams.Animation)
 	{
-		float AnimationPlayRate = WeaponParams.AttackSpeed / AttackSpeed;
+		const float AnimationPlayRate = WeaponParams.AttackSpeed / AttackSpeed;
 		GetCharacter()->PlayAnimMontage(WeaponParams.Animation, AnimationPlayRate);
 	}
 	
@@ -341,7 +344,7 @@ void UHAttackComponent::PerformAttack()
 	{
 	case EAttackMode::Actor:
 		Weapon->AttackActor(TargetActor, bIsAbilityAttack, ResultParams);
-		StopAttacking();
+		StopAttacking(EStopAttackReason::Success);
 		break;
 	case EAttackMode::LockedActor:
 		Weapon->AttackActor(TargetActor, bIsAbilityAttack, ResultParams);
@@ -357,13 +360,13 @@ void UHAttackComponent::PerformAttack()
 
 	if (bIsAttackCancelPending)
 	{
-		StopAttacking();
+		StopAttacking(EStopAttackReason::Cancel);
 	}
 
 	float AttackBackswing = CalculateAttackBackswing();
 	GetWorld()->GetTimerManager().SetTimer(AttackBackswingHandle, this, &UHAttackComponent::FinishAttackBackswing, AttackBackswing);
 
-	OnAttackEnded.Broadcast(ResultParams);
+	OnAttackPointReached.Broadcast(ResultParams);
 }
 
 void UHAttackComponent::FinishAttackBackswing()
