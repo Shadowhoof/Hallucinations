@@ -27,7 +27,7 @@ EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		AttackComponent->OnAttackCancelled.AddUObject(this, &UAttackEnemyTask::OnAttackCancelled);
 	}
 
-	if (AttackComponent->AttackActor(TargetActor, true))
+	if (AttackComponent->AttackActor(TargetActor, true) != EAttackRequestResult::Denied)
 	{
 		UE_LOG(LogBehaviorTree, Verbose, TEXT("AI | UAttackEnemyTask | Actor %s is attacking %s"), *AttackComponent->GetOwner()->GetName(), *TargetActor->GetName())
 		bIsAttacking = true;

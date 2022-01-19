@@ -106,6 +106,11 @@ private:
 	UPROPERTY()
 	UHAttackAbility* QueuedAttackAbility;
 
+	bool bAbilityAttackStarted = false;
+
+	UFUNCTION()
+	void OnAttackStarted();
+	
 	UFUNCTION()
 	void OnAttackPointReached(const FAttackResult& AttackResult);
 
@@ -115,6 +120,7 @@ private:
 
 	void FinishCastBackswing();
 	void FinishAttackBackswing();
+	void OnAttackCancelled();
 
 	void PlaySpellCastAnimation(UAnimMontage* AnimMontage, float CastPoint);
 	

@@ -109,11 +109,11 @@ bool UHAttackComponent::CanStartAttack() const
 	return Weapon && !bIsAttacking && !bIsAttackOnCooldown && !GetCharacter()->IsBusy();
 }
 
-bool UHAttackComponent::AttackActor(AActor* Actor, const bool bAttackOnce)
+EAttackRequestResult UHAttackComponent::AttackActor(AActor* Actor, const bool bAttackOnce)
 {
 	if (!CanIssueAttackOrder(Actor))
 	{
-		return false;
+		return EAttackRequestResult::Denied;
 	}
 
 	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName());
@@ -126,27 +126,28 @@ bool UHAttackComponent::AttackActor(AActor* Actor, const bool bAttackOnce)
 
 	if (bIsInRange)
 	{
-		StartAttack();
+		const bool bAttackStarted = StartAttack();
+		return bAttackStarted ? EAttackRequestResult::Started : EAttackRequestResult::Queued;
 	}
-	return true;
+	return EAttackRequestResult::Queued;
 }
 
-bool UHAttackComponent::AttackActorWithAbility(AActor* Actor)
+EAttackRequestResult UHAttackComponent::AttackActorWithAbility(AActor* Actor)
 {
 	if (!CanIssueAttackOrder(Actor))
 	{
-		return false;
+		return EAttackRequestResult::Denied;
 	}
 	
 	bIsAbilityAttack = true;
 	return AttackActor(Actor, true);
 }
 
-void UHAttackComponent::AttackLocation(const FVector& Location)
+EAttackRequestResult UHAttackComponent::AttackLocation(const FVector& Location)
 {
 	if (!CanIssueAttackOrder(Location))
 	{
-		return;
+		return EAttackRequestResult::Denied;
 	}
 
 	UE_LOG(LogAttack, Verbose, TEXT("%s is attacking location: %s"), *GetOwner()->GetName(), *Location.ToString());
@@ -156,19 +157,19 @@ void UHAttackComponent::AttackLocation(const FVector& Location)
 
 	GetCharacter()->GetFollowComponent()->RotateTowardsLocation(Location);
 
-	StartAttack();
+	const bool bAttackStarted = StartAttack();
+	return bAttackStarted ? EAttackRequestResult::Started : EAttackRequestResult::Queued;
 }
 
-bool UHAttackComponent::AttackLocationWithAbility(const FVector& Location)
+EAttackRequestResult UHAttackComponent::AttackLocationWithAbility(const FVector& Location)
 {
 	if (!CanIssueAttackOrder(Location))
 	{
-		return false;
+		return EAttackRequestResult::Denied;
 	}
 
 	bIsAbilityAttack = true;
-	AttackLocation(Location);
-	return true;
+	return AttackLocation(Location);
 }
 
 void UHAttackComponent::StopAttacking(const EStopAttackReason StopReason)
@@ -304,11 +305,11 @@ float UHAttackComponent::CalculateAttackSpeed() const
 	return IsChilled ? WeaponParams.AttackSpeed * ChilledAttackSpeedMultiplier : WeaponParams.AttackSpeed;
 }
 
-void UHAttackComponent::StartAttack()
+bool UHAttackComponent::StartAttack()
 {
 	if (!CanStartAttack())
 	{
-		return;
+		return false;
 	}
 
 	const float AttackDelay = CalculateAttackPoint();
@@ -330,6 +331,7 @@ void UHAttackComponent::StartAttack()
 	}
 	
 	OnAttackStarted.Broadcast();
+	return true;
 }
 
 void UHAttackComponent::PerformAttack()
@@ -352,7 +354,7 @@ void UHAttackComponent::PerformAttack()
 		break;
 	case EAttackMode::Ground:
 		Weapon->AttackLocation(TargetLocation, bIsAbilityAttack, ResultParams);
-		TargetLocation = FHConstants::NullVector;
+		StopAttacking(EStopAttackReason::Success);
 		break;
 	case EAttackMode::None:
 		break;

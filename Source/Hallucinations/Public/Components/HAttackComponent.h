@@ -36,6 +36,18 @@ enum class EStopAttackReason
 };
 
 
+UENUM(BlueprintType)
+enum class EAttackRequestResult : uint8
+{
+	/** Attack request was denied, no attack will happen */
+	Denied,
+	/** Attack can't happen right now but it was put into queue and will happen when possible */
+	Queued,
+	/** Attack has already started */
+	Started,
+};
+
+
 USTRUCT(BlueprintType)
 struct FAttackResult
 {
@@ -88,25 +100,25 @@ public:
 	
 	/** Locks on target that will be attacked if it's an enemy. Returns whether target is in range of the weapon */
 	UFUNCTION(BlueprintCallable)
-	bool AttackActor(AActor* Actor, bool bAttackOnce);
+	EAttackRequestResult AttackActor(AActor* Actor, bool bAttackOnce);
 
 	/**
 	 *	Regular actor attack logic except an ability will handle the logic that executes when attack finishes.
 	 *	@return Whether attack was successfully queued (either ready to execute now or moving towards the target)
 	 **/
 	UFUNCTION(BlueprintCallable)
-	bool AttackActorWithAbility(AActor* Actor);
+	EAttackRequestResult AttackActorWithAbility(AActor* Actor);
 	
 	/** Starts attacking target location */
 	UFUNCTION(BlueprintCallable)
-	void AttackLocation(const FVector& Location);
+	EAttackRequestResult AttackLocation(const FVector& Location);
 
 	/**
 	 *	Regular location attack logic except an ability will handle the logic that executes when attack finishes.
 	 *	@return Whether attack was successfully queued (either ready to execute now or moving towards the target)
 	 **/
 	UFUNCTION(BlueprintCallable)
-	bool AttackLocationWithAbility(const FVector& Location);
+	EAttackRequestResult AttackLocationWithAbility(const FVector& Location);
 
 	/** Changes locked actor attack mode to regular actor attack mode */
 	void CancelActorLock();
@@ -159,7 +171,7 @@ protected:
 	bool bIsAbilityAttack;
 	
 	/** Begins attack animation */
-	void StartAttack();
+	bool StartAttack();
 
 	void PerformAttack();
 

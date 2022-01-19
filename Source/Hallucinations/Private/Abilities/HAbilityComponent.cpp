@@ -92,23 +92,26 @@ bool UHAbilityComponent::UseAttackAbility(UHAbility* UncastAbility)
 
 	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
 	EAbilityTarget TargetType = UncastAbility->GetTargetType(CurrentTargetParams);
-	bool bIsAttackQueued = false;
+	EAttackRequestResult AttackRequestResult = EAttackRequestResult::Denied;
 	switch (TargetType)
 	{
 	case EAbilityTarget::Actor:
-		bIsAttackQueued = AttackComponent->AttackActorWithAbility(CurrentTargetParams.Actor.Get());
+		AttackRequestResult = AttackComponent->AttackActorWithAbility(CurrentTargetParams.Actor.Get());
 		break;
 	case EAbilityTarget::Point:
-		bIsAttackQueued = AttackComponent->AttackLocationWithAbility(CurrentTargetParams.Location);
+		AttackRequestResult = AttackComponent->AttackLocationWithAbility(CurrentTargetParams.Location);
 		break;
 	default:
 		break;
 	}
 
+	const bool bIsAttackQueued = AttackRequestResult != EAttackRequestResult::Denied; 
 	if (bIsAttackQueued)
 	{
 		QueuedAttackAbility = Ability;
+		bAbilityAttackStarted = AttackRequestResult == EAttackRequestResult::Started;
 	}
+
 	return bIsAttackQueued;
 }
 
@@ -145,8 +148,10 @@ void UHAbilityComponent::BeginPlay()
 	}
 
 	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
+	AttackComponent->OnAttackStarted.AddDynamic(this, &UHAbilityComponent::OnAttackStarted);
 	AttackComponent->OnAttackPointReached.AddDynamic(this, &UHAbilityComponent::OnAttackPointReached);
 	AttackComponent->OnAttackBackswingFinished.AddUObject(this, &UHAbilityComponent::FinishAttackBackswing);
+	AttackComponent->OnAttackCancelled.AddUObject(this, &UHAbilityComponent::OnAttackCancelled);
 }
 
 bool UHAbilityComponent::UseAbility(UHAbility* Ability)
@@ -202,12 +207,19 @@ void UHAbilityComponent::FinishCastBackswing()
 
 void UHAbilityComponent::FinishAttackBackswing()
 {
-	if (!QueuedAttackAbility)
+	if (!bAbilityAttackStarted)
 	{
 		return;
 	}
 
 	OnCastBackswingFinished.Broadcast();
+	bAbilityAttackStarted = false;
+	QueuedAttackAbility = nullptr;
+}
+
+void UHAbilityComponent::OnAttackCancelled()
+{
+	bAbilityAttackStarted = false;
 	QueuedAttackAbility = nullptr;
 }
 
@@ -262,6 +274,14 @@ void UHAbilityComponent::RestorePersistentState(const TMap<FString, float>& Cool
 		{
 			Ability->RestoreCooldownPercentage(CooldownData[Name]);
 		}
+	}
+}
+
+void UHAbilityComponent::OnAttackStarted()
+{
+	if (QueuedAttackAbility)
+	{
+		bAbilityAttackStarted = true;
 	}
 }
 
