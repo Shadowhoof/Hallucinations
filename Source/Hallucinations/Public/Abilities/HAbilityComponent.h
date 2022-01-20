@@ -6,6 +6,7 @@
 #include "Components/HAttackComponent.h"
 #include "HAbilityComponent.generated.h"
 
+class UHResourceComponent;
 class UHSpellAbility;
 class UHPlayerCharacterSave;
 class AHCharacter;
@@ -105,6 +106,12 @@ private:
 	
 	UPROPERTY()
 	UHAttackAbility* QueuedAttackAbility;
+
+	UPROPERTY()
+	TWeakObjectPtr<UHAttackComponent> AttackComponent;
+	
+	UPROPERTY()
+	TWeakObjectPtr<UHResourceComponent> ResourceComponent;
 
 	bool bAbilityAttackStarted = false;
 

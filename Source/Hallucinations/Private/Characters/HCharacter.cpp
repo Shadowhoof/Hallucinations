@@ -15,6 +15,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/HResourceComponent.h"
 #include "Constants/HConstants.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/HLogUtils.h"
@@ -38,6 +39,7 @@ AHCharacter::AHCharacter()
 	// initialize components
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 	HealthComponent = CreateDefaultSubobject<UHHealthComponent>(TEXT("HealthComponent"));
+	ResourceComponent = CreateDefaultSubobject<UHResourceComponent>(TEXT("ResourceComponent"));
 	AttackComponent = CreateDefaultSubobject<UHAttackComponent>(TEXT("AttackComponent"));
 	FollowComponent = CreateDefaultSubobject<UHFollowComponent>(TEXT("FollowComponent"));
 	AbilityComponent = CreateDefaultSubobject<UHAbilityComponent>(TEXT("AbilityComponent"));
@@ -184,6 +186,11 @@ FVector AHCharacter::GetTargetLocation() const
 UHHealthComponent* AHCharacter::GetHealthComponent() const
 {
 	return HealthComponent;
+}
+
+UHResourceComponent* AHCharacter::GetResourceComponent() const
+{
+	return ResourceComponent;
 }
 
 UHAttackComponent* AHCharacter::GetAttackComponent() const

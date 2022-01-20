@@ -10,6 +10,7 @@
 
 #include "HCharacter.generated.h"
 
+class UHResourceComponent;
 class UBoxComponent;
 class UHAbilityComponent;
 class UHStatusEffectComponent;
@@ -48,6 +49,7 @@ public:
 
 	// component getters
 	UHHealthComponent* GetHealthComponent() const;
+	UHResourceComponent* GetResourceComponent() const;
 	UHAttackComponent* GetAttackComponent() const;
 	UHFollowComponent* GetFollowComponent() const;
 	UHStatusEffectComponent* GetStatusEffectComponent() const;
@@ -81,6 +83,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHHealthComponent* HealthComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHResourceComponent* ResourceComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHAttackComponent* AttackComponent;
 

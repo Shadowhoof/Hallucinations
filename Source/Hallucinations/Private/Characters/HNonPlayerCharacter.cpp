@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "Abilities/HAbilityComponent.h"
 #include "Components/HHealthComponent.h"
+#include "Components/HResourceComponent.h"
 #include "Controllers/HAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -40,6 +41,7 @@ FPersistentActorState AHNonPlayerCharacter::GetPersistentState() const
 	State.Class = GetClass();
 	State.Transform = GetTransform();
 	State.Health = GetHealthComponent()->GetHealthPercentage();
+	State.Mana = GetResourceComponent()->GetManaPercentage();
 	AbilityComponent->GetPersistentState(State.AbilityCooldowns);
 	return State;
 }
@@ -47,6 +49,7 @@ FPersistentActorState AHNonPlayerCharacter::GetPersistentState() const
 void AHNonPlayerCharacter::RestorePersistentState(const FPersistentActorState& State)
 {
 	HealthComponent->RestorePersistentState(State.Health);
+	ResourceComponent->RestorePersistentState(State.Mana);
 	AbilityComponent->RestorePersistentState(State.AbilityCooldowns);
 }
 

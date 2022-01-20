@@ -24,6 +24,10 @@ struct FPersistentActorState
 	UPROPERTY()
 	float Health;
 
+	/** Actor's mana */
+	UPROPERTY()
+	float Mana;
+
 	/** Ability cooldowns of an actor at the moment of save */
 	UPROPERTY()
 	TMap<FString, float> AbilityCooldowns;

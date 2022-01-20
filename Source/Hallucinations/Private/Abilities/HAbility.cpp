@@ -89,6 +89,11 @@ EAbilityTarget UHAbility::GetTargetType(const FAbilityTargetParameters& TargetPa
 	return EAbilityTarget::None;
 }
 
+float UHAbility::GetManaCost() const
+{
+	return ManaCost;
+}
+
 void UHAbility::SetAbilityComponent(UHAbilityComponent* Component)
 {
 	ensure(!AbilityComponent && Component);

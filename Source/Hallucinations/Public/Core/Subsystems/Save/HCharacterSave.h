@@ -40,6 +40,9 @@ struct FPlayerCharacterSessionState
 	float Health;
 
 	UPROPERTY()
+	float Mana;
+	
+	UPROPERTY()
 	TMap<FString, float> AbilityCooldowns;
 };
 

@@ -12,6 +12,7 @@
 #include "Utils/HLogUtils.h"
 #include "Characters/HPlayerCharacter.h"
 #include "Components/HFollowComponent.h"
+#include "Components/HResourceComponent.h"
 #include "Utils/HEnumTools.h"
 
 DEFINE_LOG_CATEGORY(LogAbility);
@@ -42,7 +43,8 @@ UHAbilityComponent::UHAbilityComponent()
 
 bool UHAbilityComponent::CanUseAbility(UHAbility* Ability, const FAbilityTargetParameters& TargetParams) const
 {
-	return !GetCaster()->IsBusy() && Ability->CanBeUsed(TargetParams);
+	const bool bHasEnoughMana = ResourceComponent->GetCurrentMana() >= Ability->GetManaCost();
+	return !GetCaster()->IsBusy() && bHasEnoughMana && Ability->CanBeUsed(TargetParams);
 }
 
 bool UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
@@ -55,6 +57,11 @@ bool UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
 		return false;
 	}
 
+	if (!ResourceComponent->SpendMana(Ability->GetManaCost()))
+	{
+		return false;
+	}
+	
 	UHFollowComponent* FollowComponent = GetCaster()->GetFollowComponent();
 	EAbilityTarget TargetType = BaseAbility->GetTargetType(CurrentTargetParams);
 	switch (TargetType)
@@ -90,7 +97,11 @@ bool UHAbilityComponent::UseAttackAbility(UHAbility* UncastAbility)
 		return false;
 	}
 
-	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
+	if (!ResourceComponent->SpendMana(Ability->GetManaCost()))
+	{
+		return false;
+	}
+	
 	EAbilityTarget TargetType = UncastAbility->GetTargetType(CurrentTargetParams);
 	EAttackRequestResult AttackRequestResult = EAttackRequestResult::Denied;
 	switch (TargetType)
@@ -147,11 +158,13 @@ void UHAbilityComponent::BeginPlay()
 		}
 	}
 
-	UHAttackComponent* AttackComponent = GetCaster()->GetAttackComponent();
+	AttackComponent = GetCaster()->GetAttackComponent();
 	AttackComponent->OnAttackStarted.AddDynamic(this, &UHAbilityComponent::OnAttackStarted);
 	AttackComponent->OnAttackPointReached.AddDynamic(this, &UHAbilityComponent::OnAttackPointReached);
 	AttackComponent->OnAttackBackswingFinished.AddUObject(this, &UHAbilityComponent::FinishAttackBackswing);
 	AttackComponent->OnAttackCancelled.AddUObject(this, &UHAbilityComponent::OnAttackCancelled);
+
+	ResourceComponent = GetCaster()->GetResourceComponent();
 }
 
 bool UHAbilityComponent::UseAbility(UHAbility* Ability)

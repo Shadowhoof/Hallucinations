@@ -18,6 +18,7 @@
 #include "Components/HHealthComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/HResourceComponent.h"
 #include "Inventory/HInventoryComponent.h"
 #include "Inventory/HEquipmentComponent.h"
 #include "Progression/HAttributeComponent.h"
@@ -188,6 +189,7 @@ FPlayerCharacterSessionState AHPlayerCharacter::GetSessionState()
 {
 	FPlayerCharacterSessionState State;
 	State.Health = HealthComponent->GetHealthPercentage();
+	State.Mana = ResourceComponent->GetManaPercentage();
 	AbilityComponent->GetPersistentState(State.AbilityCooldowns);
 	return State;
 }
@@ -195,6 +197,7 @@ FPlayerCharacterSessionState AHPlayerCharacter::GetSessionState()
 void AHPlayerCharacter::RestoreSessionState(const FPlayerCharacterSessionState& State)
 {
 	HealthComponent->RestorePersistentState(State.Health);
+	ResourceComponent->RestorePersistentState(State.Mana);
 	AbilityComponent->RestorePersistentState(State.AbilityCooldowns);
 }
 

@@ -64,6 +64,8 @@ public:
 
 	EAbilityTarget GetTargetType(const FAbilityTargetParameters& TargetParams) const;
 
+	float GetManaCost() const;
+	
 	void SetAbilityComponent(UHAbilityComponent* Component);
 
 	/* Gets remaining cooldown for current ability in seconds */
@@ -98,6 +100,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
 	float Cooldown = 0.f;
 
+	/** Amount of mana required to use the ability */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
+	float ManaCost = 10.f;
+	
 	/** Icon to be displayed in the UI */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	UTexture2D* Icon;
