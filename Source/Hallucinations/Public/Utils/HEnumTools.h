@@ -16,3 +16,9 @@ FString EnumAsString(T Value)
 {
 	return StaticEnum<T>()->GetValueAsString(Value);
 }
+
+template<typename T>
+bool IsFlagSet(T Flags, T TestFlag)
+{
+	return static_cast<uint8>(Flags & TestFlag) > 0; 
+}

@@ -9,6 +9,15 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogFade, Log, All);
 
 
+enum class EFadeType
+{
+	None = 0,
+	Mesh = 1 << 0,
+	ClickCollision = 1 << 1
+};
+ENUM_CLASS_FLAGS(EFadeType)
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HALLUCINATIONS_API UHFadeableComponent : public UActorComponent
 {
@@ -33,8 +42,6 @@ protected:
 	virtual UMeshComponent* GetFadeableMesh();
 	
 private:
-
-	bool bIsFadeable = true;
 	
 	TObjectPtr<UMeshComponent> MeshComponent;
 
@@ -52,5 +59,7 @@ private:
 	
 	float CurrentOpacity;
 	float DesiredOpacity;
+	
+	EFadeType FadeFlags;
 	
 };

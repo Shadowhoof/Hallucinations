@@ -4,6 +4,7 @@
 #include "Level/HFadeableComponent.h"
 
 #include "Constants/HConstants.h"
+#include "Utils/HEnumTools.h"
 
 DEFINE_LOG_CATEGORY(LogFade);
 
@@ -20,7 +21,7 @@ namespace FadeConstants
 }
 
 
-UHFadeableComponent::UHFadeableComponent() : CurrentOpacity(FadeConstants::DefaultOpacity), DesiredOpacity(FadeConstants::DefaultOpacity)
+UHFadeableComponent::UHFadeableComponent() : CurrentOpacity(FadeConstants::DefaultOpacity), DesiredOpacity(FadeConstants::DefaultOpacity), FadeFlags(EFadeType::None)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -30,24 +31,39 @@ void UHFadeableComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	UMeshComponent* FadeableMesh = GetFadeableMesh();
-	bool bAreTransparentMaterialsValid = GetOwner()->IsHidden() || !TransparentMaterials.IsEmpty(); 
-	if (!FadeableMesh || !bAreTransparentMaterialsValid)
+
+	if (FadeableMesh)
+	{
+		FadeFlags |= EFadeType::ClickCollision;
+	}
+	if (!GetOwner()->IsHidden() && !TransparentMaterials.IsEmpty())
+	{
+		FadeFlags |= EFadeType::Mesh;
+	}
+
+	if (FadeFlags == EFadeType::None)
 	{
 		UE_LOG(LogLevel, Warning, TEXT("FadeableComponent: Actor %s has no mesh component or its fade materials aren't set properly"), *GetOwner()->GetName())
-		bIsFadeable = false;
 		return;
 	}
 
 	MeshComponent = FadeableMesh;
 
-	int32 TransparentMaterialCount = TransparentMaterials.Num();
-	OpaqueMaterials.Reserve(TransparentMaterialCount);
-	for (int32 Index = 0; Index < TransparentMaterialCount; ++Index)
+	if (IsFlagSet(FadeFlags, EFadeType::Mesh))
 	{
-		DynamicTransparentMaterials.Add(UMaterialInstanceDynamic::Create(TransparentMaterials[Index], this));
-		OpaqueMaterials.Add(FadeableMesh->GetMaterial(Index));
+		const int32 TransparentMaterialCount = TransparentMaterials.Num();
+		OpaqueMaterials.Reserve(TransparentMaterialCount);
+		for (int32 Index = 0; Index < TransparentMaterialCount; ++Index)
+		{
+			DynamicTransparentMaterials.Add(UMaterialInstanceDynamic::Create(TransparentMaterials[Index], this));
+			OpaqueMaterials.Add(FadeableMesh->GetMaterial(Index));
+		}
 	}
-	DefaultClickResponse = MeshComponent->GetCollisionResponseToChannel(ECC_Click);
+
+	if (IsFlagSet(FadeFlags, EFadeType::ClickCollision))
+	{
+		DefaultClickResponse = MeshComponent->GetCollisionResponseToChannel(ECC_Click);
+	}
 }
 
 UMeshComponent* UHFadeableComponent::GetFadeableMesh()
@@ -59,6 +75,11 @@ void UHFadeableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (!IsFlagSet(FadeFlags, EFadeType::Mesh))
+	{
+		return;
+	}
+	
 	if (CurrentOpacity == DesiredOpacity)
 	{
 		return;
@@ -67,8 +88,8 @@ void UHFadeableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	const float PreviousOpacity = CurrentOpacity;
 	if constexpr (FadeConstants::FadeTime > 0.f)
 	{
-		float Sign = FMath::Sign(DesiredOpacity - CurrentOpacity);
-		float DeltaOpacity = Sign * DeltaTime / FadeConstants::FadeTime;
+		const float Sign = FMath::Sign(DesiredOpacity - CurrentOpacity);
+		const float DeltaOpacity = Sign * DeltaTime / FadeConstants::FadeTime;
 		CurrentOpacity = FMath::Clamp(CurrentOpacity + DeltaOpacity, FadeConstants::MinOpacity, FadeConstants::DefaultOpacity);
 	}
 	else
@@ -90,7 +111,7 @@ void UHFadeableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		}
 	}
 	
-	bool bReturnedToDefault = CurrentOpacity == FadeConstants::DefaultOpacity && DesiredOpacity == FadeConstants::DefaultOpacity;
+	const bool bReturnedToDefault = CurrentOpacity == FadeConstants::DefaultOpacity && DesiredOpacity == FadeConstants::DefaultOpacity;
 	for (uint8 Index = 0; Index < DynamicTransparentMaterials.Num(); ++Index)
 	{
 		UMaterialInstanceDynamic* Material = DynamicTransparentMaterials[Index];
@@ -105,7 +126,7 @@ void UHFadeableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 void UHFadeableComponent::FadeOut(AActor* FadeSource)
 {
-	if (!bIsFadeable)
+	if (FadeFlags == EFadeType::None)
 	{
 		return;
 	}
@@ -118,11 +139,18 @@ void UHFadeableComponent::FadeOut(AActor* FadeSource)
 
 	if (FadeSources.IsEmpty())
 	{
-		DesiredOpacity = FadeConstants::MinOpacity;
-		MeshComponent->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
-		for (uint8 Index = 0; Index < DynamicTransparentMaterials.Num(); ++Index)
+		if (IsFlagSet(FadeFlags, EFadeType::ClickCollision))
 		{
-			MeshComponent->SetMaterial(Index, DynamicTransparentMaterials[Index]);
+			MeshComponent->SetCollisionResponseToChannel(ECC_Click, ECR_Ignore);
+		}
+
+		if (IsFlagSet(FadeFlags, EFadeType::Mesh))
+		{
+			DesiredOpacity = FadeConstants::MinOpacity;
+			for (uint8 Index = 0; Index < DynamicTransparentMaterials.Num(); ++Index)
+			{
+				MeshComponent->SetMaterial(Index, DynamicTransparentMaterials[Index]);
+			}
 		}
 		UE_LOG(LogFade, Verbose, TEXT("Fading out actor %s with source %s"), *GetOwner()->GetName(), *FadeSource->GetName());
 	}
@@ -135,12 +163,12 @@ void UHFadeableComponent::FadeOut(AActor* FadeSource)
 
 void UHFadeableComponent::FadeIn(AActor* FadeSource)
 {
-	if (!bIsFadeable || !FadeSource)
+	if (FadeFlags == EFadeType::None || !FadeSource)
 	{
 		return;
 	}
 
-	if (int32 ElementCount = FadeSources.Remove(FadeSource); ElementCount == 0)
+	if (const int32 ElementCount = FadeSources.Remove(FadeSource); ElementCount == 0)
 	{
 		UE_LOG(LogFade, Error, TEXT("FadeIn: provided FadeSource %s for actor %s is not in FadeSources array"), *FadeSource->GetName(), *GetOwner()->GetName());
 		return;
@@ -148,8 +176,15 @@ void UHFadeableComponent::FadeIn(AActor* FadeSource)
 
 	if (FadeSources.IsEmpty())
 	{
-		DesiredOpacity = FadeConstants::DefaultOpacity;
-		MeshComponent->SetCollisionResponseToChannel(ECC_Click, DefaultClickResponse);
+		if (IsFlagSet(FadeFlags, EFadeType::ClickCollision))
+		{
+			MeshComponent->SetCollisionResponseToChannel(ECC_Click, DefaultClickResponse);
+		}
+
+		if (IsFlagSet(FadeFlags, EFadeType::Mesh))
+		{
+			DesiredOpacity = FadeConstants::DefaultOpacity;
+		}
 
 		UE_LOG(LogFade, Verbose, TEXT("Fading in actor %s after removing source %s"), *GetOwner()->GetName(), *FadeSource->GetName());
 	}

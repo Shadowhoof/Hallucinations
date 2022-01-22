@@ -2,8 +2,12 @@
 
 
 #include "Level/HFadeTrigger.h"
+
 #include "Components/BoxComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include "Level/HFadeableComponent.h"
+#include "Utils/HLogUtils.h"
 
 AHFadeTrigger::AHFadeTrigger()
 {
@@ -24,12 +28,35 @@ void AHFadeTrigger::BeginPlay()
 	
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AHFadeTrigger::OnBeginOverlap);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &AHFadeTrigger::OnEndOverlap);
+
+	// overlap detection at begin play seems to depend on initialization order so we'll delay the check until next tick
+	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AHFadeTrigger::CheckForInitialOverlap);
 }
 
 void AHFadeTrigger::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Log, TEXT("Fade out"));
+	if (Cast<ACharacter>(OtherActor) != GetPlayerCharacter())
+	{
+		return;
+	}
+
+	FadeOutActors();
+}
+
+void AHFadeTrigger::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (Cast<ACharacter>(OtherActor) != GetPlayerCharacter())
+	{
+		return;
+	}
+	
+	FadeInActors();
+}
+
+void AHFadeTrigger::FadeOutActors()
+{
 	for (auto& Actor : FadeableActors)
 	{
 		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(Actor->GetComponentByClass(UHFadeableComponent::StaticClass()));
@@ -37,14 +64,25 @@ void AHFadeTrigger::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	}
 }
 
-void AHFadeTrigger::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void AHFadeTrigger::FadeInActors()
 {
-	UE_LOG(LogTemp, Log, TEXT("Fade in"));
 	for (auto& Actor : FadeableActors)
 	{
 		UHFadeableComponent* FadeableComponent = Cast<UHFadeableComponent>(Actor->GetComponentByClass(UHFadeableComponent::StaticClass()));
 		FadeableComponent->FadeIn(this);
 	}
 }
+
+ACharacter* AHFadeTrigger::GetPlayerCharacter() const
+{
+	return UGameplayStatics::GetPlayerCharacter(this, 0);
+}
+
+void AHFadeTrigger::CheckForInitialOverlap()
+{
+	if (BoxComponent->IsOverlappingActor(GetPlayerCharacter()))
+	{
+		FadeOutActors();
+	}
+}	
 

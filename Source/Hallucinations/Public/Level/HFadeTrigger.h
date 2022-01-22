@@ -24,7 +24,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Fade")
 	UBoxComponent* BoxComponent;
 	
-	// Objects which will fade when player character is inside this trigger
+	/** Objects which will fade when player character is inside this trigger */
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Fade")
 	TArray<AActor*> FadeableActors;
 
@@ -35,5 +35,11 @@ private:
 
 	UFUNCTION()
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	void FadeOutActors();
+	void FadeInActors();
 	
+	ACharacter* GetPlayerCharacter() const;
+
+	void CheckForInitialOverlap();
 };
