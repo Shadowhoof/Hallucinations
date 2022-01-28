@@ -231,7 +231,7 @@ void AHPlayerCharacter::OnPrimaryActionRelease()
 void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
 {
 	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
-	if (!PlayerController)
+	if (!PlayerController || IsDead())
 	{
 		return;
 	}

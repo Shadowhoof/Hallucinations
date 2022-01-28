@@ -37,11 +37,17 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void OnPossess(APawn* InPawn) override;
-	
+	virtual void OnUnPossess() override;
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category = "Combat")
 	bool bInCombat = false;
 
 	UPROPERTY()
 	AActor* TargetActor;
 
+private:
+
+	UFUNCTION()
+	void OnPossessedPawnDamageTaken(AActor* Victim, AActor* Source, float Damage);
+	
 };

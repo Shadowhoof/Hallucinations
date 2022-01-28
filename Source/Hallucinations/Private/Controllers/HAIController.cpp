@@ -10,6 +10,7 @@
 #include "Core/HLogCategories.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
+#include "Perception/AISense_Team.h"
 #include "Utils/HLogUtils.h"
 
 DEFINE_LOG_CATEGORY(LogAI);
@@ -18,6 +19,8 @@ DEFINE_LOG_CATEGORY(LogAI);
 namespace AIConstants
 {
 	const FName TargetActorKeyName("TargetActor");
+
+	constexpr float CallForHelpRange = 1000.f;
 }
 
 
@@ -68,11 +71,36 @@ void AHAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	
-	AHCharacter* AsCharacter = Cast<AHCharacter>(InPawn);
-	if (AsCharacter)
+	const AHCharacter* AsCharacter = Cast<AHCharacter>(InPawn);
+	if (!AsCharacter)
 	{
-		uint8 TeamId = static_cast<uint8>(AsCharacter->GetHealthComponent()->GetTeam());
-		SetGenericTeamId(FGenericTeamId(TeamId));
+		return;
+	}
+	
+	const uint8 TeamId = static_cast<uint8>(AsCharacter->GetHealthComponent()->GetTeam());
+	SetGenericTeamId(FGenericTeamId(TeamId));
+	
+	AsCharacter->GetHealthComponent()->OnDamageTaken.AddDynamic(this, &AHAIController::OnPossessedPawnDamageTaken);
+
+}
+
+void AHAIController::OnUnPossess()
+{
+	if (const AHCharacter* AsCharacter = Cast<AHCharacter>(GetPawn()))
+	{
+		AsCharacter->GetHealthComponent()->OnDamageTaken.RemoveDynamic(this, &AHAIController::OnPossessedPawnDamageTaken);
+	}
+	
+	Super::OnUnPossess();
+}
+
+void AHAIController::OnPossessedPawnDamageTaken(AActor* Victim, AActor* Source, float Damage)
+{
+	if (!Source)
+	{
+		return;
 	}
 
+	const FAITeamStimulusEvent Event(Victim, Source, Source->GetActorLocation(), AIConstants::CallForHelpRange);
+	UAIPerceptionSystem::OnEvent(GetWorld(), Event);
 }

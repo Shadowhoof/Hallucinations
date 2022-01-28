@@ -68,9 +68,29 @@ void AHAdventureGameMode::StartToLeaveMap()
 
 void AHAdventureGameMode::CreateLevel()
 {
-	FString LevelName = UGameplayStatics::GetCurrentLevelName(this);
+	const FString LevelName = UGameplayStatics::GetCurrentLevelName(this);
 	UE_LOG(LogLevel, Log, TEXT("No saved state for level %s found, randomizing..."), *LevelName);
 	
+	SpawnEnemies();
+}
+
+bool AHAdventureGameMode::LoadLevel()
+{
+	UHLevelSave* LevelSave = SaveSubsystem->LoadLevel(GetWorld());
+	if (!LevelSave)
+	{
+		return false;
+	}
+	
+	for (const auto& ActorData : LevelSave->GetActorData())
+	{
+		RestoreSavedActor(ActorData);
+	}
+	return true;
+}
+
+void AHAdventureGameMode::SpawnEnemies()
+{
 	for (TActorIterator<AHEnemySpawnPoint> It(GetWorld()); It; ++It)
 	{
 		const AHEnemySpawnPoint* SpawnPoint = *It;
@@ -89,7 +109,7 @@ void AHAdventureGameMode::CreateLevel()
 		}
 		
 		UE_LOG(LogSpawn, Log, TEXT("Spawning %d enemies of type %s"), EnemyCount, *EnemyType->GetName())
-		float SpawnRadius = SpawnPoint->GetSpawnRadius();
+		const float SpawnRadius = SpawnPoint->GetSpawnRadius();
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		for (int32 i = 0; i < EnemyCount; ++i)
@@ -100,21 +120,6 @@ void AHAdventureGameMode::CreateLevel()
 			GetWorld()->SpawnActor(EnemyType, &SpawnLocation, &SpawnRotation, SpawnParams);
 		}
 	}
-}
-
-bool AHAdventureGameMode::LoadLevel()
-{
-	UHLevelSave* LevelSave = SaveSubsystem->LoadLevel(GetWorld());
-	if (!LevelSave)
-	{
-		return false;
-	}
-	
-	for (const auto& ActorData : LevelSave->GetActorData())
-	{
-		RestoreSavedActor(ActorData);
-	}
-	return true;
 }
 
 void AHAdventureGameMode::SaveLevelState()

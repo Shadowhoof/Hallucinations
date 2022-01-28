@@ -10,6 +10,7 @@
 struct FPersistentActorState;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, TargetActor, AController*, Instigator, AActor*, SourceActor, float, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDamageTaken, AActor*, Victim, AActor*, InstigatorActor, float, Damage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActorDeath, AActor*, Victim, AActor*, Killer);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogRagdoll, Log, All);
@@ -67,6 +68,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Health")
 	FOnHealthChanged OnHealthChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Health")
+	FOnDamageTaken OnDamageTaken;
+	
 	UPROPERTY(BlueprintAssignable, Category = "Health")
 	FOnActorDeath OnActorDeath;
 

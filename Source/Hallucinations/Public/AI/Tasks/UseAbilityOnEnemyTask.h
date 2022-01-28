@@ -18,6 +18,8 @@ class HALLUCINATIONS_API UUseAbilityOnEnemyTask : public UBTTaskNode
 	GENERATED_BODY()
 
 public:
+
+	UUseAbilityOnEnemyTask();
 	
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 

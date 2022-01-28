@@ -220,7 +220,7 @@ bool AHCharacter::IsStunned() const
 
 bool AHCharacter::IsBusy() const
 {
-	if (AttackComponent->IsAttacking() || AbilityComponent->IsCasting() || IsStunned())
+	if (IsDead() || AttackComponent->IsAttacking() || AbilityComponent->IsCasting() || IsStunned())
 	{
 		return true;
 	}

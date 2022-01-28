@@ -19,6 +19,8 @@ class HALLUCINATIONS_API UAttackEnemyTask : public UBTTaskNode
 
 public:
 
+	UAttackEnemyTask();
+
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:

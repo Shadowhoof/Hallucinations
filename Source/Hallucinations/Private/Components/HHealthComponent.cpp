@@ -126,6 +126,9 @@ void UHHealthComponent::HandleTakePointDamage(AActor* DamagedActor, float Damage
 	}
 	UE_LOG(LogDamage, Log, TEXT("Taking point damage from %s, amount: %.0f"), *DamageCauser->GetName(), Damage);
 
+	AActor* InstigatorActor = InstigatedBy ? InstigatedBy->GetCharacter() : nullptr;
+	OnDamageTaken.Broadcast(DamagedActor, InstigatorActor, Damage);
+	
 	const bool bWasAlive = !IsDead();
 	ApplyHealthChange(-Damage, DamageType, InstigatedBy, DamageCauser);
 	if (bWasAlive && IsDead())
@@ -146,6 +149,8 @@ void UHHealthComponent::HandleTakeRadialDamage(AActor* DamagedActor, float Damag
 	}
 	UE_LOG(LogDamage, Log, TEXT("Taking radial damage from %s, amount: %.0f"), *DamageCauser->GetName(), Damage);
 
+	AActor* InstigatorActor = InstigatedBy ? InstigatedBy->GetCharacter() : nullptr;
+	OnDamageTaken.Broadcast(DamagedActor, InstigatorActor, Damage);
 	ApplyHealthChange(-Damage, DamageType, InstigatedBy, DamageCauser);
 }
 

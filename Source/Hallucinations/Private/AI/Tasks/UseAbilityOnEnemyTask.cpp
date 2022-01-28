@@ -8,6 +8,11 @@
 #include "Constants/HConstants.h"
 #include "Controllers/HAIController.h"
 
+UUseAbilityOnEnemyTask::UUseAbilityOnEnemyTask()
+{
+	bCreateNodeInstance = true;
+}
+
 EBTNodeResult::Type UUseAbilityOnEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	TreeComponent = &OwnerComp;

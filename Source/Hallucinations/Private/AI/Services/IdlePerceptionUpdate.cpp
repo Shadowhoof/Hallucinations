@@ -9,6 +9,7 @@
 #include "Perception/AISense_Damage.h"
 #include "Perception/AISense_Sight.h"
 #include "Constants/HConstants.h"
+#include "Perception/AISense_Team.h"
 #include "Utils/HLogUtils.h"
 #include "VisualLogger/VisualLogger.h"
 
@@ -39,17 +40,15 @@ void UIdlePerceptionUpdate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	}
 
 	// check if we have been damaged and turn to that direction
-	FVector LastDamageDirection = GetLastDamageSourceLocation(Controller, Pawn);
-	if (LastDamageDirection != HallucinationsConstants::InvalidVector)
+	const FVector LocationToLookAt = GetLocationToLookAt(Controller, Pawn);
+	if (LocationToLookAt != HallucinationsConstants::InvalidVector)
 	{
-		BlackboardComponent->SetValueAsVector(LastDamageSourceLocationKey.SelectedKeyName, LastDamageDirection);
+		BlackboardComponent->SetValueAsVector(LocationOfInterestKey.SelectedKeyName, LocationToLookAt);
 	}
 	else
 	{
-		BlackboardComponent->ClearValue(LastDamageSourceLocationKey.SelectedKeyName);
+		BlackboardComponent->ClearValue(LocationOfInterestKey.SelectedKeyName);
 	}
-
-	UE_VLOG(Controller, LogBehaviorTree, Log, TEXT("Updating idle service..."));
 }
 
 void UIdlePerceptionUpdate::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -57,7 +56,7 @@ void UIdlePerceptionUpdate::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, u
 	Super::OnCeaseRelevant(OwnerComp, NodeMemory);
 	
 	UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
-	BlackboardComponent->ClearValue(LastDamageSourceLocationKey.SelectedKeyName);
+	BlackboardComponent->ClearValue(LocationOfInterestKey.SelectedKeyName);
 }
 
 AActor* UIdlePerceptionUpdate::GetClosestVisuallyPerceivedEnemy(AAIController* OwnerController, APawn* OwnerPawn) const
@@ -81,20 +80,29 @@ AActor* UIdlePerceptionUpdate::GetClosestVisuallyPerceivedEnemy(AAIController* O
 	return ClosestActor;
 }
 
-FVector UIdlePerceptionUpdate::GetLastDamageSourceLocation(AAIController* OwnerController, APawn* OwnerPawn) const
+FVector UIdlePerceptionUpdate::GetLocationToLookAt(AAIController* OwnerController, APawn* OwnerPawn) const
 {
-	TSubclassOf<UAISense> DamageSenseClass = UAISense_Damage::StaticClass();
-	FAISenseID SenseID = UAISense::GetSenseID(DamageSenseClass);
-	if (!SenseID.IsValid())
+	static const TArray<TSubclassOf<UAISense>> SensesToUse = {UAISense_Damage::StaticClass(), UAISense_Team::StaticClass()};
+	for (const TSubclassOf<UAISense>& SenseClass : SensesToUse)
 	{
-		return HallucinationsConstants::InvalidVector;
+		if (const FVector Location = GetFreshestSourceLocation(SenseClass, OwnerController); Location != HallucinationsConstants::InvalidVector)
+		{
+			return Location;
+		}
 	}
 
-	UAIPerceptionComponent* PerceptionComponent = OwnerController->GetPerceptionComponent();
-	const FActorPerceptionInfo* FreshestSource = PerceptionComponent->GetFreshestTrace(SenseID);
-	if (FreshestSource && FreshestSource->IsSenseActive(SenseID))
+	return HallucinationsConstants::InvalidVector;
+}
+
+FVector UIdlePerceptionUpdate::GetFreshestSourceLocation(TSubclassOf<UAISense> SenseToUse, AAIController* OwnerController) const
+{
+	if (const FAISenseID SenseID = UAISense::GetSenseID(SenseToUse); SenseID.IsValid())
 	{
-		return FreshestSource->GetLastStimulusLocation();
+		const FActorPerceptionInfo* FreshestSource = OwnerController->GetPerceptionComponent()->GetFreshestTrace(SenseID);
+		if (FreshestSource && FreshestSource->IsSenseActive(SenseID))
+		{
+			return FreshestSource->GetLastStimulusLocation();
+		}
 	}
 
 	return HallucinationsConstants::InvalidVector;

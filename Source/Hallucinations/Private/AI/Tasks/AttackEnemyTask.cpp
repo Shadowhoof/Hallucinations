@@ -6,6 +6,12 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/HAttackComponent.h"
 #include "Controllers/HAIController.h"
+#include "Utils/HEnumTools.h"
+
+UAttackEnemyTask::UAttackEnemyTask()
+{
+	bCreateNodeInstance = true;
+}
 
 EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -13,7 +19,7 @@ EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	
 	AHAIController* Controller = Cast<AHAIController>(OwnerComp.GetAIOwner());
 	AActor* TargetActor = Controller->GetTargetActor();
-	if (!TargetActor)
+	if (!TargetActor || bIsAttacking)
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -27,7 +33,8 @@ EBTNodeResult::Type UAttackEnemyTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		AttackComponent->OnAttackCancelled.AddUObject(this, &UAttackEnemyTask::OnAttackCancelled);
 	}
 
-	if (AttackComponent->AttackActor(TargetActor, true) != EAttackRequestResult::Denied)
+	EAttackRequestResult Result = AttackComponent->AttackActor(TargetActor, true);
+	if (Result != EAttackRequestResult::Denied)
 	{
 		UE_LOG(LogBehaviorTree, Verbose, TEXT("AI | UAttackEnemyTask | Actor %s is attacking %s"), *AttackComponent->GetOwner()->GetName(), *TargetActor->GetName())
 		bIsAttacking = true;

@@ -31,6 +31,8 @@ private:
 	void CreateLevel();
 	bool LoadLevel();
 
+	void SpawnEnemies();
+	
 	void SaveLevelState();
 	void SavePlayerCharacter();
 	

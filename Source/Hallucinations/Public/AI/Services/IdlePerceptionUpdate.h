@@ -6,6 +6,8 @@
 #include "BehaviorTree/BTService.h"
 #include "IdlePerceptionUpdate.generated.h"
 
+class UAISense;
+
 /**
  * Service that runs while AI is in idle state and looks for potential targets or direction to pay attention to.
  */
@@ -28,12 +30,13 @@ protected:
 	FBlackboardKeySelector TargetActorKey;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Blackboard")
-	FBlackboardKeySelector LastDamageSourceLocationKey;
+	FBlackboardKeySelector LocationOfInterestKey;
 
 private:
 
 	AActor* GetClosestVisuallyPerceivedEnemy(AAIController* OwnerController, APawn* OwnerPawn) const;
 
-	FVector GetLastDamageSourceLocation(AAIController* OwnerController, APawn* OwnerPawn) const;
+	FVector GetLocationToLookAt(AAIController* OwnerController, APawn* OwnerPawn) const;
 	
+	FVector GetFreshestSourceLocation(TSubclassOf<UAISense> SenseToUse, AAIController* OwnerController) const;
 };
