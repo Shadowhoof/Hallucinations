@@ -34,7 +34,10 @@ public:
 	virtual void RestorePersistentState(const FPersistentActorState& State) override;
 
 	virtual AActor* GetTargetActor() const override;
-	
+
+	/** Returns location that NPC is anchored to */
+	const FVector& GetAnchorPoint() const;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -49,5 +52,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float NonCombatMovementSpeed = 250.f;
+
+	/** Location that NPCs are anchored to. They will wander around but not move too far away from this spot. */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "AI")
+	FVector AnchorPoint;
 	
 };

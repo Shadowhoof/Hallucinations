@@ -27,7 +27,7 @@ void UHFollowComponent::BeginPlay()
 	GetCharacter()->DeathEvent.AddDynamic(this, &UHFollowComponent::OnOwnerDeath);
 }
 
-void UHFollowComponent::ResetRotationFields()
+void UHFollowComponent::StopRotation()
 {
 	RotationActor = nullptr;
 	RotationLocation = FHConstants::NullVector;
@@ -57,7 +57,7 @@ void UHFollowComponent::MoveToActor(AActor* Actor)
 	
 	UAIBlueprintHelperLibrary::SimpleMoveToActor(GetCharacter()->Controller, Actor);
 	FollowedActor = Actor;
-	ResetRotationFields();
+	StopRotation();
 }
 
 void UHFollowComponent::MoveToLocation(const FVector& Location)
@@ -69,7 +69,7 @@ void UHFollowComponent::MoveToLocation(const FVector& Location)
 	
 	UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetCharacter()->Controller, Location);
 	FollowedActor = nullptr;
-	ResetRotationFields();
+	StopRotation();
 }
 
 void UHFollowComponent::StopMovement()
@@ -157,6 +157,6 @@ AHCharacter* UHFollowComponent::GetCharacter() const
 void UHFollowComponent::Interrupt()
 {
 	StopMovement();
-	ResetRotationFields();
+	StopRotation();
 }
 

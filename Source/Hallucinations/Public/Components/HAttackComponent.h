@@ -202,6 +202,8 @@ private:
 	float CalculateAttackBackswing() const;
 	float CalculateAttackSpeed() const;
 
+	void InterruptAttack();
+	
 	FWeaponAttackParameters WeaponParams;
 
 	FTimerHandle AttackPointHandle;

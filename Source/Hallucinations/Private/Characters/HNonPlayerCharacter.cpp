@@ -9,6 +9,7 @@
 #include "Components/HResourceComponent.h"
 #include "Controllers/HAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Core/HLogCategories.h"
 
 AHNonPlayerCharacter::AHNonPlayerCharacter()
 {
@@ -20,14 +21,15 @@ void AHNonPlayerCharacter::EnterCombat()
 {
 	bInCombat = true;
 	GetCharacterMovement()->MaxWalkSpeed = CombatMovementSpeed;
-	UE_LOG(LogTemp, Log, TEXT("%s has entered combat"), *GetName())
+	UE_LOG(LogAI, Verbose, TEXT("%s has entered combat"), *GetName());
 }
 
 void AHNonPlayerCharacter::LeaveCombat()
 {
 	bInCombat = false;
 	GetCharacterMovement()->MaxWalkSpeed = NonCombatMovementSpeed;
-	UE_LOG(LogTemp, Log, TEXT("%s has left combat"), *GetName())
+	AnchorPoint = GetActorLocation();
+	UE_LOG(LogAI, Verbose, TEXT("%s has left combat"), *GetName());
 }
 
 bool AHNonPlayerCharacter::ShouldBeSaved() const
@@ -64,11 +66,18 @@ AActor* AHNonPlayerCharacter::GetTargetActor() const
 	return AIController->GetTargetActor();
 }
 
+const FVector& AHNonPlayerCharacter::GetAnchorPoint() const
+{
+	return AnchorPoint;
+}
+
 void AHNonPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	GetCharacterMovement()->MaxWalkSpeed = NonCombatMovementSpeed;
+
+	AnchorPoint = GetActorLocation();
 }
 
 void AHNonPlayerCharacter::OnDeath(AActor* Victim, AActor* Killer)

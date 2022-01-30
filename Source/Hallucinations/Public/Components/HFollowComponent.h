@@ -16,12 +16,12 @@ class HALLUCINATIONS_API UHFollowComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
+public:
+	
 	UHFollowComponent();
 
 protected:
-	// Called when the game starts
+	
 	virtual void BeginPlay() override;
 
 	bool bIsMovementLocked;
@@ -62,7 +62,7 @@ public:
 	void RotateTowardsLocation(FVector Location);
 
 	UFUNCTION(BlueprintCallable)
-	void ResetRotationFields();
+	void StopRotation();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

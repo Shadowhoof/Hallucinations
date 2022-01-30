@@ -6,6 +6,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BTNode.h"
 #include "Characters/HCharacter.h"
+#include "Characters/HNonPlayerCharacter.h"
 #include "Components/HHealthComponent.h"
 #include "Core/HLogCategories.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -43,8 +44,22 @@ void AHAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+	const UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
 	TargetActor = Cast<AActor>(BlackboardComponent->GetValueAsObject(AIConstants::TargetActorKeyName));
+
+	if (AHNonPlayerCharacter* NPC = Cast<AHNonPlayerCharacter>(GetCharacter()))
+	{
+		if (!bInCombat && TargetActor)
+		{
+			bInCombat = true;
+			NPC->EnterCombat();
+		}
+		else if (bInCombat && !TargetActor)
+		{
+			bInCombat = false;
+			NPC->LeaveCombat();
+		}
+	}
 }
 
 ETeamAttitude::Type AHAIController::GetTeamAttitudeTowards(const AActor& Other) const

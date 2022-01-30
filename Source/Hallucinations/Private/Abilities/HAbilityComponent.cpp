@@ -202,7 +202,11 @@ void UHAbilityComponent::FinishCastPoint(UHSpellAbility* Ability)
 	bIsCasting = false;
 	OnCastPointFinished.Broadcast(Ability);
 
-	float CastBackswing = Ability->GetCastBackswing();
+	UHFollowComponent* FollowComponent = GetCaster()->GetFollowComponent();
+	FollowComponent->StopMovement();
+	FollowComponent->StopRotation();
+	
+	const float CastBackswing = Ability->GetCastBackswing();
 	if (CastBackswing > 0.f)
 	{
 		GetWorld()->GetTimerManager().SetTimer(CastPointHandle, this, &UHAbilityComponent::FinishCastBackswing, CastBackswing, false);

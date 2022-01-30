@@ -182,18 +182,16 @@ void UHAttackComponent::StopAttacking(const EStopAttackReason StopReason)
 
 	if (bIsAttacking)
 	{
-		if (StopReason != EStopAttackReason::Interrupt)
+		if (StopReason == EStopAttackReason::Interrupt)
+		{
+			InterruptAttack();
+		}
+		else
 		{
 			// we're in the middle of an attack and this is not an interrupt, wait for it to finish, then cancel
 			bIsAttackCancelPending = true;
-			return;
+			return;	
 		}
-
-		// attack was interrupted in the middle
-		GetWorld()->GetTimerManager().ClearTimer(AttackPointHandle);
-		GetCharacter()->StopAnimMontage(WeaponParams.Animation);
-		bIsAttacking = false;
-		OnAttackInterrupted.Broadcast();
 	}
 	
 	UE_LOG(LogAttack, Verbose, TEXT("%s stopped attacking"), *GetOwner()->GetName())
@@ -203,7 +201,9 @@ void UHAttackComponent::StopAttacking(const EStopAttackReason StopReason)
 	bIsAbilityAttack = false;
 	bHasAttackedWhileLocked = false;
 	bIsAttackCancelPending = false;
-	GetCharacter()->GetFollowComponent()->StopMovement();
+	UHFollowComponent* FollowComponent = GetCharacter()->GetFollowComponent();
+	FollowComponent->StopMovement();
+	FollowComponent->StopRotation();
 
 	if (StopReason == EStopAttackReason::Cancel)
 	{
@@ -303,6 +303,14 @@ float UHAttackComponent::CalculateAttackSpeed() const
 {
 	bool IsChilled = GetCharacter()->GetStatusEffectComponent()->IsConditionActive(EStatusCondition::Chilled);
 	return IsChilled ? WeaponParams.AttackSpeed * ChilledAttackSpeedMultiplier : WeaponParams.AttackSpeed;
+}
+
+void UHAttackComponent::InterruptAttack()
+{
+	GetWorld()->GetTimerManager().ClearTimer(AttackPointHandle);
+	GetCharacter()->StopAnimMontage(WeaponParams.Animation);
+	bIsAttacking = false;
+	OnAttackInterrupted.Broadcast();
 }
 
 bool UHAttackComponent::StartAttack()
