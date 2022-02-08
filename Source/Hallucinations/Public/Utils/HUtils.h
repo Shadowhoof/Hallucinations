@@ -6,6 +6,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HUtils.generated.h"
 
+enum class EThreatStatus : uint8;
+
 /**
  * 
  */
@@ -29,14 +31,22 @@ public:
 
 	static void GetRandomPointInNavigableRadius(UObject* WorldContextObject, const FVector& Origin, float Radius, FVector& OutLocation);
 
-	/** Returns a reference to a random element from an array. Doesn't check if array is empty, checking for that lies on the caller */
+	/** Determines whether threat status between two actors is included in provided threat status */
+	static bool DoesSatisfyThreatStatus(const AActor* First, const AActor* Second, const EThreatStatus ThreatStatus);
+	
+	/** Returns a pointer to a const random element from an array. */
 	template<typename T>
-	static const T& GetRandomArrayElement(const TArray<T>& Array);
+	static const T* GetRandomArrayElement(const TArray<T>& Array);
 };
 
 template <typename T>
-const T& UHUtils::GetRandomArrayElement(const TArray<T>& Array)
+const T* UHUtils::GetRandomArrayElement(const TArray<T>& Array)
 {
-	int32 ArraySize = Array.Num();
-	return Array[FMath::RandRange(0, ArraySize - 1)];
+	const int32 ArraySize = Array.Num();
+	if (ArraySize == 0)
+	{
+		return nullptr;
+	}
+
+	return &Array[FMath::RandRange(0, ArraySize - 1)];
 }

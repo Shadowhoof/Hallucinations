@@ -5,6 +5,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "StatusEffects/HConditionEffect.h"
 
+const FCollisionObjectQueryParams UHAbilityStatics::DefaultObjectQueryParams = {ECC_Pawn};
+
+
 void UHAbilityStatics::DealSingleTargetDamage(AActor* TargetActor, float Damage, AActor* SourceActor,
                                               AController* Instigator, TSubclassOf<UDamageType> DamageClass, const FHitResult& HitResult)
 {
@@ -35,4 +38,15 @@ UHConditionEffect* UHAbilityStatics::CreateConditionEffect(EStatusCondition Cond
 	UHConditionEffect* ConditionEffect = NewObject<UHConditionEffect>(Outer, UHConditionEffect::StaticClass());
 	ConditionEffect->Initialize(Condition);
 	return ConditionEffect;
+}
+
+void UHAbilityStatics::GetActorsInRadius(TSet<AActor*>& OutActors, const UWorld* World, const FVector& Origin,
+                                         float Radius, const FCollisionObjectQueryParams& ObjectQueryParams)
+{
+	TArray<FOverlapResult> Overlaps;
+	World->OverlapMultiByObjectType(Overlaps, Origin, FQuat::Identity, ObjectQueryParams, FCollisionShape::MakeSphere(Radius));
+	for (const FOverlapResult& Overlap : Overlaps)
+	{
+		OutActors.Add(Overlap.GetActor());
+	}
 }

@@ -9,9 +9,15 @@
 #include "Utils/HEnumTools.h"
 #include "Core/HLogCategories.h"
 #include "TimerManager.h"
+#include "Abilities/Instances/InstantAbilityInstance.h"
+#include "Constants/HConstants.h"
 #include "Constants/HTeamConstants.h"
 #include "Utils/HUtils.h"
 
+
+UHAbility::UHAbility() : InstanceClass(UInstantAbilityInstance::StaticClass())
+{
+}
 
 float UHAbility::GetRemainingCooldown() const
 {	
@@ -33,6 +39,11 @@ void UHAbility::RestoreCooldownPercentage(float CooldownPercentage)
 bool UHAbility::IsOffensive() const
 {
 	return static_cast<bool>(static_cast<EThreatStatus>(AffectedTargets) & EThreatStatus::Enemy);
+}
+
+const TArray<UAbilityEffect*>& UHAbility::GetEffects() const
+{
+	return Effects;
 }
 
 FText UHAbility::GetSkillName() const
@@ -98,4 +109,16 @@ void UHAbility::SetAbilityComponent(UHAbilityComponent* Component)
 {
 	ensure(!AbilityComponent && Component);
 	AbilityComponent = Component;
+}
+
+void UHAbility::CreateInstance(UWorld* World, FVector Location, FRotator Rotator, AActor* TargetActor,
+	const FVector* TargetLocation)
+{
+	UAbilityInstance* Instance = NewObject<UAbilityInstance>(this, InstanceClass);
+
+	const FVector AbilityTargetLocation = TargetLocation ? *TargetLocation : HallucinationsConstants::InvalidVector;
+	const FAbilityTargetParameters TargetParams{TargetActor, AbilityTargetLocation};
+	Instance->Initialize(this, TargetParams, AbilityComponent->GetCaster(), FTransform(Rotator, Location));
+
+	ActiveInstances.Add(Instance);
 }

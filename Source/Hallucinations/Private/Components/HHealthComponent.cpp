@@ -53,7 +53,6 @@ void UHHealthComponent::ApplyHealthChange(float Delta, const UDamageType* Damage
 	
 	CurrentHealth += Delta;
 	OnHealthChanged.Broadcast(GetOwner(), Instigator, Source, Delta);
-	UE_LOG(LogTemp, Log, TEXT("Actor %s health changed, delta: %.2f, remaining health: %.2f"), *GetOwner()->GetName(), Delta, CurrentHealth);
 
 	if (Delta < 0.f)
 	{
@@ -76,7 +75,6 @@ void UHHealthComponent::ApplyHealthChange(float Delta, const UDamageType* Damage
 		}
 		
 		OnActorDeath.Broadcast(GetOwner(), Source);
-		UE_LOG(LogTemp, Log, TEXT("Actor %s died, killer is %s"), *GetOwner()->GetName(), *Source->GetName())
 	}
 }
 

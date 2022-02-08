@@ -27,8 +27,7 @@ void AHMovingStaticActor::BeginPlay()
 		return;
 	}
 
-	FVector WorldSpaceDirection = GetActorTransform().TransformVector(ForwardDirection.GetSafeNormal());
-	UE_LOG(LogTemp, Log, TEXT("Direction before: %s, direction after: %s"), *ForwardDirection.ToString(), *WorldSpaceDirection.ToString());
+	const FVector WorldSpaceDirection = GetActorTransform().TransformVector(ForwardDirection.GetSafeNormal());
 	StartPosition = GetActorLocation();
 	EndPosition = StartPosition + WorldSpaceDirection * MovementDistance;
 
@@ -134,7 +133,6 @@ void AHMovingStaticActor::SetMovementState(EMovementState NewState)
 	}
 
 	InitialTime = RemainingTime = FMath::Max(Duration, 0.f);
-	UE_LOG(LogTemp, Log, TEXT("Movement state set to %d"), static_cast<uint8>(CurrentState));
 }
 
 void AHMovingStaticActor::TryAutoSetNextState(EMovementState NewState)

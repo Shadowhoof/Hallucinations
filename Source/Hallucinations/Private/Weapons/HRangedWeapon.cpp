@@ -2,7 +2,7 @@
 
 #include "Weapons/HRangedWeapon.h"
 #include "Constants/HConstants.h"
-#include "Actors/HProjectile.h"
+#include "Projectiles/HProjectile.h"
 #include "Characters/HCharacter.h"
 #include "Components/HAttackComponent.h"
 

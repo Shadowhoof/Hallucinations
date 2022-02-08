@@ -20,10 +20,10 @@ struct FAbilityTargetParameters
 {
 	GENERATED_BODY()
 
-	// target actor
+	/** Target actor */
 	TWeakObjectPtr<AActor> Actor;
 
-	// target location
+	/** Target location */
 	FVector Location;
 };
 

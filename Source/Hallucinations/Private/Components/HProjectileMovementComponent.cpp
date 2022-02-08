@@ -4,18 +4,24 @@
 #include "Components/HProjectileMovementComponent.h"
 #include "Characters/HCharacter.h"
 #include "Components/HHealthComponent.h"
-#include "Actors/HProjectile.h"
+#include "Projectiles/HProjectile.h"
+#include "Utils/HUtils.h"
 
 UHProjectileMovementComponent::UHProjectileMovementComponent()
 {
 	ProjectileGravityScale = 0.f;
 }
 
+void UHProjectileMovementComponent::SetAffectedTargets(EThreatStatus InAffectedTargets)
+{
+	AffectedTargets = InAffectedTargets;
+}
+
 UProjectileMovementComponent::EHandleBlockingHitResult UHProjectileMovementComponent::HandleBlockingHit(
 	const FHitResult& Hit, float TimeTick, const FVector& MoveDelta, float& SubTickTimeRemaining)
 {
 	AActor* HitActor = Hit.GetActor();
-	if (UHHealthComponent::AreAllies(GetOwner()->GetInstigator(), HitActor))
+	if (!AHAbstractProjectile::CanCollide(GetOwner()->GetInstigator(), HitActor, AffectedTargets))
 	{
 		AHAbstractProjectile* Projectile = Cast<AHAbstractProjectile>(GetOwner());
 		Projectile->IgnoreActor(HitActor);
@@ -27,7 +33,7 @@ UProjectileMovementComponent::EHandleBlockingHitResult UHProjectileMovementCompo
 
 void UHProjectileMovementComponent::HandleImpact(const FHitResult& Hit, float TimeSlice, const FVector& MoveDelta)
 {
-	if (UHHealthComponent::AreEnemies(GetOwner()->GetInstigator(), Hit.GetActor()))
+	if (AHAbstractProjectile::CanCollide(GetOwner()->GetInstigator(), Hit.GetActor(), AffectedTargets))
 	{
 		Super::HandleImpact(Hit, TimeSlice, MoveDelta);
 	}

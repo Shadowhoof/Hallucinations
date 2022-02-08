@@ -55,17 +55,9 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cast")
 	float CastBackswing;
-	
-	/** Class of an actor spawned whenever a spell cast finishes which will perform gameplay actions */
-	UPROPERTY(EditDefaultsOnly, Category = "Ability", Meta = (MustImplement = "HAbilityActorInterface"))
-	TSubclassOf<AActor> ImplementationClass;
 
 	virtual void FinishActorCast(AActor* TargetActor);
 	virtual void FinishLocationCast(FVector TargetLocation);
 	virtual void FinishSelfCast();
-
-	/** Creates actor in world that will perform all the gameplay logic */
-	virtual IHAbilityActorInterface* CreateActor(UWorld* World, FVector& Location, FRotator& Rotator,
-												 FActorSpawnParameters& SpawnParams);
 	
 };

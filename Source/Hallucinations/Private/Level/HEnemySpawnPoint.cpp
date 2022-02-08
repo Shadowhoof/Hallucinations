@@ -14,12 +14,8 @@ AHEnemySpawnPoint::AHEnemySpawnPoint()
 
 TSubclassOf<AHNonPlayerCharacter> AHEnemySpawnPoint::GetRandomEnemyType() const
 {
-	if (EnemyTypes.IsEmpty())
-	{
-		return nullptr;
-	}
-	
-	return UHUtils::GetRandomArrayElement(EnemyTypes);
+	const TSubclassOf<AHNonPlayerCharacter>* RandomEnemyType = UHUtils::GetRandomArrayElement(EnemyTypes);
+	return RandomEnemyType ? *RandomEnemyType : nullptr;
 }
 
 void AHEnemySpawnPoint::GetSpawnableEnemyTypes(TArray<TSubclassOf<AHNonPlayerCharacter>>& OutTypes)

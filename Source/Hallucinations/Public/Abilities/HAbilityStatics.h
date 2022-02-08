@@ -30,5 +30,12 @@ public:
 											  AActor* SourceActor, AController* Instigator, TSubclassOf<UDamageType> DamageClass);
 
 	static UHConditionEffect* CreateConditionEffect(EStatusCondition Condition, UObject* Outer);
+
+	static void GetActorsInRadius(TSet<AActor*>& OutActors, const UWorld* World, const FVector& Origin,
+	                              float Radius, const FCollisionObjectQueryParams& ObjectQueryParams = DefaultObjectQueryParams);
+
+public:
+
+	static const FCollisionObjectQueryParams DefaultObjectQueryParams;
 	
 };

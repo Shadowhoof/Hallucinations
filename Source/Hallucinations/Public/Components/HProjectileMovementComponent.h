@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Constants/HTeamConstants.h"
 #include "HProjectileMovementComponent.generated.h"
+
+enum class EThreatStatus : uint8;
 
 /**
  * 
@@ -18,10 +21,15 @@ public:
 
 	UHProjectileMovementComponent();
 
+	void SetAffectedTargets(EThreatStatus InAffectedTargets);
+	
 protected:
 
 	virtual EHandleBlockingHitResult HandleBlockingHit(const FHitResult& Hit, float TimeTick, const FVector& MoveDelta, float& SubTickTimeRemaining) override;
 
 	virtual void HandleImpact(const FHitResult& Hit, float TimeSlice, const FVector& MoveDelta) override;
+
+	/* Targets which will be hit by the projectile */
+	EThreatStatus AffectedTargets = EThreatStatus::Enemy;
 
 };

@@ -4,15 +4,17 @@
 
 #include "CoreMinimal.h"
 
-#include "HAbilityActorInterface.h"
 #include "HAbilityComponent.h"
 #include "UObject/NoExportTypes.h"
 #include "HAbility.generated.h"
 
+class UAbilityInstance;
+enum class EAbilityEffectTrigger : uint8;
 class UHAbilityComponent;
 class AHAbilityImpl;
 class UAnimMontage;
 class UTexture2D;
+class UAbilityEffect;
 
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EAbilityTarget : uint8
@@ -48,6 +50,8 @@ class HALLUCINATIONS_API UHAbility : public UObject
 	
 public:
 
+	UHAbility();
+	
 	/** Returns ability name if it is specified, otherwise returns class name */
 	UFUNCTION(BlueprintCallable)
 	FText GetSkillName() const;
@@ -79,6 +83,8 @@ public:
 	void RestoreCooldownPercentage(float CooldownPercentage);
 
 	bool IsOffensive() const;
+
+	const TArray<UAbilityEffect*>& GetEffects() const;
 	
 protected:
 
@@ -112,10 +118,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	FText Name = FText::GetEmpty();
 
+	UPROPERTY(EditDefaultsOnly, Instanced, BlueprintReadOnly, Category = "Ability")
+	TArray<UAbilityEffect*> Effects; 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
+	TSubclassOf<UAbilityInstance> InstanceClass; 
+
+	TSet<TObjectPtr<UAbilityInstance>> ActiveInstances;
+	
 	FTimerHandle CooldownTimerHandle;
 
 	virtual bool IsTargetTypeValid(const FAbilityTargetParameters& TargetParams) const;
 
 	void StartCooldown();
+
+	void CreateInstance(UWorld* World, FVector Location, FRotator Rotator, AActor* TargetActor,
+					const FVector* TargetLocation);
 
 };

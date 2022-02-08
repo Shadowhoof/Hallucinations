@@ -5,7 +5,10 @@
 
 #include "Constants/HConstants.h"
 #include "NavigationSystem.h"
+#include "Characters/HCharacter.h"
 #include "Components/HHealthComponent.h"
+
+class AHCharacter;
 
 bool UHUtils::CanBeTargeted(AActor* TargetActor)
 {
@@ -39,5 +42,10 @@ void UHUtils::GetRandomPointInNavigableRadius(UObject* WorldContextObject, const
 	FNavLocation RandomNavLocation;
 	NavSystem->GetRandomPointInNavigableRadius(Origin, Radius, RandomNavLocation);
 	OutLocation = RandomNavLocation.Location;
+}
+
+bool UHUtils::DoesSatisfyThreatStatus(const AActor* First, const AActor* Second, const EThreatStatus ThreatStatus)
+{
+	return static_cast<uint8>(UHHealthComponent::GetThreatStatus(First, Second) & ThreatStatus) > 0;
 }
 

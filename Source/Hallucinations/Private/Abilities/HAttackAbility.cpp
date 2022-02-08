@@ -5,7 +5,6 @@
 
 #include "Characters/HCharacter.h"
 #include "Components/HAttackComponent.h"
-#include "Core/HLogCategories.h"
 #include "Utils/HEnumTools.h"
 #include "Utils/HUtils.h"
 
@@ -30,8 +29,10 @@ void UHAttackAbility::OnAttackPointReached(const FAttackResult& AttackResult)
 
 void UHAttackAbility::FinishActorAttack(AActor* TargetActor, const FVector& SpawnOrWeaponLocation)
 {
+	CreateInstance(GetWorld(), TargetActor->GetActorLocation(), TargetActor->GetActorRotation(), TargetActor, nullptr);
 }
 
 void UHAttackAbility::FinishLocationAttack(const FVector& TargetLocation, const FVector& SpawnOrWeaponLocation)
 {
+	CreateInstance(GetWorld(), TargetLocation, FRotator(), nullptr, &TargetLocation);
 }
