@@ -57,7 +57,9 @@ protected:
 	float CastBackswing;
 
 	virtual void FinishActorCast(AActor* TargetActor);
-	virtual void FinishLocationCast(FVector TargetLocation);
+	virtual void FinishLocationCast(const FVector& TargetLocation);
 	virtual void FinishSelfCast();
+
+	FTransform GetCastTransform(FVector TargetLocation) const;
 	
 };

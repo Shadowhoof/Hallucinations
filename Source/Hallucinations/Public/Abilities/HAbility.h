@@ -124,15 +124,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
 	TSubclassOf<UAbilityInstance> InstanceClass; 
 
-	TSet<TObjectPtr<UAbilityInstance>> ActiveInstances;
-	
 	FTimerHandle CooldownTimerHandle;
 
 	virtual bool IsTargetTypeValid(const FAbilityTargetParameters& TargetParams) const;
 
 	void StartCooldown();
+	
+	void CreateInstance(const FTransform& SpawnTransform, AActor* TargetActor);
+	void CreateInstance(const FTransform& SpawnTransform, const FVector& TargetLocation);
 
-	void CreateInstance(UWorld* World, FVector Location, FRotator Rotator, AActor* TargetActor,
-					const FVector* TargetLocation);
+private:
 
+	void CreateInstanceImpl(const FTransform& SpawnTransform, AActor* TargetActor, const FVector& TargetLocation);
 };

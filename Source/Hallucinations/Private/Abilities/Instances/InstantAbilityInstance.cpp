@@ -3,10 +3,9 @@
 
 #include "Abilities/Instances/InstantAbilityInstance.h"
 
-void UInstantAbilityInstance::Initialize(UHAbility* InAbility, const FAbilityTargetParameters& InTargetParams,
-	AActor* SourceActor, const FTransform& SpawnTransform)
+void UInstantAbilityInstance::Initialize(UHAbility* InAbility, const FAbilityEffectParameters& InEffectParams)
 {
-	Super::Initialize(InAbility, InTargetParams, SourceActor, SpawnTransform);
+	Super::Initialize(InAbility, InEffectParams);
 
-	ApplyEffectsWithBaseParams();
+	ApplyEffects();
 }

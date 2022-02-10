@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "AbilityEffect.h"
-#include "UObject/Object.h"
 #include "DamageAbilityEffect.generated.h"
 
 /**
@@ -25,6 +24,6 @@ protected:
 
 protected:
 
-	virtual void ApplyToActor(AActor* InInstigatorActor, AController* InInstigatorController, AActor* HitActor, const FHitResult* HitResult) override;
+	virtual void ApplyToActor(AActor* InInstigatorActor, AController* InInstigatorController, AActor* HitActor, const FHitResult& HitResult) override;
 	
 };

@@ -29,10 +29,19 @@ void UHAttackAbility::OnAttackPointReached(const FAttackResult& AttackResult)
 
 void UHAttackAbility::FinishActorAttack(AActor* TargetActor, const FVector& SpawnOrWeaponLocation)
 {
-	CreateInstance(GetWorld(), TargetActor->GetActorLocation(), TargetActor->GetActorRotation(), TargetActor, nullptr);
+	const FTransform SpawnTransform = GetSpawnTransform(SpawnOrWeaponLocation, TargetActor->GetActorLocation());
+	CreateInstance(SpawnTransform, TargetActor);
 }
 
 void UHAttackAbility::FinishLocationAttack(const FVector& TargetLocation, const FVector& SpawnOrWeaponLocation)
 {
-	CreateInstance(GetWorld(), TargetLocation, FRotator(), nullptr, &TargetLocation);
+	const FTransform SpawnTransform = GetSpawnTransform(SpawnOrWeaponLocation, TargetLocation);
+	CreateInstance(SpawnTransform, TargetLocation);
+}
+
+FTransform UHAttackAbility::GetSpawnTransform(const FVector& SpawnLocation, FVector TargetLocation)
+{
+	TargetLocation.Z = SpawnLocation.Z;
+	const FRotator Rotation = (TargetLocation - SpawnLocation).Rotation();
+	return FTransform(Rotation, SpawnLocation);
 }

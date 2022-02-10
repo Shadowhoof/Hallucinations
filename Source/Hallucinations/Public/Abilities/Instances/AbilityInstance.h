@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/HAbilityComponent.h"
+#include "Abilities/Effects/AbilityEffect.h"
 #include "UObject/Object.h"
 #include "AbilityInstance.generated.h"
 
@@ -19,25 +19,17 @@ public:
 	
 	UAbilityInstance();
 
-	virtual void Initialize(UHAbility* InAbility, const FAbilityTargetParameters& InTargetParams, AActor* SourceActor, const FTransform& SpawnTransform = FTransform::Identity);
+	virtual void Initialize(UHAbility* InAbility, const FAbilityEffectParameters& InEffectParams);
 
 protected:
 
 	UPROPERTY()
-	UHAbility* Ability = nullptr;
-
-	FAbilityTargetParameters TargetParams;
-
-	UPROPERTY()
-	AActor* InstigatorActor = nullptr;
-
-	UPROPERTY()
-	AController* InstigatorController = nullptr;
-
+	UHAbility* Ability;
+	
+	FAbilityEffectParameters EffectParams;
+	
 protected:
 	
-	void ApplyEffects(const FAbilityTargetParameters& HitParams);
-
-	void ApplyEffectsWithBaseParams();
+	void ApplyEffects();
 	
 };

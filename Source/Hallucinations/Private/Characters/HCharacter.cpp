@@ -50,11 +50,11 @@ AHCharacter::AHCharacter()
 	StatusEffectComponent->OnConditionRemoved().AddUObject(this, &AHCharacter::OnConditionRemoved);
 
 	UCapsuleComponent* Capsule = GetCapsuleComponent();
-	Capsule->SetCapsuleHalfHeight(FHConstants::CapsuleHalfHeight);
+	Capsule->SetCapsuleHalfHeight(HallucinationsConstants::CapsuleHalfHeight);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-	float BoxRadius = Capsule->GetUnscaledCapsuleRadius() + CharacterConstants::BoxExtraExtent;
-	float BoxHeight = FHConstants::CapsuleHalfHeight + BoxRadius;
+	const float BoxRadius = Capsule->GetUnscaledCapsuleRadius() + CharacterConstants::BoxExtraExtent;
+	const float BoxHeight = HallucinationsConstants::CapsuleHalfHeight + BoxRadius;
 	BoxComponent->SetBoxExtent(FVector(BoxRadius, BoxRadius, BoxHeight));
 	BoxComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore);

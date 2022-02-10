@@ -111,14 +111,22 @@ void UHAbility::SetAbilityComponent(UHAbilityComponent* Component)
 	AbilityComponent = Component;
 }
 
-void UHAbility::CreateInstance(UWorld* World, FVector Location, FRotator Rotator, AActor* TargetActor,
-	const FVector* TargetLocation)
+void UHAbility::CreateInstance(const FTransform& SpawnTransform, AActor* TargetActor)
+{
+	CreateInstanceImpl(SpawnTransform, TargetActor, HallucinationsConstants::InvalidVector);
+}
+
+void UHAbility::CreateInstance(const FTransform& SpawnTransform, const FVector& TargetLocation)
+{
+	CreateInstanceImpl(SpawnTransform, nullptr, TargetLocation);
+}
+
+void UHAbility::CreateInstanceImpl(const FTransform& SpawnTransform, AActor* TargetActor, const FVector& TargetLocation)
 {
 	UAbilityInstance* Instance = NewObject<UAbilityInstance>(this, InstanceClass);
 
-	const FVector AbilityTargetLocation = TargetLocation ? *TargetLocation : HallucinationsConstants::InvalidVector;
-	const FAbilityTargetParameters TargetParams{TargetActor, AbilityTargetLocation};
-	Instance->Initialize(this, TargetParams, AbilityComponent->GetCaster(), FTransform(Rotator, Location));
-
-	ActiveInstances.Add(Instance);
+	AHCharacter* Caster = AbilityComponent->GetCaster();
+	ensureMsgf(Caster, TEXT("Ability %s has no caster"), *GetName());
+	const FAbilityEffectParameters EffectParams{Caster, Caster->GetInstigatorController(), TargetActor, TargetLocation, FHitResult(), SpawnTransform}; 
+	Instance->Initialize(this, EffectParams);
 }

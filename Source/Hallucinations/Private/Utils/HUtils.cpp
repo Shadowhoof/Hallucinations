@@ -33,7 +33,7 @@ bool UHUtils::AreEnemies(AActor* First, AActor* Second)
 
 bool UHUtils::IsVectorValid(const FVector& Vector)
 {
-	return Vector != FHConstants::NullVector;
+	return Vector != HallucinationsConstants::InvalidVector;
 }
 
 void UHUtils::GetRandomPointInNavigableRadius(UObject* WorldContextObject, const FVector& Origin, float Radius, FVector& OutLocation)

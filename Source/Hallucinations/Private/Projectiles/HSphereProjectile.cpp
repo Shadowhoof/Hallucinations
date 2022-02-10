@@ -20,7 +20,7 @@ AHSphereProjectile::AHSphereProjectile()
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AHSphereProjectile::OnBeginOverlap);
 	
 	RootComponent = SphereComponent;
-	TrailEffect->SetupAttachment(RootComponent);
+	TrailFXComponent->SetupAttachment(RootComponent);
 }
 
 void AHSphereProjectile::BeginPlay()
@@ -29,7 +29,7 @@ void AHSphereProjectile::BeginPlay()
 	
 	const float Diameter = SphereComponent->GetScaledSphereRadius() * 2.f;
 	const float RandomVariation = Diameter * TrailSizeVariation;
-	TrailEffect->SetVectorRandParameter(TrailSizeParameterName, FVector(Diameter + RandomVariation), FVector(Diameter - RandomVariation));
+	TrailFXComponent->SetVectorRandParameter(TrailSizeParameterName, FVector(Diameter + RandomVariation), FVector(Diameter - RandomVariation));
 }
 
 void AHSphereProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

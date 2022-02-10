@@ -16,15 +16,12 @@ namespace HallucinationsConstants
 
 	const FString PlayerStartTag("PlayerStartTag");
 	const FString DefaultPlayerStartTag("Default");
+
+	constexpr float CapsuleHalfHeight = 100.f;
 }
 
-struct FHConstants
+namespace SocketConstants
 {
-	
-	static const FName ArrowSocketName;
-	static const FName SpellSocketName;
-	
-	static const FVector NullVector;
-
-	static const float CapsuleHalfHeight;
-};
+	const FName ArrowSocketName("ArrowSocket");
+	const FName SpellSocketName("ProjectileSpellSocket");
+}

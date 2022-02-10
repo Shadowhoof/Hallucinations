@@ -4,6 +4,7 @@
 #include "Abilities/HSpellAbility.h"
 #include "Kismet/GameplayStatics.h"
 #include "Characters/HCharacter.h"
+#include "Constants/HConstants.h"
 
 UHSpellAbility::UHSpellAbility()
 {
@@ -49,16 +50,28 @@ float UHSpellAbility::GetCastBackswing() const
 
 void UHSpellAbility::FinishActorCast(AActor* TargetActor)
 {
-	CreateInstance(GetWorld(), TargetActor->GetActorLocation(), TargetActor->GetActorRotation(), TargetActor, nullptr);
+	const FTransform SpawnTransform = GetCastTransform(TargetActor->GetActorLocation());
+	CreateInstance(SpawnTransform, TargetActor);
 }
 
-void UHSpellAbility::FinishLocationCast(FVector TargetLocation)
+void UHSpellAbility::FinishLocationCast(const FVector& TargetLocation)
 {
-	CreateInstance(GetWorld(), TargetLocation, FRotator(), nullptr, &TargetLocation);
+	const FTransform SpawnTransform = GetCastTransform(TargetLocation);
+	CreateInstance(SpawnTransform, TargetLocation);
 }
 
 void UHSpellAbility::FinishSelfCast()
 {
-	AActor* Owner = AbilityComponent->GetCaster();
-	CreateInstance(GetWorld(), Owner->GetActorLocation(), Owner->GetActorRotation(), Owner, nullptr);
+	AHCharacter* Caster = AbilityComponent->GetCaster();
+	const FTransform SpawnTransform = GetCastTransform(Caster->GetActorLocation());
+	CreateInstance(SpawnTransform, Caster);
+}
+
+FTransform UHSpellAbility::GetCastTransform(FVector TargetLocation) const
+{
+	const AHCharacter* Caster = AbilityComponent->GetCaster();
+	const FVector SocketLocation = Caster->GetMesh()->GetSocketLocation(SocketConstants::SpellSocketName);
+	TargetLocation.Z = SocketLocation.Z;
+	const FRotator Rotation = (TargetLocation - SocketLocation).Rotation();
+	return FTransform(Rotation, SocketLocation);
 }

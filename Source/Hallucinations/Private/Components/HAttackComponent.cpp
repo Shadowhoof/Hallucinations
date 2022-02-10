@@ -21,7 +21,7 @@ UHAttackComponent::UHAttackComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	TargetActor = nullptr;
-	TargetLocation = FHConstants::NullVector;
+	TargetLocation = HallucinationsConstants::InvalidVector;
 }
 
 void UHAttackComponent::FollowTargetActor()
@@ -118,7 +118,7 @@ EAttackRequestResult UHAttackComponent::AttackActor(AActor* Actor, const bool bA
 
 	UE_LOG(LogAttack, Log, TEXT("%s is attacking actor %s"), *GetOwner()->GetName(), *Actor->GetName());
 	TargetActor = Actor;
-	TargetLocation = FHConstants::NullVector;
+	TargetLocation = HallucinationsConstants::InvalidVector;
 	AttackMode = bAttackOnce ? EAttackMode::Actor : EAttackMode::LockedActor;
 
 	const bool bIsInRange = Weapon->IsInRange(GetOwner(), TargetActor);
@@ -195,7 +195,7 @@ void UHAttackComponent::StopAttacking(const EStopAttackReason StopReason)
 	}
 	
 	UE_LOG(LogAttack, Verbose, TEXT("%s stopped attacking"), *GetOwner()->GetName())
-	TargetLocation = FHConstants::NullVector;
+	TargetLocation = HallucinationsConstants::InvalidVector;
 	TargetActor = nullptr;
 	AttackMode = EAttackMode::None;
 	bIsAbilityAttack = false;
@@ -344,7 +344,7 @@ bool UHAttackComponent::StartAttack()
 
 void UHAttackComponent::PerformAttack()
 {
-	ensure(TargetLocation != FHConstants::NullVector || TargetActor);
+	ensure(TargetLocation != HallucinationsConstants::InvalidVector || TargetActor);
 
 	GetCharacter()->GetFollowComponent()->UnlockMovement();
 
@@ -405,7 +405,7 @@ void UHAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		return;
 	}
 
-	if (!bIsAttackOnCooldown && (TargetActor && Weapon->IsInRange(GetOwner(), TargetActor)) || TargetLocation != FHConstants::NullVector)
+	if (!bIsAttackOnCooldown && (TargetActor && Weapon->IsInRange(GetOwner(), TargetActor)) || TargetLocation != HallucinationsConstants::InvalidVector)
 	{
 		StartAttack();
 	}

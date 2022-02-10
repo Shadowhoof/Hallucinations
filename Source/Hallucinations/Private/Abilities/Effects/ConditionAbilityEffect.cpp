@@ -6,7 +6,7 @@
 #include "StatusEffects/HConditionEffect.h"
 
 void UConditionAbilityEffect::ApplyToActor(AActor* InInstigatorActor, AController* InInstigatorController, AActor* HitActor,
-                                           const FHitResult* HitResult)
+                                           const FHitResult& HitResult)
 {
 	Super::ApplyToActor(InInstigatorActor, InInstigatorController, HitActor, HitResult);
 	

@@ -15,7 +15,7 @@ UHFollowComponent::UHFollowComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	RotationLocation = FHConstants::NullVector;
+	RotationLocation = HallucinationsConstants::InvalidVector;
 }
 
 
@@ -30,7 +30,7 @@ void UHFollowComponent::BeginPlay()
 void UHFollowComponent::StopRotation()
 {
 	RotationActor = nullptr;
-	RotationLocation = FHConstants::NullVector;
+	RotationLocation = HallucinationsConstants::InvalidVector;
 }
 
 void UHFollowComponent::OnOwnerDeath(AHCharacter* Victim, AActor* Killer)
@@ -98,7 +98,7 @@ void UHFollowComponent::RotateTowardsActor(AActor* const Actor)
 	
 	StopMovement();
 	RotationActor = Actor;
-	RotationLocation = FHConstants::NullVector;
+	RotationLocation = HallucinationsConstants::InvalidVector;
 }
 
 void UHFollowComponent::RotateTowardsLocation(FVector Location)
@@ -122,7 +122,7 @@ void UHFollowComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 	
 	const FVector TargetLocation = RotationActor ? RotationActor->GetTargetLocation(GetOwner()) : RotationLocation;
-	if (TargetLocation != FHConstants::NullVector)
+	if (TargetLocation != HallucinationsConstants::InvalidVector)
 	{
 		const FRotator CurrentRotation = GetOwner()->GetActorRotation();
 		FRotator TargetRotation = (TargetLocation - GetOwner()->GetActorLocation()).Rotation();

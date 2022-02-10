@@ -9,7 +9,7 @@
 AHRangedWeapon::AHRangedWeapon()
 {
 	ProjectileClass = AHProjectile::StaticClass();
-	ProjectileSocketName = FHConstants::ArrowSocketName;
+	ProjectileSocketName = SocketConstants::ArrowSocketName;
 }
 
 void AHRangedWeapon::ShootAtLocation(const FVector& Location, bool MatchSocketHeight, const FVector& SpawnLocation)

@@ -158,7 +158,7 @@ FVector AHPlayerCharacter::GetTargetLocation() const
 	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
 	if (!PlayerController)
 	{
-		return FHConstants::NullVector;
+		return HallucinationsConstants::InvalidVector;
 	}
 
 	FHitResult& MouseoverData = PlayerController->MouseoverData;
@@ -167,7 +167,7 @@ FVector AHPlayerCharacter::GetTargetLocation() const
 		return MouseoverData.ImpactPoint;
 	}
 
-	return FHConstants::NullVector;
+	return HallucinationsConstants::InvalidVector;
 }
 
 void AHPlayerCharacter::UseAbility(int32 Index)

@@ -25,5 +25,7 @@ protected:
 	virtual void FinishActorAttack(AActor* TargetActor, const FVector& SpawnOrWeaponLocation);
 
 	virtual void FinishLocationAttack(const FVector& TargetLocation, const FVector& SpawnOrWeaponLocation);
+
+	static FTransform GetSpawnTransform(const FVector& SpawnLocation, FVector TargetLocation);
 	
 };

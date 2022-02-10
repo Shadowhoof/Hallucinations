@@ -7,6 +7,7 @@
 #include "Components/HProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Constants/HTeamConstants.h"
+#include "Kismet/GameplayStatics.h"
 #include "Utils/HUtils.h"
 
 AHAbstractProjectile::AHAbstractProjectile()
@@ -15,9 +16,9 @@ AHAbstractProjectile::AHAbstractProjectile()
 
 	MovementComponent = CreateDefaultSubobject<UHProjectileMovementComponent>(TEXT("MovementComponent"));
 
-	TrailEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("TrailEffect"));
-	TrailEffect->SetupAttachment(RootComponent);
-	TrailEffect->SetUsingAbsoluteScale(true);
+	TrailFXComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("TrailEffect"));
+	TrailFXComponent->SetupAttachment(RootComponent);
+	TrailFXComponent->SetUsingAbsoluteScale(true);
 
 	AffectedTargets = static_cast<uint8>(EThreatStatus::Enemy);
 }
@@ -39,7 +40,10 @@ void AHAbstractProjectile::IgnoreActor(AActor* Actor)
 
 void AHAbstractProjectile::Initialize(float Speed, EThreatStatus InAffectedTargets)
 {
-	MovementComponent->InitialSpeed = Speed;
+	if (Speed > 0.f)
+	{
+		MovementComponent->InitialSpeed = Speed;
+	}
 	AffectedTargets = static_cast<uint8>(InAffectedTargets);
 }
 
@@ -65,6 +69,15 @@ void AHAbstractProjectile::BeginPlay()
 
 void AHAbstractProjectile::OnSuccessfulCollision(AActor* HitActor, const FHitResult& HitResult)
 {
+	SpawnImpactFX(HitResult.Location);
 	SuccessfulCollisionEvent.Broadcast(HitActor, HitResult.Location, HitResult);
+}
+
+void AHAbstractProjectile::SpawnImpactFX(const FVector& Location)
+{
+	if (ImpactFX)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactFX, Location);
+	}
 }
 

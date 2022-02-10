@@ -19,13 +19,14 @@ class HALLUCINATIONS_API UProjectileAbilityEffect : public UAbilityEffect
 
 public:
 	
-	virtual void Apply(AActor* InInstigatorActor, AController* InInstigatorController, const FAbilityTargetParameters& TargetParams, const FHitResult* HitResult) override;
+	virtual void Apply(const FAbilityEffectParameters& Params) override;
 
 protected:
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AHAbstractProjectile> ProjectileClass;
 
+	/** Sets initial speed for the projectile. If less or equal to zero then projectile's own initial speed will be used instead. */
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	float Speed = 1000.f;
 	

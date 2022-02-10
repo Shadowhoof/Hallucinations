@@ -16,5 +16,5 @@ class HALLUCINATIONS_API UInstantAbilityInstance : public UAbilityInstance
 
 public:
 	
-	virtual void Initialize(UHAbility* InAbility, const FAbilityTargetParameters& InTargetParams, AActor* SourceActor, const FTransform& SpawnTransform) override;
+	virtual void Initialize(UHAbility* InAbility, const FAbilityEffectParameters& InEffectParams) override;
 };

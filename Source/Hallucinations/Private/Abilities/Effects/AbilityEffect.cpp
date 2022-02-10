@@ -7,21 +7,22 @@
 #include "Constants/HConstants.h"
 #include "Core/HLogCategories.h"
 #include "Kismet/GameplayStatics.h"
+#include "Constants/HTeamConstants.h"
 
 DEFINE_LOG_CATEGORY(LogAbilityEffect)
 
-UAbilityEffect::UAbilityEffect()
+UAbilityEffect::UAbilityEffect() : Radius(0.f), AffectedTargets(static_cast<uint8>(EThreatStatus::Enemy))
 {
 }
 
 void UAbilityEffect::ApplyToActor(AActor* InInstigatorActor, AController* InInstigatorController, AActor* HitActor,
-                                  const FHitResult* HitResult)
+                                  const FHitResult& HitResult)
 {
 	UE_LOG(LogAbilityEffect, Verbose, TEXT("Applying effect %s to actor %s"), *GetName(), *HitActor->GetName());
 }
 
 void UAbilityEffect::ApplyToLocation(AActor* InInstigatorActor, AController* InInstigatorController,
-                                     const FVector& HitLocation, const FHitResult* HitResult)
+                                     const FVector& HitLocation, const FHitResult& HitResult)
 {
 	if (Radius <= 0.f)
 	{
@@ -34,19 +35,18 @@ void UAbilityEffect::ApplyToLocation(AActor* InInstigatorActor, AController* InI
 	UHAbilityStatics::GetActorsInRadius(ActorsInRadius, GetWorld(), HitLocation, Radius);
 	for (AActor* Actor : ActorsInRadius)
 	{
-		ApplyToActor(InInstigatorActor, InInstigatorController, Actor, nullptr);
+		ApplyToActor(InInstigatorActor, InInstigatorController, Actor, FHitResult());
 	}
 }
 
-void UAbilityEffect::Apply(AActor* InInstigatorActor, AController* InInstigatorController,
-                           const FAbilityTargetParameters& TargetParams, const FHitResult* HitResult)
+void UAbilityEffect::Apply(const FAbilityEffectParameters& Params)
 {
 	if (Radius > 0.f)
 	{
-		FVector Location = TargetParams.Location;
+		FVector Location = Params.TargetLocation;
 		if (Location == HallucinationsConstants::InvalidVector)
 		{
-			if (const AActor* HitActor = TargetParams.Actor.Get())
+			if (const AActor* HitActor = Params.TargetActor)
 			{
 				Location = HitActor->GetActorLocation();
 			}
@@ -54,14 +54,14 @@ void UAbilityEffect::Apply(AActor* InInstigatorActor, AController* InInstigatorC
 
 		if (Location != HallucinationsConstants::InvalidVector)
 		{
-			ApplyToLocation(InInstigatorActor, InInstigatorController, Location, HitResult);
+			ApplyToLocation(Params.InstigatorActor, Params.InstigatorController, Location, Params.HitResult);
 		}
 	}
 	else
 	{
-		if (AActor* HitActor = TargetParams.Actor.Get())
+		if (AActor* HitActor = Params.TargetActor)
 		{
-			ApplyToActor(InInstigatorActor, InInstigatorController, HitActor, HitResult);
+			ApplyToActor(Params.InstigatorActor, Params.InstigatorController, HitActor, Params.HitResult);
 		}
 	}
 }
