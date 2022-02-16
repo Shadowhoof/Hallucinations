@@ -80,6 +80,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Cooldown")
 	float GetRemainingCooldownPercentage() const;
 
+	UFUNCTION(BlueprintPure, Category = "Cooldown")
+	bool IsOnCooldown() const;
+	
 	void RestoreCooldownPercentage(float CooldownPercentage);
 
 	bool IsOffensive() const;

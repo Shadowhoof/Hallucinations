@@ -25,3 +25,8 @@ namespace SocketConstants
 	const FName ArrowSocketName("ArrowSocket");
 	const FName SpellSocketName("ProjectileSpellSocket");
 }
+
+namespace DataConstants
+{
+	const FName GameplayEventStringTable("GameplayEventMessages");
+}

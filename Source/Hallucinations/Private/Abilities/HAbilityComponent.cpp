@@ -43,8 +43,7 @@ UHAbilityComponent::UHAbilityComponent()
 
 bool UHAbilityComponent::CanUseAbility(UHAbility* Ability, const FAbilityTargetParameters& TargetParams) const
 {
-	const bool bHasEnoughMana = ResourceComponent->GetCurrentMana() >= Ability->GetManaCost();
-	return !GetCaster()->IsBusy() && bHasEnoughMana && Ability->CanBeUsed(TargetParams);
+	return !GetCaster()->IsBusy() && Ability->CanBeUsed(TargetParams);
 }
 
 bool UHAbilityComponent::UseSpellAbility(UHAbility* BaseAbility)
@@ -172,6 +171,13 @@ bool UHAbilityComponent::UseAbility(UHAbility* Ability)
 	FAbilityTargetParameters TargetParams;
 	TargetParams.Actor = GetTargetActor();
 	TargetParams.Location = GetTargetLocation();
+
+	if (Ability->IsOnCooldown())
+	{
+		AbilityOnCooldownEvent.Broadcast();
+		return false;
+	}
+	
 	if (!CanUseAbility(Ability, TargetParams))
 	{
 		return false;

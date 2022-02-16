@@ -27,6 +27,7 @@ bool UHResourceComponent::SpendMana(const float Amount)
 {
 	if (Amount > CurrentMana)
 	{
+		OutOfManaEvent.Broadcast();
 		return false;
 	}
 

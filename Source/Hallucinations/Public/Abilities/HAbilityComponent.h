@@ -65,6 +65,9 @@ public:
 	/** Event that is fired whenever queued or currently being cast ability is cancelled */
 	DECLARE_EVENT_OneParam(UHAbilityComponent, FAbilityCancelledEvent, const UHAbility*)
 	FAbilityCancelledEvent OnAbilityCancelled;
+
+	DECLARE_EVENT(UHAbilityComponent, FAbilityOnCooldownEvent)
+	FAbilityOnCooldownEvent AbilityOnCooldownEvent;
 	
 	void GetPersistentState(TMap<FString, float>& OutCooldownData);
 	void RestorePersistentState(const TMap<FString, float>& CooldownData);

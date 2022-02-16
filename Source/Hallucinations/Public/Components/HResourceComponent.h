@@ -33,6 +33,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void RestorePersistentState(const float ManaPercentage);
+
+	DECLARE_EVENT(UHResourceComponent, FOutOfManaEvent)
+	FOutOfManaEvent OutOfManaEvent;
 	
 protected:
 

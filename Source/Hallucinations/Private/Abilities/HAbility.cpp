@@ -21,13 +21,17 @@ UHAbility::UHAbility() : InstanceClass(UInstantAbilityInstance::StaticClass())
 
 float UHAbility::GetRemainingCooldown() const
 {	
-	UWorld* World = AbilityComponent->GetWorld();
-	return World->GetTimerManager().GetTimerRemaining(CooldownTimerHandle);
+	return AbilityComponent->GetWorld()->GetTimerManager().GetTimerRemaining(CooldownTimerHandle);
 }
 
 float UHAbility::GetRemainingCooldownPercentage() const
 {
 	return (Cooldown > 0.f) ? (GetRemainingCooldown() / Cooldown) : 0.f;
+}
+
+bool UHAbility::IsOnCooldown() const
+{
+	return GetRemainingCooldown() > 0.f;
 }
 
 void UHAbility::RestoreCooldownPercentage(float CooldownPercentage)

@@ -7,11 +7,14 @@
 #include "Components/HHealthComponent.h"
 #include "Camera/CameraActor.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "UI/MessageHandlerComponent.h"
 #include "Utils/HLogUtils.h"
 
 AHPlayerController::AHPlayerController()
 {
 	CurrentClickTraceChannel = ECC_Click;
+
+	MessageHandlerComponent = CreateDefaultSubobject<UMessageHandlerComponent>(TEXT("MessageHandlerComponent"));
 }
 
 AHPlayerCharacter* AHPlayerController::GetPlayerCharacter() const
@@ -67,11 +70,12 @@ void AHPlayerController::PlayerTick(float DeltaSeconds)
 
 void AHPlayerController::OnPossess(APawn* InPawn)
 {
-	AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(InPawn);
-	if (PlayerCharacter)
+	if (AHPlayerCharacter* PlayerCharacter = Cast<AHPlayerCharacter>(InPawn))
 	{
 		PlayerCharacter->DeathEvent.AddDynamic(this, &AHPlayerController::OnPawnDeath);
-		GenericTeamId = FGenericTeamId((uint8) PlayerCharacter->GetHealthComponent()->GetTeam());
+		GenericTeamId = FGenericTeamId(static_cast<uint8>(PlayerCharacter->GetHealthComponent()->GetTeam()));
+
+		MessageHandlerComponent->SetCharacter(PlayerCharacter);
 	}
 
 	Super::OnPossess(InPawn);

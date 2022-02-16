@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerController.h"
 #include "HPlayerController.generated.h"
 
+class UMessageHandlerComponent;
 class AHPlayerCharacter;
 class UHPlayerCharacterSave;
 class UCameraComponent;
@@ -40,7 +41,7 @@ public:
 	virtual FGenericTeamId GetGenericTeamId() const override;
 	
 protected:
-
+	
 	virtual void BeginPlay() override;
 	
 	UFUNCTION(BlueprintImplementableEvent)
@@ -48,6 +49,11 @@ protected:
 
 	AHPlayerCharacter* GetPlayerCharacter() const;
 
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UMessageHandlerComponent* MessageHandlerComponent;
+	
 private:
 	
 	UPROPERTY()
