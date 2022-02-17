@@ -106,6 +106,10 @@ FGenericTeamId AHPlayerController::GetGenericTeamId() const
 void AHPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FInputModeGameAndUI InputMode;
+	InputMode.SetHideCursorDuringCapture(false);
+	SetInputMode(InputMode);
 }
 
 
