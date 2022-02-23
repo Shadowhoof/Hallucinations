@@ -3,6 +3,9 @@
 
 #include "Core/HGameInstance.h"
 
+#include "Characters/HCharacterMetaData.h"
+#include "Utils/HEnumTools.h"
+
 UHInventoryItem* UHGameInstance::CreateItemById(int32 ItemId)
 {
 	if (!ItemMap.Contains(ItemId))
@@ -16,10 +19,27 @@ UHInventoryItem* UHGameInstance::CreateItemById(int32 ItemId)
 	return UHInventoryItem::CreateItem(ItemData);
 }
 
+FCharacterClassMetaData UHGameInstance::GetClassMetaData(ECharacterClass Class)
+{
+	if (!ClassMetaDataMap.Contains(Class))
+	{
+		UE_LOG(LogDataTable, Error, TEXT("No class metadata found for class %s"), *EnumAsString(Class));
+		return FCharacterClassMetaData();
+	}
+
+	return ClassMetaDataMap[Class];
+}
+
 void UHGameInstance::OnStart()
 {
 	Super::OnStart();
 	
+	InitializeItemMap();
+	InitializeClassMetaDataMap();
+}
+
+void UHGameInstance::InitializeItemMap()
+{
 	if (ItemTable)
 	{
 		for (const auto& Entry : ItemTable->GetRowMap())
@@ -31,5 +51,21 @@ void UHGameInstance::OnStart()
 	else
 	{
 		UE_LOG(LogDataTable, Error, TEXT("No item database specified for game instance"));
+	}
+}
+
+void UHGameInstance::InitializeClassMetaDataMap()
+{
+	if (ClassMetaDataTable)
+	{
+		for (const auto& Entry : ClassMetaDataTable->GetRowMap())
+		{
+			const FCharacterClassMetaData* MetaDataPtr = reinterpret_cast<FCharacterClassMetaData*>(Entry.Value);
+			ClassMetaDataMap.Add(MetaDataPtr->Class, *MetaDataPtr);
+		}
+	}
+	else
+	{
+		UE_LOG(LogDataTable, Error, TEXT("No class metadata table specified for game instance"));
 	}
 }

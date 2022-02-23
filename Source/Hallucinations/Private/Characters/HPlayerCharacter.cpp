@@ -25,6 +25,7 @@
 #include "Core/HInteractable.h"
 #include "Core/Subsystems/Save/HSaveSubsystem.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "Core/HGameInstance.h"
 #include "Level/HFadeableComponent.h"
 #include "Utils/HLogUtils.h"
 
@@ -75,6 +76,9 @@ AHPlayerCharacter::AHPlayerCharacter()
 // Called when the game starts or when spawned
 void AHPlayerCharacter::BeginPlay()
 {
+	InitializeFromMetaData();
+	LoadFromSave();
+	
 	Super::BeginPlay();
 
 	MinimapCaptureComponent->SetRelativeLocation(FVector(0.f, 0.f, Constants::MinimapSceneComponentHeight));
@@ -90,6 +94,9 @@ void AHPlayerCharacter::BeginPlay()
 		// enable terrain fade triggers
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_FadeTrigger, ECR_Overlap);
 	}
+
+	PlayerController = Cast<AHPlayerController>(Controller);
+	PlayerController->OnCharacterBeginPlay(this);
 }
 
 // Called every frame
@@ -134,12 +141,6 @@ void AHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 AActor* AHPlayerCharacter::GetTargetActor() const
 {
-	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
-	if (!PlayerController)
-	{
-		return nullptr;
-	}
-
 	FHitResult& MouseoverData = PlayerController->MouseoverData;
 	if (MouseoverData.bBlockingHit)
 	{
@@ -155,12 +156,6 @@ AActor* AHPlayerCharacter::GetTargetActor() const
 
 FVector AHPlayerCharacter::GetTargetLocation() const
 {
-	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
-	if (!PlayerController)
-	{
-		return HallucinationsConstants::InvalidVector;
-	}
-
 	FHitResult& MouseoverData = PlayerController->MouseoverData;
 	if (MouseoverData.bBlockingHit)
 	{
@@ -230,8 +225,7 @@ void AHPlayerCharacter::OnPrimaryActionRelease()
 
 void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
 {
-	AHPlayerController* PlayerController = Cast<AHPlayerController>(Controller);
-	if (!PlayerController || IsDead())
+	if (IsDead())
 	{
 		return;
 	}
@@ -264,6 +258,28 @@ void AHPlayerCharacter::PrimaryAction(bool bIsRepeated)
 			
 		}
 	}
+}
+
+void AHPlayerCharacter::InitializeFromMetaData()
+{
+	UHGameInstance* GameInstance = Cast<UHGameInstance>(GetGameInstance());
+	const FCharacterClassMetaData MetaData = GameInstance->GetClassMetaData(GetSaveData()->Class);
+
+	Class = MetaData.Class;
+	if (MetaData.SkeletalMesh)
+	{
+		GetMesh()->SetSkeletalMesh(MetaData.SkeletalMesh);
+	}
+	if (MetaData.AnimBlueprintClass)
+	{
+		GetMesh()->SetAnimInstanceClass(MetaData.AnimBlueprintClass);
+	}
+}
+
+void AHPlayerCharacter::LoadFromSave()
+{
+	const UHPlayerCharacterSave* Save = GetSaveData();
+	Name = FText::FromString(Save->Name);
 }
 
 void AHPlayerCharacter::UpdateFadeableObstructions(float DeltaTime)

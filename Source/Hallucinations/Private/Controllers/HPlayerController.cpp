@@ -76,6 +76,11 @@ void AHPlayerController::OnPossess(APawn* InPawn)
 		GenericTeamId = FGenericTeamId(static_cast<uint8>(PlayerCharacter->GetHealthComponent()->GetTeam()));
 
 		MessageHandlerComponent->SetCharacter(PlayerCharacter);
+
+		if (PlayerCharacter->HasActorBegunPlay())
+		{
+			OnCharacterBeginPlay(PlayerCharacter);
+		}
 	}
 
 	Super::OnPossess(InPawn);

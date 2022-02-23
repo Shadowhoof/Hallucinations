@@ -66,6 +66,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UHEquipmentComponent* EquipmentComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Class")
+	ECharacterClass Class;
+	
 	// camera
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MinCameraDistance;
@@ -96,11 +99,17 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void ToggleInventory();
 
+	void InitializeFromMetaData();
+	void LoadFromSave();
+	
 private:
 
 	void UpdateFadeableObstructions(float DeltaTime);
 
 	UPROPERTY()
 	TMap<AActor*, float> FadedActorMap;
+
+	UPROPERTY()
+	AHPlayerController* PlayerController;
 	
 };

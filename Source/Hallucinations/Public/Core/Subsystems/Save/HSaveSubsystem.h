@@ -6,6 +6,8 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "HSaveSubsystem.generated.h"
 
+class UHCharacterListSave;
+enum class ECharacterClass : uint8;
 struct FPlayerCharacterSessionState;
 class USaveGame;
 class UHPlayerCharacterSave;
@@ -27,6 +29,9 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
+	UFUNCTION(BlueprintCallable)
+	const TArray<UHPlayerCharacterSave*>& GetAllCharacterSaves() const;
+	
 	UHPlayerCharacterSave* GetCharacterSaveData() const;
 
 	/** Creates a level save for provided world */
@@ -44,10 +49,24 @@ public:
 	/** Loads player character's session state */
 	const UHPlayerCharacterSessionSave* LoadPCSessionState();
 
+
+	// character save functions
+	
+	UFUNCTION(BlueprintCallable)
+	bool CreateCharacterSave(const FString& CharacterName, ECharacterClass Class);
+	
+	UFUNCTION(BlueprintCallable)
+	bool LoadCharacterSave(const FString& CharacterName);
+
+	UFUNCTION(BlueprintCallable)
+	void DeleteCharacterSave(const FString& CharacterName);
+
 private:
 
+	void LoadCharacterList();
+	void SaveCharacterList();
+	
 	void SaveCharacter();
-	void LoadCharacter();
 
 	static USaveGame* CreateSave(TSubclassOf<USaveGame> SaveClass);
 	static void Save(USaveGame* SaveGameObject, const FString& SlotName, int32 UserIndex);
@@ -56,10 +75,17 @@ private:
 	static void Delete(const FString& SlotName, int UserIndex);
 	
 	static FString GetLevelSlotName(const UWorld* World);
-	static FString GetCharacterSlotName(const uint8 CharacterId);
+	static FString GetCharacterSlotName(const uint8 CharacterId); // DEPRECATED
+	static FString GetCharacterSlotName(const FString& CharacterName);
 	
 	UPROPERTY()
-	UHPlayerCharacterSave* CharacterSave;
+	TObjectPtr<UHPlayerCharacterSave> CurrentCharacterSave;
+
+	UPROPERTY()
+	TObjectPtr<UHCharacterListSave> CharacterListSave;
+
+	UPROPERTY()
+	mutable TArray<TObjectPtr<UHPlayerCharacterSave>> AllCharacterSaves = {};
 	
 	TSet<FString> VisitedLevelsSlotNames;
 	

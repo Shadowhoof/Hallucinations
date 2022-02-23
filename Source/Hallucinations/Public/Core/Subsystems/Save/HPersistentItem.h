@@ -8,7 +8,7 @@
 /**
  *	Equipped item information that will be saved to and loaded from disk
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FPersistentEquippedItem
 {
 	GENERATED_BODY()
@@ -31,7 +31,7 @@ struct FPersistentEquippedItem
 /**
  *	Inventory item information that will be saved to and loaded from disk
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FPersistentInventoryItem
 {
 	GENERATED_BODY()

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HPersistentItem.h"
+#include "Characters/HCharacterMetaData.h"
 #include "GameFramework/SaveGame.h"
 #include "HCharacterSave.generated.h"
 
@@ -11,20 +12,26 @@
 /**
  *  Character save data which is saved to disk between sessions. Should not contain data which is only relevant for the current session.
  */
-UCLASS()
+UCLASS(BlueprintType)
 class HALLUCINATIONS_API UHPlayerCharacterSave : public USaveGame
 {
 	GENERATED_BODY()
 
 public:
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ECharacterClass Class;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString Name;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<FString> EquippedAbilities;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<FPersistentEquippedItem> EquippedItems;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<FPersistentInventoryItem> InventoryItems;
 	
 };
@@ -60,4 +67,18 @@ public:
 	UPROPERTY()
 	FPlayerCharacterSessionState State;
 	
+};
+
+
+/** Save containing names of all existing character saves. */
+UCLASS()
+class HALLUCINATIONS_API UHCharacterListSave : public USaveGame
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY()
+	TArray<FString> CharacterNames;
+
 };

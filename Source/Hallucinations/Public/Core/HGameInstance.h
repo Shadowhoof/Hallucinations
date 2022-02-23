@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Characters/HCharacterMetaData.h"
 #include "Inventory/HInventoryItem.h"
 #include "HGameInstance.generated.h"
 
@@ -24,6 +25,9 @@ public:
 	 *	@param ItemId unique item identifier
 	 */
 	UHInventoryItem* CreateItemById(int32 ItemId);
+
+	/**	Retrieves meta data for provided character class */
+	FCharacterClassMetaData GetClassMetaData(ECharacterClass Class);
 	
 protected:
 
@@ -32,8 +36,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
 	UDataTable* ItemTable;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characters")
+	UDataTable* ClassMetaDataTable;
+
 private:
-	
+
 	TMap<int32, FName> ItemMap;
-	
+	TMap<ECharacterClass, FCharacterClassMetaData> ClassMetaDataMap;
+
+	void InitializeItemMap();
+	void InitializeClassMetaDataMap();
+
 };

@@ -39,6 +39,9 @@ public:
 	void OnPlayerRestart();
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCharacterBeginPlay(AHPlayerCharacter* PlayerCharacter);
 	
 protected:
 	

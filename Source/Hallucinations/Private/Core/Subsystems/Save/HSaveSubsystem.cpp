@@ -14,6 +14,7 @@ namespace SaveConstants
 	const FString LevelPrefix = "Level:";
 	const FString PCSessionSlotName = "CharacterSession";
 	const FString CharacterPrefix = "Character:";
+	const FString CharacterListSlotName = "CharacterList";
 }
 
 
@@ -21,12 +22,13 @@ void UHSaveSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	LoadCharacter();
+	LoadCharacterList();
 }
 
 void UHSaveSubsystem::Deinitialize()
 {
 	SaveCharacter();
+	SaveCharacterList();
 
 	// level data should not be saved between sessions
 	for (const auto& SlotName : VisitedLevelsSlotNames)
@@ -40,9 +42,41 @@ void UHSaveSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+const TArray<UHPlayerCharacterSave*>& UHSaveSubsystem::GetAllCharacterSaves() const
+{
+	TArray<FString> NotExistingNames;
+	if (AllCharacterSaves.IsEmpty() && !CharacterListSave->CharacterNames.IsEmpty())
+	{
+		for (const FString& CharacterName : CharacterListSave->CharacterNames)
+		{
+			const FString CharacterSlotName = GetCharacterSlotName(CharacterName);
+			UHPlayerCharacterSave* LoadedSave = Cast<UHPlayerCharacterSave>(Load(CharacterSlotName, 0));
+			if (LoadedSave)
+			{
+				AllCharacterSaves.Add(LoadedSave);
+			}
+			else
+			{
+				NotExistingNames.Add(CharacterName);
+			}
+		}
+	}
+
+	if (!NotExistingNames.IsEmpty())
+	{
+		for (const FString& CharacterName : NotExistingNames)
+		{
+			UE_LOG(LogSave, Warning, TEXT("Save with name %s does not exist, deleting it from the character list"), *CharacterName);
+			CharacterListSave->CharacterNames.Remove(CharacterName);
+		}
+	}
+	
+	return AllCharacterSaves;
+}
+
 UHPlayerCharacterSave* UHSaveSubsystem::GetCharacterSaveData() const
 {
-	return CharacterSave;
+	return CurrentCharacterSave;
 }
 
 UHLevelSave* UHSaveSubsystem::CreateLevelSave()
@@ -74,16 +108,68 @@ const UHPlayerCharacterSessionSave* UHSaveSubsystem::LoadPCSessionState()
 	return Cast<UHPlayerCharacterSessionSave>(Load(SaveConstants::PCSessionSlotName, 0));
 }
 
-void UHSaveSubsystem::SaveCharacter()
+bool UHSaveSubsystem::LoadCharacterSave(const FString& CharacterName)
 {
-	const FString SlotName = GetCharacterSlotName(0);
-	Save(CharacterSave, SlotName, 0);
+	const FString SlotName = GetCharacterSlotName(CharacterName);
+	CurrentCharacterSave = Cast<UHPlayerCharacterSave>(Load(SlotName, 0));
+	return CurrentCharacterSave != nullptr;
 }
 
-void UHSaveSubsystem::LoadCharacter()
+void UHSaveSubsystem::DeleteCharacterSave(const FString& CharacterName)
 {
-	const FString SlotName = GetCharacterSlotName(0);
-	CharacterSave = Cast<UHPlayerCharacterSave>(LoadOrCreate(UHPlayerCharacterSave::StaticClass(), SlotName, 0));
+	const FString SlotName = GetCharacterSlotName(CharacterName);
+	Delete(SlotName, 0);
+	CharacterListSave->CharacterNames.Remove(CharacterName);
+	
+	AllCharacterSaves.RemoveAll([&CharacterName](const UHPlayerCharacterSave* Save)
+	{
+		return Save->Name == CharacterName;
+	});
+}
+
+void UHSaveSubsystem::LoadCharacterList()
+{
+	USaveGame* NewSave = LoadOrCreate(UHCharacterListSave::StaticClass(), SaveConstants::CharacterListSlotName, 0);
+	CharacterListSave = Cast<UHCharacterListSave>(NewSave);
+}
+
+void UHSaveSubsystem::SaveCharacterList()
+{
+	Save(CharacterListSave, SaveConstants::CharacterListSlotName, 0);
+}
+
+void UHSaveSubsystem::SaveCharacter()
+{
+	if (!CurrentCharacterSave)
+	{
+		return;
+	}
+	
+	const FString SlotName = GetCharacterSlotName(CurrentCharacterSave->Name);
+	Save(CurrentCharacterSave, SlotName, 0);
+}
+
+bool UHSaveSubsystem::CreateCharacterSave(const FString& CharacterName, ECharacterClass Class)
+{
+	if (CharacterListSave->CharacterNames.Contains(CharacterName))
+	{
+		// character with that name already exists
+		return false;
+	}
+
+	UHPlayerCharacterSave* NewCharacterSave = Cast<UHPlayerCharacterSave>(CreateSave(UHPlayerCharacterSave::StaticClass()));
+	NewCharacterSave->Class = Class;
+	NewCharacterSave->Name = CharacterName;
+	// FIXME change character slot name
+	Save(NewCharacterSave, GetCharacterSlotName(CharacterName), 0);
+	
+	CharacterListSave->CharacterNames.Add(CharacterName);
+	AllCharacterSaves.Add(NewCharacterSave);
+
+	// FIXME creation should not automatically start a game
+	CurrentCharacterSave = NewCharacterSave;
+	
+	return true;
 }
 
 USaveGame* UHSaveSubsystem::CreateSave(TSubclassOf<USaveGame> SaveClass)
@@ -157,4 +243,9 @@ FString UHSaveSubsystem::GetLevelSlotName(const UWorld* World)
 FString UHSaveSubsystem::GetCharacterSlotName(const uint8 CharacterId)
 {
 	return SaveConstants::CharacterPrefix + FString::FromInt(CharacterId);
+}
+
+FString UHSaveSubsystem::GetCharacterSlotName(const FString& CharacterName)
+{
+	return SaveConstants::CharacterPrefix + CharacterName;
 }
